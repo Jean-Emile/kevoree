@@ -29,7 +29,7 @@
         </dependency>
     </dependencies>
 
-
+<!--
     <profiles>
         <profile>
             <id>org.kevoree.tools.root.profile</id>
@@ -50,7 +50,7 @@
             </dependencies>
         </profile>
     </profiles>
-
+-->
 
     <build>
         <plugins>
@@ -191,7 +191,7 @@
         <module>../org.kevoree.tools.model2code</module>
         <module>../org.kevoree.tools.ui.editor.standalone</module>
     </modules>
-    
+
     
     <properties>
         <scala.version>2.9.1</scala.version>
