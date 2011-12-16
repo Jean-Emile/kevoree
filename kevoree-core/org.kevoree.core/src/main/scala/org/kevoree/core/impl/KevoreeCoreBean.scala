@@ -27,14 +27,14 @@ import scala.reflect.BeanProperty
 import org.kevoree.framework.message._
 import scala.actors.Actor
 import org.kevoree.api.configuration.ConfigConstants
-import java.util.Date
-import org.kevoree.api.service.core.handler.{ModelListener, KevoreeModelHandlerService}
 import org.kevoree.framework._
 import org.kevoree.framework.context.KevoreeDeployManager
 import deploy.PrimitiveCommandExecutionHelper
 import org.kevoree.tools.aether.framework.NodeTypeBootstrapHelper
 import org.kevoree.cloner.ModelCloner
 import org.kevoree.core.basechecker.RootChecker
+import java.util.{UUID, Date}
+import org.kevoree.api.service.core.handler.{KevoreeModelUpdateException, UUIDModel, ModelListener, KevoreeModelHandlerService}
 
 class KevoreeCoreBean extends KevoreeModelHandlerService with KevoreeThreadActor {
 
@@ -52,10 +52,10 @@ class KevoreeCoreBean extends KevoreeModelHandlerService with KevoreeThreadActor
   @BeanProperty var nodeName: String = ""
   @BeanProperty var nodeInstance: AbstractNodeType = null
 
-  var models: java.util.ArrayList[ContainerRoot] = new java.util.ArrayList()
+  var models: scala.collection.mutable.ArrayBuffer[ContainerRoot] = new scala.collection.mutable.ArrayBuffer[ContainerRoot]()
   var model: ContainerRoot = KevoreeFactory.eINSTANCE.createContainerRoot
-
   var lastDate: Date = new Date(System.currentTimeMillis)
+  var currentModelUUID: UUID = UUID.randomUUID();
 
   def getLastModification = lastDate
 
@@ -132,17 +132,21 @@ class KevoreeCoreBean extends KevoreeModelHandlerService with KevoreeThreadActor
     } catch {
       case _@e => logger.error("Error while unbootstraping node instance ", e); None
     }
-
-
   }
-
 
   /**
    * Switches to the newly deployed model
    */
   private def switchToNewModel(c: ContainerRoot) = {
-    models.add(model) //backup
+    models.append(model)
+    //Keep a limited history
+    if (models.size > 15) {
+      // MAGIC NUMBER ;-) , ONLY KEEP 10 PREVIOUS MODEL
+      models = models.drop(5)
+      logger.debug("Garbage old previous model")
+    }
     model = c
+    currentModelUUID = UUID.randomUUID()
     lastDate = new Date(System.currentTimeMillis)
     //TODO ADD LISTENER
 
@@ -182,14 +186,9 @@ class KevoreeCoreBean extends KevoreeModelHandlerService with KevoreeThreadActor
   override def stop() {
 
     logger.warn("Kevoree Core will be stopped !")
-
     listenerActor.stop()
-
     super[KevoreeThreadActor].forceStop
-    //TODO CLEAN AND REACTIVATE
-
     if (nodeInstance != null) {
-
       try {
         val stopModel = checkUnbootstrapNode(model)
         if (stopModel.isDefined) {
@@ -213,20 +212,16 @@ class KevoreeCoreBean extends KevoreeModelHandlerService with KevoreeThreadActor
         }
       }
     }
-
     logger.debug("Kevoree core stopped ")
-    // KevoreeXmiHelper.save(bundleContext.getDataFile("lastModel.xmi").getAbsolutePath(), models.head);
   }
 
   val cloner = new ModelCloner
   val modelChecker = new RootChecker
 
-
   /**
    * Internal message processor
    */
   def internal_process(msg: Any) = msg match {
-    //case updateMsg: PlatformModelUpdate => KevoreePlatformHelper.updateNodeLinkProp(model, nodeName, updateMsg.targetNodeName, updateMsg.key, updateMsg.value, updateMsg.networkType, updateMsg.weight)
 
     // Returns the collection of previous models
     case PreviousModel() => reply(models)
@@ -236,184 +231,210 @@ class KevoreeCoreBean extends KevoreeModelHandlerService with KevoreeThreadActor
       reply(cloner.clone(model))
     }
 
-      //Updates the system to the given model
-    case UpdateModel(pnewmodel) => {
-      if (pnewmodel == null) {
-        logger.error("Update Asked with a Null model")
-        reply(false)
+    case LastUUIDModel() => {
+      reply(UUIDModelImpl(currentModelUUID, cloner.clone(model)))
+    }
+    case UpdateUUIDModel(prevUUIDModel, targetModel) => {
+      if (prevUUIDModel.getUUID.compareTo(currentModelUUID) == 0) {
+        //TODO CHECK WITH MODEL SHA-1 HASHCODE
+        reply(internal_update_model(targetModel))
       } else {
-        val updtIndex = CoreStats.getExecutionIndex // increase the index of stats
-        try {
+        reply(false)
+      }
+    }
+    //Updates the system to the given model
+    case UpdateModel(pnewmodel) => {
+      reply(internal_update_model(pnewmodel))
+    }
+    case _@unknow => logger
+      .warn("unknow message  " + unknow.toString + " - sender" + sender.toString + "-" + this.getClass.getName)
+  }
 
-          //Checks the model conformance
-          val checkingStartTime = System.currentTimeMillis()
-          val checkResult = modelChecker.check(pnewmodel)
-          CoreStats.checking += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - checkingStartTime))
+  /**
+   * Internal update model process
+   */
+  private def internal_update_model(pnewmodel: ContainerRoot): Boolean = {
+    if (pnewmodel == null) {
+      logger.error("Update Asked with a Null model")
+      false
+    } else {
+      val updtIndex = CoreStats.getExecutionIndex // increase the index of stats
+      try {
 
-          if (!checkResult.isEmpty) {
-            //Checking errors
-            logger.error("There is check failure on update model, update refused !")
-            import scala.collection.JavaConversions._
-            checkResult.foreach {
-              cr =>
-                logger.error("error=>" + cr.getMessage + ",objects" + cr.getTargetObjects.mkString(","))
-            }
-            reply(false)
+        //Checks the model conformance
+        val checkingStartTime = System.currentTimeMillis()
+        val checkResult = modelChecker.check(pnewmodel)
+        CoreStats.checking += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - checkingStartTime))
 
-          } else {
-            //No checking errors, resume update
+        if (!checkResult.isEmpty) {
+          //Checking failed
+          logger.error("There is check failure on update model, update refused !")
+          import scala.collection.JavaConversions._
+          checkResult.foreach {
+            cr =>
+              logger.error("error=>" + cr.getMessage + ",objects" + cr.getTargetObjects.mkString(","))
+          }
+          false
+        } else {
+          //No checking errors, resume update
 
-            //Cloning the incoming model
-            val cloneStartTime = System.currentTimeMillis()
-            var newmodel = cloner.clone(pnewmodel)
-            CoreStats.cloneMap += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - cloneStartTime))
+          //Cloning the incoming model
+          val cloneStartTime = System.currentTimeMillis()
+          var newmodel = cloner.clone(pnewmodel)
+          CoreStats.cloneMap += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - cloneStartTime))
 
-            //HARAKIRI removes the local node type from the system, then resumes the update with the new model
-            if (HaraKiriHelper.detectNodeHaraKiri(model, newmodel, getNodeName())) {
-              logger.warn("HaraKiri detected , flush platform")
-              newmodel = KevoreeFactory.createContainerRoot
-              try {
-
-                //Plan the adaptation
-                val kompareStartTime = System.currentTimeMillis()
-                val adaptationModel = nodeInstance.kompare(model, newmodel);
-                CoreStats.kompare += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - kompareStartTime))
-
-                //DEBUG
-                if (logger.isDebugEnabled) {
-                  logger.debug("Adaptation model size {}", adaptationModel.getAdaptations.size)
-                  adaptationModel.getAdaptations.foreach {
-                    adaptation =>
-                      logger.debug("primitive {}", adaptation.getPrimitiveType.getName)
-                  }
-                }
-
-                //Executes the adaptation to unload the system
-                val deployStartTime = System.currentTimeMillis()
-                PrimitiveCommandExecutionHelper.execute(adaptationModel, nodeInstance)
-                CoreStats.deploy += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - deployStartTime))
-
-                //Unloads the bundles
-                KevoreeDeployManager.bundleMapping.foreach {
-                  bm =>
-                    try {
-                      logger.debug("Try to cleanup " + bm.bundleId + "," + bm.objClassName + "," + bm.name)
-                      KevoreeDeployManager.removeMapping(bm)
-                      getBundleContext.getBundle(bm.bundleId).uninstall()
-                    } catch {
-                      case _@e => logger.warn("Error while cleanup platform ", e)
-                    }
-                }
-                logger.debug("Deploy manager cache size after HaraKiri" + KevoreeDeployManager.bundleMapping.size)
-
-                //Updates the current model
-                nodeInstance = null
-                switchToNewModel(newmodel)
-                val cloneStartTime = System.currentTimeMillis()
-                newmodel = cloner.clone(pnewmodel)
-                CoreStats.cloneMap.get(CoreStats.getLastExecutionIndex) match {
-                  case None => CoreStats.cloneMap += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - cloneStartTime))
-                  case Some(delay) => {
-                    CoreStats.cloneMap += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - cloneStartTime + delay))
-                  }
-                }
-                //resumes with the update
-              } catch {
-                case _@e => {
-                  logger.error("Error while update ", e)
-                }
-              }
-              logger.debug("End HaraKiri")
-            } //END OF HARAKIRI
-
-
-            //Update START
-            checkBootstrapNode(newmodel)
-
-            val updateStartTime = System.currentTimeMillis()
-            logger.debug("Begin update model ")
-            var deployResult = true
+          //HARAKIRI removes the local node type from the system, then resumes the update with the new model
+          if (HaraKiriHelper.detectNodeHaraKiri(model, newmodel, getNodeName())) {
+            logger.warn("HaraKiri detected , flush platform")
+            newmodel = KevoreeFactory.createContainerRoot
             try {
-              //Update kompare
+
+              //Plan the adaptation
               val kompareStartTime = System.currentTimeMillis()
               val adaptationModel = nodeInstance.kompare(model, newmodel);
-              CoreStats.kompare.get(CoreStats.getLastExecutionIndex) match {
-                case None => CoreStats.kompare += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - kompareStartTime))
-                case Some(delay) => {
-                  CoreStats.kompare += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - kompareStartTime + delay))
+              CoreStats.kompare += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - kompareStartTime))
+
+              //DEBUG
+              if (logger.isDebugEnabled) {
+                logger.debug("Adaptation model size " + adaptationModel.getAdaptations.size)
+                adaptationModel.getAdaptations.foreach {
+                  adaptation =>
+                    logger.debug("primitive " + adaptation.getPrimitiveType.getName)
                 }
               }
-
-              //Update deploy
+              //Executes the adaptation to unload the system
               val deployStartTime = System.currentTimeMillis()
-              deployResult = PrimitiveCommandExecutionHelper.execute(adaptationModel, nodeInstance)
-              CoreStats.deploy.get(CoreStats.getLastExecutionIndex) match {
-                case None => CoreStats.deploy += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - deployStartTime))
+              PrimitiveCommandExecutionHelper.execute(adaptationModel, nodeInstance)
+              CoreStats.deploy += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - deployStartTime))
+
+              //Unloads the bundles
+              KevoreeDeployManager.bundleMapping.foreach {
+                bm =>
+                  try {
+                    logger.debug("Try to cleanup " + bm.bundleId + "," + bm.objClassName + "," + bm.name)
+                    KevoreeDeployManager.removeMapping(bm)
+                    getBundleContext.getBundle(bm.bundleId).uninstall()
+                  } catch {
+                    case _@e => logger.debug("Error while cleanup platform ", e)
+                  }
+              }
+              logger.debug("Deploy manager cache size after HaraKiri" + KevoreeDeployManager.bundleMapping.size)
+
+              //Updates the current model
+              nodeInstance = null
+              switchToNewModel(newmodel)
+              val cloneStartTime = System.currentTimeMillis()
+              newmodel = cloner.clone(pnewmodel)
+              CoreStats.cloneMap.get(CoreStats.getLastExecutionIndex) match {
+                case None => CoreStats.cloneMap += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - cloneStartTime))
                 case Some(delay) => {
-                  CoreStats.deploy += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - deployStartTime + delay))
+                  CoreStats.cloneMap += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - cloneStartTime + delay))
                 }
               }
             } catch {
               case _@e => {
                 logger.error("Error while update ", e)
-                deployResult = false
               }
-            }//Update END
-
-            //Examination of the result
-            if (deployResult) {
-              switchToNewModel(newmodel)
-              logger.info("Deploy result " + deployResult)
-              //val milliEnd = System.currentTimeMillis - milli
-              logger.debug("End deploy result " + deployResult)//) + "-" + milliEnd)
-            } else {
-              logger.warn("Failed to update the system to the given model.")
             }
-            CoreStats.update.get(CoreStats.getLastExecutionIndex) match {
-              case None => CoreStats.update += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - updateStartTime))
+            logger.debug("End HaraKiri")
+          }
+
+
+          checkBootstrapNode(newmodel)
+          val updateStartTime = System.currentTimeMillis()
+          logger.debug("Begin update model ")
+          var deployResult = true
+          try {
+            //Update kompare
+            val kompareStartTime = System.currentTimeMillis()
+            val adaptationModel = nodeInstance.kompare(model, newmodel);
+            CoreStats.kompare.get(CoreStats.getLastExecutionIndex) match {
+              case None => CoreStats.kompare += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - kompareStartTime))
               case Some(delay) => {
-                CoreStats.update += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - updateStartTime + delay))
+                CoreStats.kompare += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - kompareStartTime + delay))
               }
             }
+            //Update deploy
+            val deployStartTime = System.currentTimeMillis()
+            deployResult = PrimitiveCommandExecutionHelper.execute(adaptationModel, nodeInstance)
+            CoreStats.deploy.get(CoreStats.getLastExecutionIndex) match {
+              case None => CoreStats.deploy += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - deployStartTime))
+              case Some(delay) => {
+                CoreStats.deploy += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - deployStartTime + delay))
+              }
+            }
+          } catch {
+            case _@e => {
+              logger.error("Error while update ", e)
+              deployResult = false
+            }
+          }
+          if (deployResult) {
+            //Merge previous model on new model for platform model
+            //KevoreePlatformMerger.merge(newmodel, model)
+            switchToNewModel(newmodel)
+            logger.info("Deploy result " + deployResult)
+          } else {
+            //KEEP FAIL MODEL
+            logger.warn("Failed model")
+          }
 
-            reply(deployResult)
-
-          } //END OF UPDATE execution
-        } catch {
-          case _@e =>
-            logger.error("Error while update", e)
-            reply(false)
+          CoreStats.update.get(CoreStats.getLastExecutionIndex) match {
+            case None => CoreStats.update += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - updateStartTime))
+            case Some(delay) => {
+              CoreStats.update += (CoreStats.getLastExecutionIndex -> (System.currentTimeMillis() - updateStartTime + delay))
+            }
+          }
+          logger.info("Deploy result " + deployResult)
+          //val milliEnd = System.currentTimeMillis - milli
+          logger.debug("End deploy result " + deployResult) //) + "-" + milliEnd)
+          logger.info(CoreStats.printStats)
+          deployResult
         }
-        logger.info(CoreStats.printStats)
-      }//END Checked UPDATE
+      } catch {
+        case _@e =>
+          logger.error("Error while update", e)
+          false
+      }
 
-    }//END CASE
-    case _@unknow => logger
-      .warn("unknow message  " + unknow.toString + " - sender" + sender.toString + "-" + this.getClass.getName)
-  }
-
+    } //End model not null
+  } //CLose Update Method
 
   override def getLastModel: ContainerRoot = {
     (this !? LastModel()).asInstanceOf[ContainerRoot]
   }
 
-  override def updateModel(model: ContainerRoot) {
-    logger.debug("update asked")
-    this ! UpdateModel(model)
-    logger.debug("update end")
 
+  override def getLastUUIDModel: UUIDModel = {
+    (this !? LastUUIDModel()).asInstanceOf[UUIDModel]
+  }
+
+  @Deprecated
+  override def updateModel(model: ContainerRoot) {
+    this ! UpdateModel(model)
   }
 
   override def atomicUpdateModel(model: ContainerRoot) = {
-    logger.debug("Atomic update asked")
     (this !? UpdateModel(model))
-    logger.debug("Atomic up date end")
     lastDate
   }
 
-  override def getPreviousModel: java.util.List[ContainerRoot] = (this !? PreviousModel())
-    .asInstanceOf[java.util.List[ContainerRoot]]
+  override def compareAndSwapModel(previousModel: UUIDModel, targetModel: ContainerRoot) {
+    this ! UpdateUUIDModel(previousModel, targetModel)
+  }
 
+  override def atomicCompareAndSwapModel(previousModel: UUIDModel, targetModel: ContainerRoot): Date = {
+    val result = (this !? UpdateUUIDModel(previousModel, targetModel)).asInstanceOf[Boolean]
+    if (!result) {
+      throw new KevoreeModelUpdateException //SEND AND EXCEPTION - Compare&Swap fail !
+    }
+    lastDate
+  }
+
+  override def getPreviousModel: java.util.List[ContainerRoot] = {
+    import scala.collection.JavaConversions._
+    (this !? PreviousModel()).asInstanceOf[scala.collection.mutable.ArrayBuffer[ContainerRoot]].toList
+  }
 
   val listenerActor = new KevoreeListeners
   listenerActor.start()

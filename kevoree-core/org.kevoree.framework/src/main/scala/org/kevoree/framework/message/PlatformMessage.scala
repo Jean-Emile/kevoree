@@ -19,7 +19,12 @@
 package org.kevoree.framework.message
 
 import org.kevoree.ContainerRoot
+import org.kevoree.api.service.core.handler.UUIDModel
 
 case class UpdateModel(model : ContainerRoot)
 case class LastModel()
 case class PreviousModel()
+
+
+case class LastUUIDModel()
+case class UpdateUUIDModel(prev : UUIDModel,target: ContainerRoot)

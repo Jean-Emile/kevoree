@@ -14,14 +14,16 @@ package org.kevoree.library.jmdnsrest
  * limitations under the License.
  */
 
-import java.util.HashMap
 import javax.jmdns.{ServiceEvent, ServiceListener, ServiceInfo, JmDNS}
 import org.kevoree.api.service.core.handler.KevoreeModelHandlerService
 import actors.Actor
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
 import org.kevoree.tools.marShell.KevsEngine
-import org.kevoree.{KevoreeFactory, ContainerRoot}
+import org.kevoree.framework.KevoreePlatformHelper
+import org.kevoree.{ContainerRoot, KevoreeFactory}
+import scala.Array
+import java.util.{ArrayList, HashMap}
 
 /**
  * User: ffouquet
@@ -29,16 +31,14 @@ import org.kevoree.{KevoreeFactory, ContainerRoot}
  * Time: 17:42
  */
 
-class JmDnsComponent(nodeName: String, groupName: String, modelPort: Int, modelHandler: KevoreeModelHandlerService, groupTypeName: String) {
-
+class JmDnsComponent(nodeName: String, groupName: String, modelPort: Int, modelHandler: KevoreeModelHandlerService, groupTypeName: String,interface : InetAddress) {
   val logger = LoggerFactory.getLogger(this.getClass)
   var servicelistener: ServiceListener = null
   final val REMOTE_TYPE: String = "_kevoree-remote._tcp.local."
-  val values = new HashMap[String, String]
+  val nodeAlreadydiscovery  = new HashMap[String,ArrayList[String]]
 
-  def updateModelNetwork(nodeName: String, nodeType: String, groupName: String, groupType: String, groupPort: String): Option[ContainerRoot] = {
-    val currentModel = modelHandler.getLastModel //GET & CLONE
 
+  def updateModelNetwork(currentModel:ContainerRoot,nodeName: String, nodeType: String, groupName: String, groupType: String, groupPort: String): Option[ContainerRoot] = {
     val groupTypeDef = currentModel.getTypeDefinitions.find(td => td.getName == groupType)
     val nodeTypeDef = currentModel.getTypeDefinitions.find(td => td.getName == nodeType)
     if (groupTypeDef.isEmpty || nodeTypeDef.isEmpty) {
@@ -83,40 +83,82 @@ class JmDnsComponent(nodeName: String, groupName: String, modelPort: Int, modelH
     Some(currentModel)
   }
 
-  def addService(p1:ServiceEvent)
-  {
-    val typeNames = new String(p1.getInfo.getTextBytes, "UTF-8");
-    val typeNamesArray = typeNames.split("/")
-    val resultModel = updateModelNetwork(p1.getInfo.getName.trim(), typeNamesArray(1), groupName, typeNamesArray(0), p1.getInfo().getPort.toString)
-    resultModel.map {
-      goodModel => {
 
-        modelHandler.updateModel(goodModel)
+
+  /**
+   * add a node found in the model and request an update
+   */
+  def addNodeDiscovered(p1:ServiceInfo)
+  {
+    if(nodeAlreadydiscovery.containsKey(groupName) == false)
+    {
+      val row = new java.util.ArrayList[String]()
+      nodeAlreadydiscovery.put(groupName,row)
+    }
+    if(nodeAlreadydiscovery.get(groupName).contains(p1.getName.trim()) == false )
+    {
+      val typeNames = new String(p1.getTextBytes, "UTF-8");
+      val typeNamesArray = typeNames.split("/")
+
+      val uuidModel = modelHandler.getLastUUIDModel
+      val model = modelHandler.getLastModel
+
+      val resultModel = updateModelNetwork(model,p1.getName.trim(), typeNamesArray(1), groupName, typeNamesArray(0), p1.getPort.toString)
+      resultModel.map {
+        goodModel => {
+          val model= goodModel
+          nodeAlreadydiscovery.get(groupName).add(p1.getName.trim())
+
+         if(p1.getName != nodeName)
+         {
+           KevoreePlatformHelper.updateNodeLinkProp(model,nodeName, p1.getName.trim(),org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP, p1.getInet4Address.getHostAddress,"LAN"+p1.getInet4Address.getHostAddress, 100)
+           KevoreePlatformHelper.updateNodeLinkProp(model,nodeName,p1.getName.trim(), org.kevoree.framework.Constants.KEVOREE_MODEL_PORT, p1.getPort.toString, "LAN", 100)
+         }
+          modelHandler.compareAndSwapModel(uuidModel,model)
+          logger.debug("add node <"+p1.getName.trim()+"> on "+interface.getHostAddress)
+        }
       }
+    }else
+    {
+
+      logger.debug("List of discovered nodes <"+nodeAlreadydiscovery.get(groupName)+">")
     }
   }
 
-  // TODO Listen interfaces ?
-  val jmdns = JmDNS.create()
+  /*
+  Request from the user to scan the network
+  */
+  def requestUpdateList(time :Int)
+  {
+    for (ser <- jmdns.list(REMOTE_TYPE,time)) {
+      addNodeDiscovered(ser)
+    }
+  }
+
+  // Create JmDNS on all interfaces
+  val jmdns = JmDNS.create(interface,nodeName+"."+interface.getAddress.toString)
   logger.debug(" JmDNS listen on " + jmdns.getInterface());
+
   servicelistener = new ServiceListener() {
 
     def serviceAdded(p1: ServiceEvent) {
       jmdns.requestServiceInfo(p1.getType(), p1.getName(), 1);
-      addService(p1)
+      addNodeDiscovered(p1.getInfo)
     }
 
     def serviceResolved(p1: ServiceEvent) {
 
       logger.debug("Service resolved: " + p1.getInfo().getQualifiedName() + " port:" + p1.getInfo().getPort());
-      addService(p1)
+      addNodeDiscovered(p1.getInfo)
     }
-
-
 
     def serviceRemoved(p1: ServiceEvent) {
       logger.debug("Service removed " + p1.getName)
       //TODO REMOVE NODE FROM JMDNS GROUP INSTANCES SUBNODES
+      if(nodeAlreadydiscovery.containsKey(groupName) == true)
+      {
+        nodeAlreadydiscovery.get(groupName).remove(p1.getName.trim())
+      }
     }
   };
 
@@ -126,15 +168,9 @@ class JmDnsComponent(nodeName: String, groupName: String, modelPort: Int, modelH
   new Thread() {
     override def run() {
       val nodeType = modelHandler.getLastModel.getNodes.find(n => n.getName == nodeName).get.getTypeDefinition.getName
-
-
       val pairservice: ServiceInfo = ServiceInfo.create(REMOTE_TYPE, nodeName, groupName, modelPort, "")
       pairservice.setText((groupTypeName + "/" + nodeType).getBytes("UTF-8"))
-
-      logger.debug("nodeName " + nodeName + " groupName " + groupName + " modelPort " + modelPort + " groupTypeName " + groupTypeName + " nodeType " + nodeType)
-
       jmdns.registerService(pairservice)
-
     }
   }.start()
 
@@ -145,8 +181,8 @@ class JmDnsComponent(nodeName: String, groupName: String, modelPort: Int, modelH
           jmdns.removeServiceListener(REMOTE_TYPE, servicelistener)
         }
         jmdns.close()
-      }
 
+      }
     }.start()
   }
 }

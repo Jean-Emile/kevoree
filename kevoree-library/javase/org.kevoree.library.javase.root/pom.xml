@@ -27,7 +27,7 @@
         <module>../org.kevoree.library.javase.jPaxos</module>
         <module>../org.kevoree.library.javase.fileSystem</module>
         <module>../org.kevoree.library.javase.fileSystemSVN</module>
-
+        <module>../org.kevoree.library.javase.fileSystemGit</module>
 
         <!--   <module>../org.kevoree.library.javase.xmpp</module>     -->
         <!--<module>../org.kevoree.library.javase.sample</module>-->
@@ -60,6 +60,10 @@
         <module>../org.kevoree.library.javase.webserver.aceEditor</module>
         <module>../org.kevoree.library.javase.webserver.reasoner</module>
         <module>../org.kevoree.library.javase.webserver.servlet</module>
+        <module>../org.kevoree.library.javase.webserver.wordpress</module>
+
+
+        <module>../org.kevoree.library.javase.kestrelChannels</module>
 
         <module>../org.kevoree.library.javase.miniCloudGroup</module>
         <module>../org.kevoree.library.javase.pipe</module>

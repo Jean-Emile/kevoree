@@ -1,14 +1,5 @@
 package org.kevoree.library.javase.kestrelChannels
 
-/**
- * Created by IntelliJ IDEA.
- * User: jed
- * Date: 30/11/11
- * Time: 13:59
- * To change this template use File | Settings | File Templates.
- */
-
-
 import scala.collection.Map
 import java.net._
 import java.nio._
@@ -19,6 +10,13 @@ import java.io._
 
 class ClientError(reason: String) extends Exception(reason)
 
+/**
+ * Created by IntelliJ IDEA.
+ * User: jedartois@gmail.com
+ * Date: 29/11/11
+ * Time: 11:04
+ * To change this template use File | Settings | File Templates.
+ */
 class KestrelClient(host: String, port: Int) {
 
   var socketchannel: SocketChannel = null
@@ -36,6 +34,7 @@ class KestrelClient(host: String, port: Int) {
   def disconnect() {
     socketchannel.socket().close
   }
+
 
 
   final def send(socket: SocketChannel, data: ByteBuffer) = {
@@ -56,42 +55,15 @@ class KestrelClient(host: String, port: Int) {
     data
   }
 
-  def toBinary(obj: AnyRef): Array[Byte] = {
-    val bos = new ByteArrayOutputStream
-    val out = new ObjectOutputStream(bos)
-    out.writeObject(obj)
-    out.close
-    bos.toByteArray
-  }
-
-  def fromBinary(bytes: Array[Byte]): Message = {
-    val in = new ObjectInputStream(new ByteArrayInputStream(bytes))
-    val obj = in.readObject.asInstanceOf[Message]
-    in.close
-    obj
-  }
-
-
-  def checkConnected() = {
-
-    if(!socketchannel.isConnected)
-    {
-      disconnect()
-      connect()
-    }
-  }
-
 
   def enqueue(key :String,msg:Message)=
   {
-    checkConnected()
-    setData(key,toBinary(msg))
+    setData(key,KevoreeUtil.toBinary(msg))
 
   }
   def dequeue(key :String) :Message =
   {
-    checkConnected()
-    val obj = fromBinary(getData(key,true))
+    val obj = KevoreeUtil.fromBinary(getData(key,true))
     obj
   }
 
@@ -114,7 +86,7 @@ class KestrelClient(host: String, port: Int) {
   }
 
   def startGet(key: String, blockingReads: Boolean) {
-    out.write(("get " + key+ (if (blockingReads) "/t=1000000/close/open" else "") + "\r\n").getBytes)
+    out.write(("get " + key+ (if (blockingReads) "/t=500/close/open" else "") + "\r\n").getBytes)
   }
 
   def finishGetData(): Array[Byte] = {
