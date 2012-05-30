@@ -36,7 +36,9 @@ class AndroidKevoreeJarClassLoader(gkey: String, ctx: android.content.Context, p
   val selfPointer = this
 
 
-
+  override def setLazyLoad (lazyload: Boolean) {
+    super.setLazyLoad(true)
+  }
 
   private class KevoreeDexClassLoader(c1:String,c2:String,c3:String,parentCL : ClassLoader) extends ClassLoader(parentCL) {
 
