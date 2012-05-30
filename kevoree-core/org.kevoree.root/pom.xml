@@ -10,7 +10,7 @@
     <version>1.7.5-SNAPSHOT</version>
 
     <properties>
-        <scala.version>2.9.2</scala.version>
+        <scala.version>2.10.0-M3</scala.version>
         <bundle.vendor>IRISA/INRIA</bundle.vendor>
         <slf4j.version>1.6.4</slf4j.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
