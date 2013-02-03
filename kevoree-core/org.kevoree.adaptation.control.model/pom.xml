@@ -14,27 +14,7 @@
 
     <properties>
         <metamodel.ecore>metamodel/control.ecore</metamodel.ecore>
-        <kotlin.version>0.4.297</kotlin.version>
-
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib</artifactId>
-            <version>${kotlin.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.kevoree</groupId>
-            <artifactId>org.kevoree.model</artifactId>
-            <version>${kevoree.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.kevoree</groupId>
-            <artifactId>org.kevoree.framework</artifactId>
-            <version>${kevoree.version}</version>
-        </dependency>
-    </dependencies>
 
     <build>
         <plugins>
@@ -52,7 +32,6 @@
                         <configuration>
                             <ecore>${metamodel.ecore}</ecore>
                             <packagePrefix>org.kevoree</packagePrefix>
-                          <!--  <modelOnly>true</modelOnly>  -->
                         </configuration>
                     </execution>
                 </executions>
