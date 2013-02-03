@@ -150,7 +150,7 @@ object HTMLPageBuilder {
     </html>).toString()
   }
 
-  def getPaasUserPage(login: String, pattern: String, model: ContainerRoot): String = {
+  def getPaasUserPage(login: String, pattern: String, model: ContainerRoot, allowManagement : Boolean): String = {
     (<html>
       <head>
         <link rel="stylesheet" href={pattern + "fileuploader/fileuploader.css"}/>
@@ -176,7 +176,7 @@ object HTMLPageBuilder {
             case null => new java.util.ArrayList[ContainerNode]()
             case group:Group => group.getSubNodes
           }
-          nodeList(pattern, model, nodesList.toList)}
+          nodeList(pattern, model, nodesList, allowManagement)}
           </div>
         </div>
       </body>
@@ -320,12 +320,11 @@ object HTMLPageBuilder {
     </html>).toString()
   }
 
-  private def nodeList(pattern: String, model: ContainerRoot, nodeList: List[ContainerNode]): Seq[Node] = {
+  private def nodeList(pattern: String, model: ContainerRoot, nodeList: List[ContainerNode], allowManagement : Boolean): Seq[Node] = {
     (<table class="table table-bordered">
       <thead>
         <tr>
-          <td>#
-            <a class="btn btn-success" href={pattern + "AddChild"}>add child</a>
+          <td>{if (allowManagement) {<a class="btn btn-success" href={pattern + "AddChild"}>add child</a>}}
           </td> <td>virtual node</td> <td>ip</td> <td>action(s)</td>
         </tr>
       </thead>
@@ -351,7 +350,7 @@ object HTMLPageBuilder {
                 {ipString}
               </td>
               <td>
-                <a class="btn btn-warning" href={pattern + "RemoveChild?name=" + child.getName}>delete</a>
+                {if (allowManagement) {<a class="btn btn-warning" href={pattern + "RemoveChild?name=" + child.getName}>delete</a>}}
               </td>
             </tr>
           )

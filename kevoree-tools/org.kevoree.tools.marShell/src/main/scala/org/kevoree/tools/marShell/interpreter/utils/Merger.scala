@@ -31,7 +31,8 @@
 
 package org.kevoree.tools.marShell.interpreter.utils
 
-import org.kevoree.{ContainerRoot, ContainerNode, Instance, KevoreeFactory}
+import org.kevoree._
+import scala.Some
 import org.kevoree.impl.DefaultKevoreeFactory
 
 
@@ -46,7 +47,7 @@ object Merger {
       propKey match {
         case "*"=> mergeDictionary(inst,fragmentProps.get(propKey),null)
         case _ @ searchNodeName => {
-          inst.getTypeDefinition.eContainer.asInstanceOf[ContainerRoot].getNodes.find(n => n.getName == searchNodeName) match {
+          inst.getTypeDefinition.eContainer.asInstanceOf[ContainerRoot].findByQuery("nodes[" + searchNodeName + "]", classOf[ContainerNode]) match {
             case Some(nodeFound)=> {
               mergeDictionary(inst,fragmentProps.get(propKey),nodeFound)
             }
@@ -81,8 +82,8 @@ object Merger {
           //MERGE NEW Dictionary Attribute
           case None => {
             //CHECK IF ATTRIBUTE ALREADY EXISTE WITHOUT VALUE
-            val att = inst.getTypeDefinition.getDictionaryType.getAttributes.find(att => att.getName == key) match {
-              case None => {
+            val att = inst.getTypeDefinition.getDictionaryType.findByQuery("attributes[" + key + "]", classOf[DictionaryAttribute]) match {
+              case null =>
                /* if(allowTypeUpdate){
                   val newDictionaryValue = kevoreeFactory.createDictionaryAttribute
                   newDictionaryValue.setName(key.toString)
@@ -92,7 +93,7 @@ object Merger {
                      throw new Exception("Dictionary Type does not contain attribute named -"+key+"- type modification not allowed in this scope")
                // }
               }
-              case Some(previousAtt) => previousAtt
+              case previousAtt:DictionaryAttribute => previousAtt
             }
             val newDictionaryValue = kevoreeFactory.createDictionaryValue
             newDictionaryValue.setValue(newValue.toString)
