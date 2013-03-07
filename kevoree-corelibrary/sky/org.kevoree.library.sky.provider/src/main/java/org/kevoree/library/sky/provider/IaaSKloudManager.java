@@ -75,7 +75,6 @@ public class IaaSKloudManager extends AbstractComponentType implements ModelList
             }
             this.getModelService().registerModelListener(this);
         }
-        logger.warn("[TIME] IaaSKloudManager model submitted (or not): {}", System.currentTimeMillis());
     }
 
     @Override
