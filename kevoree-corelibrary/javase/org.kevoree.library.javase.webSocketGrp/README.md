@@ -5,30 +5,34 @@ This Kevoree Group goal is to provide a WebSocket implementation between push/pu
 ## Node start
 When a node starts, this group creates a Webbit socket server that is capable of handling 4 different kinds of requests :
 
-*   host:port/**push**
+*   host:port/__push__
 
-*   host:port/**pull**
+*   host:port/__pull__
 
-*   host:port/**push/zip**
+*   host:port/__push/zip__
 
-*   host:port/**pull/zip**
+*   host:port/__pull/zip__
 
 ## Push process
 When a push is requested on a node. This group compresses the given model and try to send it to the targeted node on :
 
-*   ws://host:port/**push/zip**
+*   ws://host:port/__push/zip__
 
 The targeted node will then process the model in the **pushCompressedHandler**  
-    `ByteArrayInputStream bais = new ByteArrayInputStream(msg);  
-    ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);  
-    updateLocalModel(model);`
+```java
+ByteArrayInputStream bais = new ByteArrayInputStream(msg);  
+ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);  
+updateLocalModel(model);
+```
 
 ## Pull process
 When a pull is requested on a node. This group asks the targeted node via :
 
-* ws://host:port/**pull/zip**
+* ws://host:port/__pull/zip__
 
 The targeted node will then process the model in the **pullCompressedHandler**  
-    `ByteArrayOutputStream output = new ByteArrayOutputStream();  
-    KevoreeXmiHelper.$instance.saveCompressedStream(output, getModelService().getLastModel());  
-    connection.send(output.toByteArray());`
+```java
+ByteArrayOutputStream output = new ByteArrayOutputStream();  
+KevoreeXmiHelper.$instance.saveCompressedStream(output, getModelService().getLastModel());  
+connection.send(output.toByteArray());
+```
