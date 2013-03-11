@@ -169,7 +169,7 @@ class GossiperProcess(instance: GossiperComponent,
           }
           case Occured.BEFORE => {
             logger.debug("VectorClocks comparison into GossiperRequestSender give us: BEFORE")
-            send(message.getDestName, askForData(uuid))
+            send(message.getDestNodeName, askForData(uuid))
             /*buildAddresses(message).foreach {
               address => askForData(uuid, message.getDestNodeName, address)
             }*/
