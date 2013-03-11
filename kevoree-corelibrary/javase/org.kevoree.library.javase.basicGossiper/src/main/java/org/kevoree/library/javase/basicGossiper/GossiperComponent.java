@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface GossiperComponent {
 
-	public String getAddress(String remoteNodeName);
+	public List<String> getAddresses(String remoteNodeName);
 
 	public int parsePortNumber(String nodeName);
 

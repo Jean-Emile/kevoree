@@ -8,7 +8,6 @@ import org.kevoree.api.service.core.handler.KevoreeModelHandlerService;
 import org.kevoree.framework.AbstractGroupType;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.KevoreeXmiHelper;
-import org.kevoree.framework.NetworkHelper;
 import org.kevoree.library.javase.nanohttp.NodeNetworkHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +19,7 @@ import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -218,16 +218,9 @@ public class NanoRestGroup extends AbstractGroupType {
 
     @Override
     public void push(ContainerRoot model, String targetNodeName) throws Exception {
-        String ip = "127.0.0.1";
-        Option<String> ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper.getNetworkProperties(this.getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP()));
-        if (ipOption.isDefined()) {
-            ip = ipOption.get();
-        }
-
-
-        Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
-        if (groupOption!=null) {
-//		List<String> ips = KevoreePropertyHelper.getStringNetworkProperties(model, targetNodeName, Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        boolean sendModel = false;
+        Group groupOption = model.findGroupsByID(getName());
+        if (groupOption != null) {
             Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
             int PORT = 8000;
             if (portOption.isDefined()) {
@@ -237,28 +230,39 @@ public class NanoRestGroup extends AbstractGroupType {
                     logger.warn("Attribute \"port\" of {} is not an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
-//		boolean sent = false;
-//		for (String ip : ips) {
-            logger.debug("try to send model on url=>" + "http://" + ip + ":" + PORT + "/model/current");
-            try {
-                sendModel(model, "http://" + ip + ":" + PORT + "/model/current");
-            } catch (Exception e) {
-                logger.debug("try to send model on url=>" + "http://127.0.0.1:" + PORT + "/model/current");
-                sendModel(model, "http://127.0.0.1:" + PORT + "/model/current");
+            List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+            if (ips.size() > 0) {
+            for (String ip : ips) {
+                try {
+                    logger.debug("try to send model on url=>" + "http://" + ip + ":" + PORT + "/model/current");
+                    sendModel(model, "http://" + ip + ":" + PORT + "/model/current");
+                    sendModel = true;
+                    // avoid sendModel to another ip if we already have send the model
+                    break;
+                } catch (Exception e) {
+                    logger.debug("send model on url=>" + "http://" + ip + ":" + PORT + "/model/current has failed");
+                }
             }
-        } else {
-
+            } else {
+                try {
+                    logger.debug("try to send model on url=>" + "http://127.0.0.1:" + PORT + "/model/current");
+                    sendModel(model, "http://127.0.0.1:" + PORT + "/model/current");
+                    sendModel = true;
+                } catch (Exception e) {
+                    logger.debug("send model on url=>" + "http://127.0.0.1:" + PORT + "/model/current has failed");
+                }
+            }
+        }
+        if (!sendModel) {
+            logger.debug("Unable to push the model to targetNodeName because the group ({}) doesn't exist", getName());
+            throw new Exception("Unable to push the model to targetNodeName because the group (" + getName() + ") doesn't exist");
         }
     }
 
     protected void internalPush(ContainerRoot model, String targetNodeName, String sender) throws Exception {
-        String ip = "127.0.0.1";
-        Option<String> ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper.getNetworkProperties(this.getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP()));
-        if (ipOption.isDefined()) {
-            ip = ipOption.get();
-        }
+        boolean sendModel = false;
         Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
-        if (groupOption!=null) {
+        if (groupOption != null) {
             Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
             int PORT = 8000;
             if (portOption.isDefined()) {
@@ -268,10 +272,25 @@ public class NanoRestGroup extends AbstractGroupType {
                     logger.warn("Attribute \"port\" of {} is not an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
-            logger.debug("try to send model on url=>" + "http://" + ip + ":" + PORT + "/model/current?nodesrc=" + sender);
-            sendModel(model, "http://" + ip + ":" + PORT + "/model/current?nodesrc=" + sender);
+            List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+            for (String ip : ips) {
+                try {
+                    logger.debug("try to send model on url=>" + "http://" + ip + ":" + PORT + "/model/current?nodesrc=" + sender);
+                    sendModel(model, "http://" + ip + ":" + PORT + "/model/current?nodesrc=" + sender);
+                    sendModel = true;
+                    // avoid sendModel to another ip if we already have send the model
+                    break;
+                } catch (Exception e) {
+                    logger.debug("send model on url=>" + "http://127.0.0.1:" + PORT + "/model/current?nodesrc=" + sender + " has failed");
+                }
+            }
+        }
+        if (!sendModel) {
+            logger.debug("Unable to push the model to {}", targetNodeName);
+            throw new Exception("Unable to push the model to " + targetNodeName);
         }
     }
+
 
     private void sendModel(ContainerRoot model, String urlPath) throws Exception {
 
@@ -316,12 +335,6 @@ public class NanoRestGroup extends AbstractGroupType {
 
     @Override
     public ContainerRoot pull(String targetNodeName) throws Exception {
-        String ip = "127.0.0.1";
-        Option<String> ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper.getNetworkProperties(this.getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP()));
-        if (ipOption.isDefined()) {
-            ip = ipOption.get();
-        }
-
         Option<String> portOption = KevoreePropertyHelper.getProperty(getModelElement(), "port", true, targetNodeName);
         int PORT = 8000;
         if (portOption.isDefined()) {
@@ -331,28 +344,40 @@ public class NanoRestGroup extends AbstractGroupType {
                 logger.warn("Attribute \"port\" of {} is not an Integer. Default value ({}) is used", getName(), PORT);
             }
         }
-//		for (String ip : ips) {
-        logger.debug("try to pull model on url=>" + "http://" + ip + ":" + PORT + "/model/current");
-        ContainerRoot model = pullModel("http://" + ip + ":" + PORT + "/model/current");
-        if (model == null) {
-            model = pullModel("http://127.0.0.1:" + PORT + "/model/current");
+        List<String> ips = KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        ContainerRoot model = null;
+        for (String ip : ips) {
+            try {
+                logger.debug("try to pull model on url=>" + "http://" + ip + ":" + PORT + "/model/current");
+                model = pullModel("http://" + ip + ":" + PORT + "/model/current");
+            } catch (Exception e) {
+                logger.debug("Unable to pull model from {} using {} as URL", targetNodeName, "http://" + ip + ":" + PORT + "/model/current", e);
+            }
         }
-//		}
 
-//		if (model == null) {
-//			logger.debug("Unable to pull a model on " + targetNodeName);
-//			return null;
-//		} else {
-//			return model;
-//		}
-        return model;
+        if (model == null) {
+            logger.debug("Unable to pull a model from " + targetNodeName);
+            throw new Exception("Unable to pull a model from " + targetNodeName);
+        } else {
+            return model;
+        }
+//        return model;
     }
 
     private ContainerRoot pullModel(String urlPath) throws Exception {
         ContainerRoot model = null;
-        model = pullModel(urlPath + "/zip", true);
+        try {
+            model = pullModel(urlPath + "/zip", true);
+        } catch (Exception e) {
+            logger.debug("Unable to pull model from {}/zip", urlPath, e);
+        }
+
         if (model == null) {
-            model = pullModel(urlPath, false);
+            try {
+                model = pullModel(urlPath, false);
+            } catch (Exception e) {
+                logger.debug("Unable to pull model from {}", urlPath, e);
+            }
         }
         if (model == null) {
             throw new Exception("Unable to pull model");

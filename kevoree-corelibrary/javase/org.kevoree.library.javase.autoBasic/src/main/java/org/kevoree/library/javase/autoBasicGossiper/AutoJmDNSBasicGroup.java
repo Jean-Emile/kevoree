@@ -4,7 +4,7 @@ import org.kevoree.ContainerRoot;
 import org.kevoree.annotation.DictionaryAttribute;
 import org.kevoree.annotation.DictionaryType;
 import org.kevoree.annotation.GroupType;
-import org.kevoree.library.javase.basicGossiper.group.BasicGossiperGroup;
+import org.kevoree.library.BasicGroup;
 import org.kevoree.library.javase.jmdns.JmDNSComponent;
 import org.kevoree.library.javase.jmdns.JmDNSListener;
 
@@ -22,27 +22,31 @@ import java.io.IOException;
 @DictionaryType(
         @DictionaryAttribute(name = "ipv4Only", vals = {"true", "false"}, defaultValue = "true")
 )
-public class AutoBasicGossiperGroup extends BasicGossiperGroup implements JmDNSListener {
+public class AutoJmDNSBasicGroup extends BasicGroup implements JmDNSListener {
 
     private JmDNSComponent jmDnsComponent;
 
     @Override
-    public void startGossiperGroup() throws IOException {
-        super.startGossiperGroup();
+    public void startRestGroup() throws IOException {
+        super.startRestGroup();
         jmDnsComponent = new JmDNSComponent(this, this, this.getDictionary().get("ip").toString(), Integer.parseInt(this.getDictionary().get("port").toString()), getDictionary().get("ipv4Only").toString().equalsIgnoreCase("true"));
         jmDnsComponent.start();
     }
 
     @Override
-    public void stopGossiperGroup() {
-        super.stopGossiperGroup();
+    public void stopRestGroup() {
+        super.stopRestGroup();
         jmDnsComponent.stop();
     }
 
     @Override
     public void notifyNewSubNode(String remoteNodeName) {
         logger.debug("new remote node discovered, try to pull the model from {}", remoteNodeName);
-        super.actor.doGossip(remoteNodeName);
+        try {
+            push(getModelService().getLastModel(), remoteNodeName);
+        } catch (Exception e) {
+            logger.debug("unable to notify other members of the group " + getName(), e);
+        }
     }
 
     public synchronized boolean updateModel(ContainerRoot model) {
@@ -50,9 +54,9 @@ public class AutoBasicGossiperGroup extends BasicGossiperGroup implements JmDNSL
         int i = 1;
         while (!created) {
             try {
-//                group.getModelService().unregisterModelListener(group);
+                getModelService().unregisterModelListener(this);
                 getModelService().atomicUpdateModel(model);
-//                group.getModelService().registerModelListener(group);
+                getModelService().registerModelListener(this);
                 created = true;
             } catch (Exception e) {
                 logger.warn("Error while trying to update model due to {}, try number {}", new String[]{e.getMessage(), Integer.toString(i)});

@@ -48,7 +48,7 @@ public class NetworkSender {
     }
 
 
-    public void sendMessage(KevoreeMessage.Message m, InetSocketAddress addr) {
+    public boolean sendMessage(KevoreeMessage.Message m, InetSocketAddress addr) {
         UniClientConnection conn = null;
         try {
             conn = new UniClientConnection(new ConnectionListener() {
@@ -73,17 +73,18 @@ public class NetworkSender {
             conn.send(output.toByteArray(), Delivery.RELIABLE);
             output.close();
             logger.debug("message sent to {}", addr.toString());
+            return true;
         } catch (Exception e) {
             logger.debug("", e);
         } finally {
             if (conn != null && conn.isConnected()) {
                 try {
                     conn.close();
-                } catch (Exception e){
-
+                } catch (Exception ignored){
                 }
             }
         }
+        return false;
     }
 
 }

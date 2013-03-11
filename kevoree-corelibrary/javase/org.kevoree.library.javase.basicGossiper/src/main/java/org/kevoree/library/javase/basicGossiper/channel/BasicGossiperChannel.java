@@ -3,12 +3,12 @@ package org.kevoree.library.javase.basicGossiper.channel;
 import org.kevoree.Channel;
 import org.kevoree.ContainerRoot;
 import org.kevoree.KevoreeFactory;
-import org.kevoree.annotation.ChannelTypeFragment;
 import org.kevoree.annotation.*;
 import org.kevoree.api.service.core.handler.ModelListener;
-import org.kevoree.framework.*;
-import org.kevoree.framework.KevoreePropertyHelper;
-import org.kevoree.framework.NetworkHelper;
+import org.kevoree.framework.AbstractChannelFragment;
+import org.kevoree.framework.ChannelFragmentSender;
+import org.kevoree.framework.KevoreeChannelFragment;
+import org.kevoree.framework.NoopChannelFragmentSender;
 import org.kevoree.framework.message.Message;
 import org.kevoree.impl.DefaultKevoreeFactory;
 import org.kevoree.library.basicGossiper.protocol.gossip.Gossip;
@@ -27,92 +27,92 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
-* @author Erwan Daubert
-*         TODO add a DictionaryAttribute to define the number of uuids sent by response when a VectorClockUUIDsRequest is sent
-*/
+ * @author Erwan Daubert
+ *         TODO add a DictionaryAttribute to define the number of uuids sent by response when a VectorClockUUIDsRequest is sent
+ */
 @Library(name = "JavaSE")
 @DictionaryType({
-		@DictionaryAttribute(name = "interval", defaultValue = "30000", optional = true)
+        @DictionaryAttribute(name = "interval", defaultValue = "30000", optional = true)
 })
 @ChannelTypeFragment
-public class BasicGossiperChannel extends AbstractChannelFragment implements ModelListener,GossiperComponent {
+public class BasicGossiperChannel extends AbstractChannelFragment implements ModelListener, GossiperComponent {
 
-	private DataManagerForChannel dataManager;
-	private Serializer serializer;
-	private ChannelScorePeerSelector selector;
-	private GossiperPeriodic actor;
-	private GossiperProcess processValue;
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private DataManagerForChannel dataManager;
+    private Serializer serializer;
+    private ChannelScorePeerSelector selector;
+    private GossiperPeriodic actor;
+    private GossiperProcess processValue;
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	@Start
-	public void startGossiperChannel () {
-		Long timeoutLong = Long.parseLong((String) this.getDictionary().get("interval"));
-		serializer = new ChannelSerializer();
-		dataManager = new DataManagerForChannel(this, this.getNodeName()/*, this.getModelService()*/);
-		processValue = new GossiperProcess(this, dataManager,serializer, true);
-		selector = new ChannelScorePeerSelector(timeoutLong, this.getModelService(), this.getNodeName());
-		logger.debug(this.getName() + ": initialize GossiperActor");
-		actor = new GossiperPeriodic(this, timeoutLong, selector, processValue);
-		processValue.start();
-		actor.start();
+    @Start
+    public void startGossiperChannel() {
+        Long timeoutLong = Long.parseLong((String) this.getDictionary().get("interval"));
+        serializer = new ChannelSerializer();
+        dataManager = new DataManagerForChannel(this, this.getNodeName()/*, this.getModelService()*/);
+        processValue = new GossiperProcess(this, dataManager, serializer, true);
+        selector = new ChannelScorePeerSelector(timeoutLong, this.getModelService(), this.getNodeName());
+        logger.debug(this.getName() + ": initialize GossiperActor");
+        actor = new GossiperPeriodic(this, timeoutLong, selector, processValue);
+        processValue.start();
+        actor.start();
         this.getModelService().registerModelListener(this);
-	}
+    }
 
-	@Stop
-	public void stopGossiperChannel () {
+    @Stop
+    public void stopGossiperChannel() {
         this.getModelService().unregisterModelListener(this);
         if (actor != null) {
-			actor.stop();
-			actor = null;
-		}
-		if (selector != null) {
-			selector = null;
-		}
-		if (processValue != null) {
-			processValue.stop();
-			processValue = null;
-		}
-		if (dataManager != null) {
-			dataManager = null;
-		}
-	}
+            actor.stop();
+            actor = null;
+        }
+        if (selector != null) {
+            selector = null;
+        }
+        if (processValue != null) {
+            processValue.stop();
+            processValue = null;
+        }
+        if (dataManager != null) {
+            dataManager = null;
+        }
+    }
 
-	@Update
-	public void updateGossiperChannel () {
-		// TODO use the garbage of the dataManager
-		Map<UUID, Version.VectorClock> vectorClockUUIDs = dataManager.getUUIDVectorClocks();
-		Map<UUID, Tuple2<Version.VectorClock, Object>> messages = new HashMap<UUID, Tuple2<Version.VectorClock, Object>>();
-		for (UUID uuid : vectorClockUUIDs.keySet()) {
-			messages.put(uuid, dataManager.getData(uuid));
-		}
+    @Update
+    public void updateGossiperChannel() {
+        // TODO use the garbage of the dataManager
+        Map<UUID, Version.VectorClock> vectorClockUUIDs = dataManager.getUUIDVectorClocks();
+        Map<UUID, Tuple2<Version.VectorClock, Object>> messages = new HashMap<UUID, Tuple2<Version.VectorClock, Object>>();
+        for (UUID uuid : vectorClockUUIDs.keySet()) {
+            messages.put(uuid, dataManager.getData(uuid));
+        }
 
-		stopGossiperChannel();
-		startGossiperChannel();
+        stopGossiperChannel();
+        startGossiperChannel();
 
-		for (UUID uuid : messages.keySet()) {
-			dataManager.setData(uuid, messages.get(uuid), "");
-		}
-	}
+        for (UUID uuid : messages.keySet()) {
+            dataManager.setData(uuid, messages.get(uuid), "");
+        }
+    }
 
-	@Override
-	public Object dispatch (Message msg) {
-		//Local delivery
-		localNotification(msg);
+    @Override
+    public Object dispatch(Message msg) {
+        //Local delivery
+        localNotification(msg);
 
-		//CREATE NEW MESSAGE
-		long timestamp = System.currentTimeMillis();
-		UUID uuid = UUID.randomUUID();
-		Tuple2<Version.VectorClock, Object> tuple = new Tuple2<Version.VectorClock, Object>(
-				Version.VectorClock.newBuilder().
-						addEnties(Version.ClockEntry.newBuilder().setNodeID(this.getNodeName())
-								/*.setTimestamp(timestamp)*/.setVersion(2).build()).setTimestamp(timestamp).build(),
-				msg);
-		dataManager.setData(uuid, tuple, "");
+        //CREATE NEW MESSAGE
+        long timestamp = System.currentTimeMillis();
+        UUID uuid = UUID.randomUUID();
+        Tuple2<Version.VectorClock, Object> tuple = new Tuple2<Version.VectorClock, Object>(
+                Version.VectorClock.newBuilder().
+                        addEnties(Version.ClockEntry.newBuilder().setNodeID(this.getNodeName())
+                                /*.setTimestamp(timestamp)*/.setVersion(2).build()).setTimestamp(timestamp).build(),
+                msg);
+        dataManager.setData(uuid, tuple, "");
 
         notifyPeersInternal(peers.get());
-		//SYNCHRONOUS NON IMPLEMENTED
-		return null;
-	}
+        //SYNCHRONOUS NON IMPLEMENTED
+        return null;
+    }
 
 
     private void notifyPeersInternal(List<String> l) {
@@ -120,43 +120,45 @@ public class BasicGossiperChannel extends AbstractChannelFragment implements Mod
         messageBuilder.setContentClass(Gossip.UpdatedValueNotification.class.getName()).setContent(Gossip.UpdatedValueNotification.newBuilder().build().toByteString());
         for (String peer : l) {
             if (!peer.equals(getNodeName())) {
-                String address = getAddress(peer);
-                processValue.netSender().sendMessageUnreliable(messageBuilder.build(), new InetSocketAddress(address, parsePortNumber(peer)));
+                int port = parsePortNumber(peer);
+                List<String> addresses = getAddresses(peer);
+                if (addresses.size() > 0) {
+                    for (String address : addresses) {
+                        // TODO do we need to check if the message is correctly sent to avoid useless dissemination with the others addresses ?
+                        processValue.netSender().sendMessageUnreliable(messageBuilder.build(), new InetSocketAddress(address, port));
+                    }
+                } else {
+                    processValue.netSender().sendMessageUnreliable(messageBuilder.build(), new InetSocketAddress("127.0.0.1", port));
+                }
             }
         }
     }
 
-	@Override
-	public ChannelFragmentSender createSender (String remoteNodeName, String remoteChannelName) {
-		return new NoopChannelFragmentSender();
-	}
-
-	@Override
-	public void localNotification (Object o) {
-		if (o instanceof Message) {
-			for (org.kevoree.framework.KevoreePort p : getBindedPorts()) {
-				forward(p, (Message) o);
-			}
-		}
-	}
-
+    @Override
+    public ChannelFragmentSender createSender(String remoteNodeName, String remoteChannelName) {
+        return new NoopChannelFragmentSender();
+    }
 
     @Override
-    public String getAddress(String remoteNodeName) {
-        Option<String> ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper.getNetworkProperties(currentCacheModel.get(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP()));
-        if (ipOption.isDefined()) {
-            return ipOption.get();
-        } else {
-            return "127.0.0.1";
+    public void localNotification(Object o) {
+        if (o instanceof Message) {
+            for (org.kevoree.framework.KevoreePort p : getBindedPorts()) {
+                forward(p, (Message) o);
+            }
         }
     }
 
-	@Override
-	public int parsePortNumber (String nodeName) {
+    @Override
+    public List<String> getAddresses(String remoteNodeName) {
+        return org.kevoree.framework.KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+    }
+
+    @Override
+    public int parsePortNumber(String nodeName) {
         Channel channelOption = currentCacheModel.get().findByPath("hubs[" + getName() + "]", Channel.class);
         int port = 8000;
-        if (channelOption!=null) {
-            Option<String> portOption = KevoreePropertyHelper.getProperty(channelOption, "port", true, nodeName);
+        if (channelOption != null) {
+            Option<String> portOption = org.kevoree.framework.KevoreePropertyHelper.getProperty(channelOption, "port", true, nodeName);
             if (portOption.isDefined()) {
                 try {
                     port = Integer.parseInt(portOption.get());
@@ -168,7 +170,7 @@ public class BasicGossiperChannel extends AbstractChannelFragment implements Mod
             logger.warn("There is no channel named {}, default value ({}) is used.", getName(), port);
         }
         return port;
-	}
+    }
 
     @Override
     public boolean preUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {

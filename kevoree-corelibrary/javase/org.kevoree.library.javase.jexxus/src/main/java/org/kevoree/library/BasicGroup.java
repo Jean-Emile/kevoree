@@ -14,7 +14,6 @@ import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractGroupType;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.KevoreeXmiHelper;
-import org.kevoree.framework.NetworkHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Option;
@@ -22,6 +21,7 @@ import scala.Option;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Exchanger;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -45,6 +45,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
 
     private final byte getModel = 0;
     private final byte pushModel = 1;
+    private final byte pushModelInternal = 3;
 
     protected Server server = null;
     private boolean starting;
@@ -83,7 +84,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
     }
 
 
-    protected void locaUpdateModel(final ContainerRoot modelOption) {
+    protected void localUpdateModel(final ContainerRoot modelOption) {
         new Thread() {
             public void run() {
                 getModelService().unregisterModelListener(BasicGroup.this);
@@ -96,7 +97,6 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
     @Override
     public void triggerModelUpdate() {
         if (starting) {
-
             final ContainerRoot modelOption = NodeNetworkHelper.updateModelWithNetworkProperty(this);
             if (modelOption != null) {
                 new Thread() {
@@ -113,15 +113,19 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
             }
             starting = false;
         } else {
-            Group group = getModelElement();
-            ContainerRoot currentModel = (ContainerRoot) group.eContainer();
-            for (ContainerNode subNode : group.getSubNodes()) {
-                if (!subNode.getName().equals(this.getNodeName())) {
-                    try {
-                        push(currentModel, subNode.getName());
-                    } catch (Exception e) {
-                        logger.warn("Unable to notify other members of {} group", group.getName());
-                    }
+            broadcast(getModelService().getLastModel());
+        }
+    }
+
+    protected void broadcast(ContainerRoot model) {
+        logger.debug("Try to broadcast the model to other members of the group {}", getName());
+        Group group = getModelElement();
+        for (ContainerNode subNode : group.getSubNodes()) {
+            if (!subNode.getName().equals(this.getNodeName())) {
+                try {
+                    pushInternal(model, subNode.getName(), pushModelInternal);
+                } catch (Exception e) {
+                    logger.warn("Unable to notify other members of {} group", group.getName());
                 }
             }
         }
@@ -129,68 +133,108 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
 
     @Override
     public void push(ContainerRoot model, String targetNodeName) throws Exception {
+        pushInternal(model, targetNodeName, pushModel);
+    }
+
+    public void pushInternal(ContainerRoot model, String targetNodeName, byte code) throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        output.write(pushModel);
+        output.write(code);
         KevoreeXmiHelper.$instance.saveCompressedStream(output, model);
-        String ip = "127.0.0.1";
-        Option<String> ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP()));
-        if (ipOption.isDefined()) {
-            ip = ipOption.get();
-        } else {
-            logger.warn("No addr, found default local");
-        }
 
         int PORT = 8000;
         Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
-        if (groupOption!=null) {
+        if (groupOption != null) {
             Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
             if (portOption.isDefined()) {
                 try {
-                PORT = Integer.parseInt(portOption.get());
-                } catch (NumberFormatException e){
+                    PORT = Integer.parseInt(portOption.get());
+                } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
         }
-        final UniClientConnection[] conns = new UniClientConnection[1];
-        conns[0] = new UniClientConnection(new ConnectionListener() {
-            @Override
-            public void connectionBroken(Connection broken, boolean forced) {
-            }
+        List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        if (ips.size() > 0) {
+            logger.debug("Try to send the model using one of the {} defined ips for {}", ips.size(), targetNodeName);
+            for (String ip : ips) {
+                try {
+                    final UniClientConnection[] conns = new UniClientConnection[1];
+                    conns[0] = new UniClientConnection(new ConnectionListener() {
+                        @Override
+                        public void connectionBroken(Connection broken, boolean forced) {
+                        }
 
-            @Override
-            public void receive(byte[] data, Connection from) {
-            }
+                        @Override
+                        public void receive(byte[] data, Connection from) {
+                        }
 
-            @Override
-            public void clientConnected(ServerConnection conn) {
+                        @Override
+                        public void clientConnected(ServerConnection conn) {
+                        }
+                    }, ip, PORT, ssl);
+                    conns[0].connect(5000);
+                    conns[0].send(output.toByteArray(), Delivery.RELIABLE);
+                } catch (IOException e) {
+                    logger.debug("Unable to push model on {} using {}", targetNodeName, ip + ":" + PORT);
+                }
             }
-        }, ip, PORT, ssl);
-        conns[0].connect(5000);
-        conns[0].send(output.toByteArray(), Delivery.RELIABLE);
+        } else {
+            logger.debug("Try to send the model using le locahost ip for {}", ips.size(), targetNodeName);
+            try {
+                final UniClientConnection[] conns = new UniClientConnection[1];
+                conns[0] = new UniClientConnection(new ConnectionListener() {
+                    @Override
+                    public void connectionBroken(Connection broken, boolean forced) {
+                    }
+
+                    @Override
+                    public void receive(byte[] data, Connection from) {
+                    }
+
+                    @Override
+                    public void clientConnected(ServerConnection conn) {
+                    }
+                }, "127.0.0.1", PORT, ssl);
+                conns[0].connect(5000);
+                conns[0].send(output.toByteArray(), Delivery.RELIABLE);
+            } catch (IOException e) {
+                logger.debug("Unable to push model on {} using {}", targetNodeName, "127.0.0.1:" + PORT, e);
+            }
+        }
     }
 
     @Override
     public ContainerRoot pull(final String targetNodeName) throws Exception {
         ContainerRoot model = getModelService().getLastModel();
-        String ip = "127.0.0.1";
-        Option<String> ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP()));
-        if (ipOption.isDefined()) {
-            ip = ipOption.get();
-        }
         int PORT = 8000;
         Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
-        if (groupOption!=null) {
+        if (groupOption != null) {
             Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
             if (portOption.isDefined()) {
                 try {
                     PORT = Integer.parseInt(portOption.get());
-                } catch (NumberFormatException e){
+                } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
         }
-        return requestModel(ip, PORT, targetNodeName);
+        List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        if (ips.size() > 0) {
+            for (String ip : ips) {
+                try {
+                    return requestModel(ip, PORT, targetNodeName);
+                } catch (Exception e) {
+                    logger.debug("Unable to request model on {} using {}", targetNodeName, ip + ":" + PORT, e);
+                }
+            }
+        } else {
+            try {
+                return requestModel("127.0.0.1", PORT, targetNodeName);
+            } catch (Exception e) {
+                logger.debug("Unable to request model on {} using {}", targetNodeName, "127.0.0.1:" + PORT, e);
+            }
+        }
+        throw new Exception("Unable to pull model on " + targetNodeName);
     }
 
     protected ContainerRoot requestModel(String ip, int port, final String targetNodeName) throws IOException, TimeoutException, InterruptedException {
@@ -256,7 +300,16 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                         ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
                         inputStream.read();
                         final ContainerRoot root = KevoreeXmiHelper.$instance.loadCompressedStream(inputStream);
-                        locaUpdateModel(root);
+                        localUpdateModel(root);
+                        //from.close();
+                        broadcast(root);
+                    }
+                    break;
+                    case pushModelInternal: {
+                        ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+                        inputStream.read();
+                        final ContainerRoot root = KevoreeXmiHelper.$instance.loadCompressedStream(inputStream);
+                        localUpdateModel(root);
                         //from.close();
                     }
                     break;

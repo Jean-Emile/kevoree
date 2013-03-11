@@ -8,23 +8,19 @@ import jexxus.common.ConnectionListener;
 import jexxus.common.Delivery;
 import jexxus.server.Server;
 import jexxus.server.ServerConnection;
-import org.kevoree.AccessControl.*;
+import org.kevoree.AccessControl.AccessControlRoot;
 import org.kevoree.ContainerNode;
 import org.kevoree.ContainerRoot;
 import org.kevoree.Group;
 import org.kevoree.Instance;
-
 import org.kevoree.adaptation.accesscontrol.api.ControlException;
-
 import org.kevoree.adaptation.accesscontrol.api.SignedModel;
 import org.kevoree.adaptation.accesscontrol.api.SignedPDP;
 import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractGroupType;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.KevoreeXmiHelper;
-import org.kevoree.framework.NetworkHelper;
 import org.kevoree.library.NodeNetworkHelper;
-
 import org.kevoree.tools.accesscontrol.framework.api.ICompareAccessControl;
 import org.kevoree.tools.accesscontrol.framework.impl.CompareAccessControlImpl;
 import org.kevoree.tools.accesscontrol.framework.impl.SignedModelImpl;
@@ -38,7 +34,10 @@ import scala.Option;
 
 import javax.swing.*;
 import java.io.*;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.SignatureException;
 import java.util.List;
 import java.util.concurrent.Exchanger;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +54,7 @@ import java.util.concurrent.TimeoutException;
 @DictionaryType({
         @DictionaryAttribute(name = "port", defaultValue = "8000", optional = true, fragmentDependant = true),
         @DictionaryAttribute(name = "ip", defaultValue = "0.0.0.0", optional = true, fragmentDependant = true),
-        @DictionaryAttribute(name = "ssl", defaultValue = "false", vals = {"true", "false"}) ,
+        @DictionaryAttribute(name = "ssl", defaultValue = "false", vals = {"true", "false"}),
         @DictionaryAttribute(name = "pdp", defaultValue = "false", vals = {"true", "false"}),
         @DictionaryAttribute(name = "benchmark", defaultValue = "false", vals = {"true", "false"}),
         @DictionaryAttribute(name = "gui", defaultValue = "false", vals = {"true", "false"})
@@ -72,7 +71,7 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
     protected boolean udp = false;
     boolean ssl = false;
     int port = -1;
-    private  AccessControlRoot root=null;
+    private AccessControlRoot root = null;
 
 
     @Start
@@ -82,18 +81,17 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
 
         // root = AccessControlXmiHelper.$instance.loadStream(Tester.class.getClassLoader().getResourceAsStream("model.ac"));
 
-        if(Boolean.parseBoolean(getDictionary().get("gui").toString()))
-        {
+        if (Boolean.parseBoolean(getDictionary().get("gui").toString())) {
             JFileChooser dialogue = new JFileChooser(new File("."));
             PrintWriter sortie;
-            File fichier=null;
-            if (dialogue.showOpenDialog(null)==  JFileChooser.APPROVE_OPTION) {
+            File fichier = null;
+            if (dialogue.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 fichier = dialogue.getSelectedFile();
                 sortie = new PrintWriter
                         (new FileWriter(fichier.getPath(), true));
 
                 sortie.close();
-                root =  AccessControlXmiHelper.$instance.loadStream(new FileInputStream(fichier));
+                root = AccessControlXmiHelper.$instance.loadStream(new FileInputStream(fichier));
             }
 
         }
@@ -117,11 +115,11 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
         new Thread() {
             public void run() {
                 try {
-                    long duree,start;
+                    long duree, start;
                     getModelService().unregisterModelListener(AccessControlGroup.this);
                     start = System.currentTimeMillis();
                     getModelService().atomicUpdateModel(modelOption);
-                    duree =  (System.currentTimeMillis() - start) ;
+                    duree = (System.currentTimeMillis() - start);
                     getModelService().registerModelListener(AccessControlGroup.this);
                     /*
                     try
@@ -178,31 +176,27 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
         }
     }
 
-    public void pushPDP(AccessControlRoot root,PrivateKey key,ContainerRoot model,String targetNodeName) throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        SignedPDP pdp = new SignedPDPImpl(root,key);
-        write(model,targetNodeName,pdp);
+    public void pushPDP(AccessControlRoot root, PrivateKey key, ContainerRoot model, String targetNodeName) throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        SignedPDP pdp = new SignedPDPImpl(root, key);
+        write(model, targetNodeName, pdp);
     }
 
 
-    public void pushSignedModel(PrivateKey key,ContainerRoot model, String targetNodeName)  throws Exception
-    {
-        SignedModel signedmodel = new SignedModelImpl(model,key);
-        write(model,targetNodeName,signedmodel);
+    public void pushSignedModel(PrivateKey key, ContainerRoot model, String targetNodeName) throws Exception {
+        SignedModel signedmodel = new SignedModelImpl(model, key);
+        write(model, targetNodeName, signedmodel);
     }
-
 
 
     @Override
-    public void push(ContainerRoot model, String targetNodeName) throws Exception
-    {
-        String private_exponent="";
-        String modulus="";
-        if(Boolean.parseBoolean(getDictionary().get("gui").toString()))
-        {
+    public void push(ContainerRoot model, String targetNodeName) throws Exception {
+        String private_exponent = "";
+        String modulus = "";
+        if (Boolean.parseBoolean(getDictionary().get("gui").toString())) {
             JFileChooser dialogue = new JFileChooser(new File("."));
             PrintWriter sortie;
-            File fichier=null;
-            if (dialogue.showOpenDialog(null)==
+            File fichier = null;
+            if (dialogue.showOpenDialog(null) ==
                     JFileChooser.APPROVE_OPTION) {
                 fichier = dialogue.getSelectedFile();
                 sortie = new PrintWriter
@@ -210,15 +204,13 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
 
                 sortie.close();
             }
-            FileReader fr = new FileReader (fichier);
-            BufferedReader br = new BufferedReader (fr);
+            FileReader fr = new FileReader(fichier);
+            BufferedReader br = new BufferedReader(fr);
             StringBuilder stringkey = new StringBuilder();
-            try
-            {
+            try {
                 String line = br.readLine();
 
-                while (line != null)
-                {
+                while (line != null) {
                     stringkey.append(line);
                     line = br.readLine();
                 }
@@ -227,37 +219,48 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
                 fr.close();
                 private_exponent = stringkey.toString().split(":")[0];
                 modulus = stringkey.toString().split(":")[1];
-            }      catch (EOFException e ){
+            } catch (EOFException e) {
 
             }
         }
 
-        SignedModel signedmodel = new SignedModelImpl(model,HelperSignature.getPrivateKey(modulus,private_exponent));
-        write(model,targetNodeName,signedmodel);
+        SignedModel signedmodel = new SignedModelImpl(model, HelperSignature.getPrivateKey(modulus, private_exponent));
+        write(model, targetNodeName, signedmodel);
 
     }
 
     @Override
     public ContainerRoot pull(final String targetNodeName) throws Exception {
         ContainerRoot model = getModelService().getLastModel();
-        String ip = "127.0.0.1";
-        Option<String> ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP()));
-        if (ipOption.isDefined()) {
-            ip = ipOption.get();
-        }
         int PORT = 8000;
         Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
-        if (groupOption!=null) {
+        if (groupOption != null) {
             Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
             if (portOption.isDefined()) {
                 try {
                     PORT = Integer.parseInt(portOption.get());
-                } catch (NumberFormatException e){
+                } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
         }
-        return requestModel(ip, PORT, targetNodeName);
+        List<String> ips = KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        if (ips.size() > 0) {
+            for (String ip : ips) {
+                try {
+                    return requestModel(ip, PORT, targetNodeName);
+                } catch (Exception e) {
+                    logger.debug("Unable to pull model on {} using {}:{}", targetNodeName, ip, PORT);
+                }
+            }
+        } else {
+            try {
+                return requestModel("127.0.0.1", PORT, targetNodeName);
+            } catch (Exception e) {
+                logger.debug("Unable to pull model on {} using {}:{}", targetNodeName, "127.0.0.1", PORT);
+            }
+        }
+        throw new Exception("Unable to pull model on " + targetNodeName);
     }
 
     protected ContainerRoot requestModel(String ip, int port, final String targetNodeName) throws IOException, TimeoutException, InterruptedException {
@@ -320,77 +323,65 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
                         ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
                         inputStream.read();
 
-                        byte [] bytessignedModel = HelperModelSigned.loadSignedModelStream(inputStream);
+                        byte[] bytessignedModel = HelperModelSigned.loadSignedModelStream(inputStream);
                         ByteArrayInputStream bis = new ByteArrayInputStream(bytessignedModel);
-                        ObjectInputStream ois= new ObjectInputStream(bis);
+                        ObjectInputStream ois = new ObjectInputStream(bis);
 
-                        try
-                        {
+                        try {
 
-                            Object signed =    ois.readObject();
+                            Object signed = ois.readObject();
 
-                            if(signed instanceof SignedModelImpl) {
+                            if (signed instanceof SignedModelImpl) {
 
-                                SignedModel signedModel = (SignedModelImpl)signed;
-                                if(root != null)
-                                {
-                                    CompareAccessControlImpl accessControl =    new CompareAccessControlImpl(root);
-                                    if(Boolean.parseBoolean(getDictionary().get("benchmark").toString()))
-                                    {
+                                SignedModel signedModel = (SignedModelImpl) signed;
+                                if (root != null) {
+                                    CompareAccessControlImpl accessControl = new CompareAccessControlImpl(root);
+                                    if (Boolean.parseBoolean(getDictionary().get("benchmark").toString())) {
                                         accessControl.setBenchmark(true);
                                     } else {
                                         accessControl.setBenchmark(false);
                                     }
-                                    List<AdaptationPrimitive> result =     accessControl.approval(getNodeName(), getModelService().getLastModel(), signedModel);
+                                    List<AdaptationPrimitive> result = accessControl.approval(getNodeName(), getModelService().getLastModel(), signedModel);
 
-                                    if(result != null && result.size() == 0)
-                                    {
+                                    if (result != null && result.size() == 0) {
                                         logger.info("model accepted according to access control");
                                         ContainerRoot target_model = KevoreeXmiHelper.$instance.loadString(new String(signedModel.getSerialiedModel()));
                                         locaUpdateModel(target_model);
-                                    }else
-                                    {
-                                        if(result != null){
-                                            for(AdaptationPrimitive p : result)
-                                            {
+                                    } else {
+                                        if (result != null) {
+                                            for (AdaptationPrimitive p : result) {
 
-                                                String ref="";
+                                                String ref = "";
 
-                                                if(p.getRef() instanceof Instance){
-                                                    ref = ((Instance)p.getRef()).getTypeDefinition().getName();
-                                                }   else
-                                                {
-                                                    ref =  p.getRef().toString();
+                                                if (p.getRef() instanceof Instance) {
+                                                    ref = ((Instance) p.getRef()).getTypeDefinition().getName();
+                                                } else {
+                                                    ref = p.getRef().toString();
                                                 }
                                                 logger.error("Refused Adapation Primitive " + p.getPrimitiveType().getName() + " " + ref);
 
 
                                             }
-                                        }  else {
+                                        } else {
                                             logger.error(" no result ");
                                         }
 
                                     }
-                                }else
-                                {
+                                } else {
                                     logger.error("There is no access control defined");
                                 }
 
-                            } else if( signed instanceof SignedPDPImpl)
-                            {
-                                SignedPDPImpl pdp = (SignedPDPImpl)signed;
+                            } else if (signed instanceof SignedPDPImpl) {
+                                SignedPDPImpl pdp = (SignedPDPImpl) signed;
 
-                                if(root == null)
-                                {
+                                if (root == null) {
                                     root = AccessControlXmiHelper.$instance.loadString(new String(pdp.getSerialiedModel()));
-                                }  else
-                                {
+                                } else {
 
-                                    ICompareAccessControl accessControl =    new CompareAccessControlImpl(root);
-                                    if(accessControl.accessPDP(pdp))
-                                    {
+                                    ICompareAccessControl accessControl = new CompareAccessControlImpl(root);
+                                    if (accessControl.accessPDP(pdp)) {
                                         root = AccessControlXmiHelper.$instance.loadString(new String(pdp.getSerialiedModel()));
-                                    }else {
+                                    } else {
                                         logger.error("There is no acess to PDP");
 
                                     }
@@ -429,66 +420,61 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
     }
 
 
-
-    public void write(ContainerRoot model,String targetNodeName,Object data) throws IOException {
+    public void write(ContainerRoot model, String targetNodeName, Object data) throws IOException {
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         output.write(pushModel);
-        String ip = "127.0.0.1";
-        Option<String> ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP()));
-        if (ipOption.isDefined()) {
-            ip = ipOption.get();
-        } else {
-            logger.warn("No addr, found default local");
-        }
 
         int PORT = 8000;
         Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
-        if (groupOption!=null) {
+        if (groupOption != null) {
             Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
             if (portOption.isDefined()) {
                 try {
                     PORT = Integer.parseInt(portOption.get());
-                } catch (NumberFormatException e){
+                } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
         }
 
-        final UniClientConnection[] conns = new UniClientConnection[1];
-        conns[0] = new UniClientConnection(new ConnectionListener() {
-            @Override
-            public void connectionBroken(Connection broken, boolean forced) {
-            }
+        List<String> ips = KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        for (String ip : ips) {
+            final UniClientConnection[] conns = new UniClientConnection[1];
+            conns[0] = new UniClientConnection(new ConnectionListener() {
+                @Override
+                public void connectionBroken(Connection broken, boolean forced) {
+                }
 
-            @Override
-            public void receive(byte[] data, Connection from) {
-            }
+                @Override
+                public void receive(byte[] data, Connection from) {
+                }
 
-            @Override
-            public void clientConnected(ServerConnection conn) {
-            }
-        }, ip, PORT, ssl);
+                @Override
+                public void clientConnected(ServerConnection conn) {
+                }
+            }, ip, PORT, ssl);
 
-
-
-        ObjectOutputStream oos= new ObjectOutputStream(output);
-
-        try
-        {
-            oos.writeObject(data);
-            oos.flush();
-            conns[0].connect(5000);
-            conns[0].send(output.toByteArray(), Delivery.RELIABLE);
-        } finally
-        {
+            ObjectOutputStream oos = new ObjectOutputStream(output);
 
             try {
-                oos.close();
+                oos.writeObject(data);
+                oos.flush();
+                conns[0].connect(5000);
+                conns[0].send(output.toByteArray(), Delivery.RELIABLE);
+                break;
+            } catch (Exception e) {
+                logger.debug("Unable to write data on {}", targetNodeName, e);
             } finally {
-                output.close();
+                try {
+                    oos.close();
+                } finally {
+                    output.close();
+                }
             }
         }
+
+
     }
 
 }
