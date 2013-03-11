@@ -47,7 +47,7 @@
         <module>../org.kevoree.library.javase.nanohttpAutoDiscovery</module>
         <module>../org.kevoree.library.javase.camel</module>
         <module>../org.kevoree.library.javase.camel.atom</module>
-		<module>../org.kevoree.library.javase.camel.http</module>
+		<module>../org.kevoree.library.javase.camel.jetty</module>
         <module>../org.kevoree.library.javase.authentication</module>
         <module>../org.kevoree.library.javase.mongoDB</module>
         <module>../org.kevoree.library.javase.nodeJS</module>
@@ -64,6 +64,7 @@
 
         <module>../org.kevoree.library.javase.mavenCache</module>
         <module>../org.kevoree.library.javase.webserver.webbit</module>
+        <module>../org.kevoree.library.javase.autoBasic</module>
         <module>../org.kevoree.library.javase.autoBasicGossiper</module>
         <module>../org.kevoree.library.javase.jmdns</module>
 

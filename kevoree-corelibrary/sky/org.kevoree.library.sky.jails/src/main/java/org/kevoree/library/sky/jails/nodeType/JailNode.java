@@ -99,8 +99,8 @@ public class JailNode extends AbstractIaaSNode {
     }
 
     public String getDefaultFlavor() {
-        if (this.getDictionary().get("flavor") != null) {
-            return this.getDictionary().get("flavor").toString();
+        if (this.getDictionary().get("defaultFlavor") != null) {
+            return this.getDictionary().get("defaultFlavor").toString();
         }
         return null;
     }

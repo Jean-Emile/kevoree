@@ -7,7 +7,6 @@ import org.kevoree.Group;
 import org.kevoree.KevoreeFactory;
 import org.kevoree.annotation.*;
 import org.kevoree.framework.KevoreePropertyHelper;
-import org.kevoree.framework.NetworkHelper;
 import org.kevoree.impl.DefaultKevoreeFactory;
 import org.kevoree.library.BasicGroup;
 import org.kevoree.library.basicGossiper.protocol.gossip.Gossip;
@@ -67,7 +66,11 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
             stin.read();
             KevoreeMessage.Message msg = KevoreeMessage.Message.parseFrom(stin);
             logger.debug("Rec Some MSG {}->{}->{}", new String[]{msg.getContentClass(), msg.getDestName(), msg.getDestNodeName()});
-            processValue.receiveRequest(msg);
+            if (!msg.getDestNodeName().equals(getNodeName())) {
+                processValue.receiveRequest(msg);
+            } else {
+                logger.debug("message coming from itself, we don't need to manage it");
+            }
         } catch (Exception e) {
             logger.error("", e);
         }
@@ -104,21 +107,15 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
     private KevoreeFactory factory = new DefaultKevoreeFactory();
     protected AtomicReference<ContainerRoot> currentCacheModel = new AtomicReference<ContainerRoot>(factory.createContainerRoot());
 
-    @Override
+    /*@Override
     public boolean afterLocalUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
         currentCacheModel.set(proposedModel);
         return super.afterLocalUpdate(currentModel, proposedModel);
-    }
+    }*/
 
     @Override
-    public String getAddress(String remoteNodeName) {
-        Option<String> ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper
-                .getNetworkProperties(currentCacheModel.get(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP()));
-        if (ipOption.isDefined()) {
-            return ipOption.get();
-        } else {
-            return "127.0.0.1";
-        }
+    public List<String> getAddresses(String remoteNodeName) {
+        return KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
     }
 
     @Override
@@ -152,19 +149,46 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
         messageBuilder.setContentClass(Gossip.UpdatedValueNotification.class.getName()).setContent(Gossip.UpdatedValueNotification.newBuilder().build().toByteString());
         for (String peer : l) {
             if (!peer.equals(getNodeName())) {
-                String address = getAddress(peer);
-                processValue.netSender().sendMessage/*Unreliable*/(messageBuilder.build(), new InetSocketAddress(address, parsePortNumber(peer)));
+                int port = parsePortNumber(peer);
+                boolean sent = false;
+                for (String address : getAddresses(peer)) {
+                    sent = processValue.netSender().sendMessage/*Unreliable*/(messageBuilder.build(), new InetSocketAddress(address, port));
+                    if (sent) {
+                        break;
+                    }
+                }
+                if (!sent) {
+                    processValue.netSender().sendMessage/*Unreliable*/(messageBuilder.build(), new InetSocketAddress("127.0.0.1", port));
+                }
+
             }
         }
     }
 
     @Override
-    protected void locaUpdateModel(final ContainerRoot modelOption) {
+    protected void localUpdateModel(final ContainerRoot modelOption) {
         new Thread() {
             public void run() {
+                getModelService().unregisterModelListener(BasicGossiperGroup.this);
                 getModelService().atomicUpdateModel(modelOption);
+                getModelService().registerModelListener(BasicGossiperGroup.this);
             }
         }.start();
+    }
+
+    @Override
+    protected void broadcast(ContainerRoot model) {
+        currentCacheModel.set(model);
+        for (Object o : currentCacheModel.get().getGroups()) {
+            Group g = (Group) o;
+            if (g.getName().equals(this.getName())) {
+                List<String> peers = new ArrayList<String>(g.getSubNodes().size());
+                for (ContainerNode node : g.getSubNodes()) {
+                    peers.add(node.getName());
+                }
+                notifyPeersInternal(peers);
+            }
+        }
     }
 
     @Override
@@ -178,16 +202,8 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
             }
             starting = false;
         }
-        for (Object o : currentCacheModel.get().getGroups()) {
-            Group g = (Group) o;
-            if (g.getName().equals(this.getName())) {
-                List<String> peers = new ArrayList<String>(g.getSubNodes().size());
-                for (ContainerNode node : g.getSubNodes()) {
-                    peers.add(node.getName());
-                }
-                notifyPeersInternal(peers);
-            }
-        }
+        broadcast(getModelService().getLastModel());
+
     }
 
 

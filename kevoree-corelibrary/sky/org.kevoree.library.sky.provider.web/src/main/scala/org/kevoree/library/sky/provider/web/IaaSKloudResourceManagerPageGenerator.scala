@@ -137,7 +137,11 @@ class IaaSKloudResourceManagerPageGenerator(instance: IaaSKloudResourceManagerPa
               }
             }
             try {
-              instance.addToNode(kengine.interpret(), parentNodeName)
+              new Thread() {
+                override def run() {
+                  instance.addToNode(kengine.interpret(), parentNodeName)
+                }
+              }.start()
               jsonresponse.key("code").value("0")
             } catch {
               case e: Throwable => logger.warn("Unable to add the child", e); jsonresponse.key("code").value("-2").key("message").value(e.getMessage)

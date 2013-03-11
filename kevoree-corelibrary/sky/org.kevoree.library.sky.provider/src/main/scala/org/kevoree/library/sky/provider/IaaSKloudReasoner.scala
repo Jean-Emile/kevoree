@@ -3,10 +3,11 @@ package org.kevoree.library.sky.provider
 import org.kevoree.{ContainerNode, NodeType, ContainerRoot}
 import org.kevoree.api.service.core.script.KevScriptEngine
 import org.kevoree.library.sky.api.helper.{KloudNetworkHelper, KloudModelHelper}
-import org.kevoree.framework.{NetworkHelper, KevoreePropertyHelper, Constants}
+import org.kevoree.framework.{KevoreePropertyHelper, Constants}
 import org.slf4j.{LoggerFactory, Logger}
 import scala.collection.JavaConversions._
 import collection.mutable.ListBuffer
+import java.util
 
 /**
  * User: Erwan Daubert - erwan.daubert@gmail.com
@@ -26,12 +27,12 @@ object IaaSKloudReasoner extends KloudReasoner {
       node =>
         val parentNodeOption = node.getHost
         if (parentNodeOption != null) {
-          val ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper.getNetworkProperties(iaasModel, node.getName, Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP))
-          if (ipOption.isDefined) {
-            val portNumber = configureIsolatedNode(node, parentNodeOption.getName, ipOption.get, iaasModel, kengine, usedPorts)
+          val ips: util.List[String] = KevoreePropertyHelper.getNetworkProperties(iaasModel, node.getName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP)
+          if (ips.size() > 0) {
+            val portNumber = configureIsolatedNode(node, parentNodeOption.getName, ips, iaasModel, kengine, usedPorts)
             if (portNumber != 0) {
               doSomething = doSomething && true
-              usedPorts = usedPorts + portNumber
+              usedPorts += portNumber
             } else {
               doSomething = doSomething && false
             }
@@ -69,13 +70,15 @@ object IaaSKloudReasoner extends KloudReasoner {
         kengine append "addChild {nodeName}@{parentName}"
 
         // define IP using selected node to know what is the network used in this machine
+        val ips = new util.ArrayList[String]()
         val ipOption = defineIP(node.getName, parentName, iaasModel, kengine, usedIps)
         if (ipOption.isDefined) {
-          usedIps = usedIps + ipOption.get
+          usedIps +=  ipOption.get
+          ips.add(ipOption.get)
         }
-        val portNumber = configureIsolatedNode(node, parentName, ipOption.get, iaasModel, kengine, usedPorts)
+        val portNumber = configureIsolatedNode(node, parentName, ips, iaasModel, kengine, usedPorts)
         if (portNumber != 0) {
-          usedPorts = usedPorts + portNumber
+          usedPorts += portNumber
         }
 
         // find corresponding Kloud group to update the user group configuration on the kloud
@@ -93,7 +96,7 @@ object IaaSKloudReasoner extends KloudReasoner {
     doSomething
   }
 
-  def countChilds(kloudModel: ContainerRoot): List[(String, Int)] = {
+  def countChilds(kloudModel: ContainerRoot): util.List[(String, Int)] = {
     var counts = List[(String, Int)]()
     kloudModel.getNodes.filter {
       node =>
@@ -157,14 +160,14 @@ object IaaSKloudReasoner extends KloudReasoner {
           kengine append "addChild {nodeName}@{parentName}"
 
           val ipOption = defineIP(node.getName, parentName, iaasModel, kengine, usedIps)
-          var ip = "127.0.0.1"
+          val ips = new util.ArrayList[String]()
           if (ipOption.isDefined) {
-            usedIps = usedIps + ipOption.get
-            ip = ipOption.get
+            usedIps +=  ipOption.get
+            ips.add(ipOption.get)
           }
-          val portNumber = configureIsolatedNode(node, parentName, ip, iaasModel, kengine, usedPorts)
+          val portNumber = configureIsolatedNode(node, parentName, ips, iaasModel, kengine, usedPorts)
           if (portNumber != 0) {
-            usedPorts = usedPorts + portNumber
+            usedPorts +=  portNumber
           }
       }
       true
@@ -173,7 +176,7 @@ object IaaSKloudReasoner extends KloudReasoner {
     }
   }
 
-  private def configureIsolatedNode(node: ContainerNode, parentNodeName: String, ip: String, model: ContainerRoot, kengine: KevScriptEngine, usedPorts: ListBuffer[Int]): Int = {
+  private def configureIsolatedNode(node: ContainerNode, parentNodeName: String, ips: util.List[String], model: ContainerRoot, kengine: KevScriptEngine, usedPorts: ListBuffer[Int]): Int = {
     // find all groups that are linked to the parent node
     val groups = model.getGroups.filter(g => g.findByPath("subNodes[" + parentNodeName + "]", classOf[ContainerNode]) != null)
     // look for a group that is linked to the node
@@ -195,7 +198,7 @@ object IaaSKloudReasoner extends KloudReasoner {
               }
             }
             /* Warning This method try severals Socket to determine available port */
-            portNumber = KloudNetworkHelper.selectPortNumber(dv, ip, usedPorts)
+            portNumber = KloudNetworkHelper.selectPortNumber(dv, ips, usedPorts)
             portAttributeName = attribute.getName
           }
         }
@@ -232,7 +235,7 @@ object IaaSKloudReasoner extends KloudReasoner {
     ipOption
   }
 
-  def lookAtPotentialParents(parents: List[(String, Int)]): ListBuffer[String] = {
+  def lookAtPotentialParents(parents: util.List[(String, Int)]): ListBuffer[String] = {
     val potentialParents = ListBuffer[String]()
     var min = Int.MaxValue
 

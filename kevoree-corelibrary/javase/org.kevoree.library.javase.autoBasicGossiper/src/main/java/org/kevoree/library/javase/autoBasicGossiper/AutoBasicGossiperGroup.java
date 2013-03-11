@@ -45,7 +45,7 @@ public class AutoBasicGossiperGroup extends BasicGossiperGroup implements JmDNSL
         super.actor.doGossip(remoteNodeName);
     }
 
-    public boolean updateModel(ContainerRoot model) {
+    public synchronized boolean updateModel(ContainerRoot model) {
         boolean created = false;
         int i = 1;
         while (!created) {

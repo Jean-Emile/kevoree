@@ -156,7 +156,8 @@ public class JmDNSComponent {
         }
     }
 
-    private void addNodeDiscovered(ServiceInfo p1) {
+    private synchronized void addNodeDiscovered(ServiceInfo p1) {
+        logger.debug("starting addNodeDiscovered");
         if (p1.getInetAddresses().length > 0 && p1.getPort() != 0) {
             if (!nodeAlreadyDiscovered.contains(p1.getName())) {
                 String nodeType = p1.getPropertyString("nodeType");
@@ -193,6 +194,7 @@ public class JmDNSComponent {
             }
             logger.warn("Unable to get address or port from {} and {}", builder.substring(0, builder.length() - 2), Integer.toString(p1.getPort()));
         }
+        logger.debug("ending addNodeDiscovered");
     }
 
     private void updateGroup(ContainerRoot model, String remoteNodeName, int port) {

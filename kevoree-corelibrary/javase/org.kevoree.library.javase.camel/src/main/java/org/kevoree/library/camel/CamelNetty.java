@@ -6,12 +6,13 @@ import org.apache.camel.builder.RouteBuilder;
 import org.kevoree.annotation.*;
 import org.kevoree.framework.KevoreeChannelFragment;
 import org.kevoree.framework.KevoreePropertyHelper;
-import org.kevoree.framework.NetworkHelper;
 import org.kevoree.framework.message.Message;
 import org.kevoree.library.camel.framework.AbstractKevoreeCamelChannelType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Option;
+
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -67,39 +68,69 @@ public class CamelNetty extends AbstractKevoreeCamelChannelType {
                                 }
                             }
                             for (KevoreeChannelFragment cf : getOtherFragments()) {
-                                getContext().createProducerTemplate().sendBody("netty:tcp://" + getAddress(cf.getNodeName()) + ":" + parsePortNumber(cf.getNodeName()), exchange.getIn().getBody());
+                                List<String> addresses = getAddresses(cf.getNodeName());
+                                if (addresses.size() > 0) {
+                                    for (String address : addresses) {
+                                        try {
+                                            getContext().createProducerTemplate().sendBody("netty:tcp://" + address + ":" + parsePortNumber(cf.getNodeName()), exchange.getIn().getBody());
+                                            break;
+                                        } catch (Exception e) {
+                                            logger.debug("Unable to send data to components on {} using {} as address", cf.getNodeName(), "netty:tcp://" + address + ":" + parsePortNumber(cf.getNodeName()), e);
+                                        }
+                                    }
+                                } else {
+                                    try {
+                                        getContext().createProducerTemplate().sendBody("netty:tcp://127.0.0.1:" + parsePortNumber(cf.getNodeName()), exchange.getIn().getBody());
+                                    } catch (Exception e) {
+                                        logger.debug("Unable to send data to components on {} using {} as address", cf.getNodeName(), "netty:tcp://127.0.0.1:" + parsePortNumber(cf.getNodeName()), e);
+                                    }
+                                }
                             }
                         }
                     }
                 }
                 );
-        try {
-            routeBuilder.from("netty:tcp://0.0.0.0:" + /*parsePortNumber(getNodeName())*/port + "?sync=true").
-                    process(new Processor() {
-                        public void process(Exchange exchange) throws Exception {
-                            exchange.getOut().setBody("result Async TODO");
-                            for (org.kevoree.framework.KevoreePort p : getBindedPorts()) {
-                                if (exchange.getIn().getBody() instanceof Message) {
-                                    forward(p, (Message) exchange.getIn().getBody());
+        List<String> addresses = getAddresses(getNodeName());
+        if (addresses.size() > 0) {
+            for (String address : addresses) {
+                try {
+                    routeBuilder.from("netty:tcp://" + address + ":" + port + "?sync=true").
+                            process(new Processor() {
+                                public void process(Exchange exchange) throws Exception {
+                                    exchange.getOut().setBody("result Async TODO");
+                                    for (org.kevoree.framework.KevoreePort p : getBindedPorts()) {
+                                        if (exchange.getIn().getBody() instanceof Message) {
+                                            forward(p, (Message) exchange.getIn().getBody());
+                                        }
+                                    }
+                                }
+                            });
+                } catch (Exception e) {
+                    logger.debug("Fail to manage route {}", "netty:tcp://" + address + ":" + port + "?sync=true", e);
+                }
+            }
+        } else {
+            try {
+                routeBuilder.from("netty:tcp://127.0.0.1:" + port + "?sync=true").
+                        process(new Processor() {
+                            public void process(Exchange exchange) throws Exception {
+                                exchange.getOut().setBody("result Async TODO");
+                                for (org.kevoree.framework.KevoreePort p : getBindedPorts()) {
+                                    if (exchange.getIn().getBody() instanceof Message) {
+                                        forward(p, (Message) exchange.getIn().getBody());
+                                    }
                                 }
                             }
-                        }
-                    });
-        } catch (Exception e) {
-            e.printStackTrace();
+                        });
+            } catch (Exception e) {
+                logger.debug("Fail to manage route {}", "netty:tcp://127.0.0.1:" + port + "?sync=true", e);
+            }
         }
-
-
     }
 
 
-    public String getAddress(String remoteNodeName) {
-        Option<String> ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper.getNetworkProperties(this.getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP()));
-        if (ipOption.isDefined()) {
-            return ipOption.get();
-        } else {
-            return "127.0.0.1";
-        }
+    public List<String> getAddresses(String remoteNodeName) {
+        return KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
     }
 
     public int parsePortNumber(String nodeName) {

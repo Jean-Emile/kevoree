@@ -16,7 +16,7 @@ import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractChannelFragment;
 import org.kevoree.framework.ChannelFragmentSender;
 import org.kevoree.framework.KevoreeChannelFragment;
-import org.kevoree.framework.NetworkHelper;
+import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.message.Message;
 import org.slf4j.LoggerFactory;
 import scala.Option;
@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 
@@ -162,7 +163,7 @@ public class NioChannel extends AbstractChannelFragment {
 					if (!message.getPassedNodes().contains(getNodeName())) {
 						message.getPassedNodes().add(getNodeName());
 					}
-					msgQueue.putMsg(getAddress(remoteNodeName), parsePortNumber(remoteNodeName), message);
+					msgQueue.putMsg(getAddresses(remoteNodeName), parsePortNumber(remoteNodeName), message);
 					//    clientBootStrap.connect(new InetSocketAddress(getAddress(remoteNodeName),parsePortNumber(remoteNodeName)));
 				} catch (IOException e) {
 					logger.debug("Error while sending message to " + remoteNodeName + "-" + remoteChannelName);
@@ -172,14 +173,8 @@ public class NioChannel extends AbstractChannelFragment {
 		};
 	}
 
-	public String getAddress (String remoteNodeName) {
-		String ip = "127.0.0.1";
-		Option<String> ipOption = NetworkHelper.getAccessibleIP(org.kevoree.framework.KevoreePropertyHelper
-                .getNetworkProperties(this.getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP()));
-		if (ipOption.isDefined()) {
-			ip = ipOption.get();
-		}
-		return ip;
+	public List<String> getAddresses (String remoteNodeName) {
+        return KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
 	}
 
 	public int parsePortNumber (String nodeName) throws IOException {

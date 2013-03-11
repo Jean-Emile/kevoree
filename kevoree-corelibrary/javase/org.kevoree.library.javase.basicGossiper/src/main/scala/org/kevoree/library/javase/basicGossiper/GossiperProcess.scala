@@ -8,11 +8,13 @@ import org.kevoree.library.basicGossiper.protocol.gossip.Gossip._
 import org.kevoree.library.basicGossiper.protocol.version.Version.{ClockEntry, VectorClock}
 
 import scala.collection.JavaConversions._
-import actors.{Actor}
+import actors.Actor
 import com.google.protobuf.ByteString
 import org.kevoree.library.javase.NetworkSender
 import scala.Some
 import scala.Tuple2
+import java.util
+
 
 class GossiperProcess(instance: GossiperComponent,
                       dataManager: DataManager, serializer: Serializer, doGarbage: Boolean) extends Actor {
@@ -20,7 +22,6 @@ class GossiperProcess(instance: GossiperComponent,
   implicit def vectorDebug(vc: VectorClock) = VectorClockAspect(vc)
 
   val netSender = new NetworkSender(this)
-
 
 
   private val logger = LoggerFactory.getLogger(classOf[GossiperProcess])
@@ -49,9 +50,27 @@ class GossiperProcess(instance: GossiperComponent,
   private val UUIDDataRequestClazz = classOf[UUIDDataRequest].getName
   private val VectorClockUUIDsRequestClazz = classOf[VectorClockUUIDsRequest].getName
 
-  def buildAddr(message: Message): InetSocketAddress = {
-    val ip = instance.getAddress(message.getDestNodeName)
-    new InetSocketAddress(ip, instance.parsePortNumber(message.getDestNodeName))
+  def buildAddresses(nodeName : String, port : Int): util.List[InetSocketAddress] = {
+    val addresses: util.List[InetSocketAddress] = new util.ArrayList[InetSocketAddress]()
+    instance.getAddresses(nodeName).foreach {
+      address =>
+        addresses.add(new InetSocketAddress(address, port))
+    }
+    addresses
+  }
+
+  def buildLocalHostAddress(nodeName : String, port: Int): InetSocketAddress = {
+    new InetSocketAddress("127.0.0.1", port)
+  }
+
+  private def send(nodeName : String, message : Message) {
+    val port = instance.parsePortNumber(nodeName)
+    val notSent = buildAddresses(nodeName, port).forall {
+      address => !netSender.sendMessage(message, address)
+    }
+    if (notSent) {
+      netSender.sendMessage(message, buildLocalHostAddress(nodeName, port))
+    }
   }
 
   def act() {
@@ -59,8 +78,13 @@ class GossiperProcess(instance: GossiperComponent,
       react {
         case STOP() => stopInternal()
         case INIT_GOSSIP(peer) => {
-          val inetAddress = new InetSocketAddress(instance.getAddress(peer), instance.parsePortNumber(peer))
-          netSender.sendMessage(createVectorClockUUIDsRequest(), inetAddress)
+          send(peer, createVectorClockUUIDsRequest())
+          /*val notSent = buildAddresses(peer).forall {
+            address => !netSender.sendMessage(createVectorClockUUIDsRequest(), address)
+          }
+          if (notSent) {
+            netSender.sendMessage(createVectorClockUUIDsRequest(), buildLocalHostAddress(peer))
+          }*/
         }
         case RECEIVE_REQUEST(message) => {
           message.getContentClass match {
@@ -76,10 +100,24 @@ class GossiperProcess(instance: GossiperComponent,
             }
             case UUIDDataRequestClazz => {
               logger.debug("UUIDDataRequest received")
-              netSender.sendMessage(buildData(message), buildAddr(message))
+              send(message.getDestNodeName, buildData(message))
+              /*val notSent = buildAddresses(message.getDestNodeName).forall {
+                address => !netSender.sendMessage(buildData(message), address)
+              }
+
+              if (notSent) {
+                netSender.sendMessage(buildData(message), buildLocalHostAddress(message.getDestNodeName))
+              }*/
+
             }
             case VectorClockUUIDsRequestClazz => {
-              netSender.sendMessage(buildVectorClockUUIDs(message), buildAddr(message))
+              send(message.getDestNodeName, buildVectorClockUUIDs(message))
+              /*val notSent = buildAddresses(message.getDestNodeName).forall {
+                address => !netSender.sendMessage(buildVectorClockUUIDs(message), address)
+              }
+              if (notSent) {
+                netSender.sendMessage(buildVectorClockUUIDs(message), buildLocalHostAddress(message.getDestNodeName))
+              }*/
             }
           }
         }
@@ -131,13 +169,17 @@ class GossiperProcess(instance: GossiperComponent,
           }
           case Occured.BEFORE => {
             logger.debug("VectorClocks comparison into GossiperRequestSender give us: BEFORE")
-            val address = instance.getAddress(message.getDestNodeName)
-            askForData(uuid, message.getDestNodeName, new InetSocketAddress(address, instance.parsePortNumber(message.getDestNodeName)))
+            send(message.getDestNodeName, askForData(uuid))
+            /*buildAddresses(message).foreach {
+              address => askForData(uuid, message.getDestNodeName, address)
+            }*/
           }
           case Occured.CONCURRENTLY => {
             logger.debug("VectorClocks comparison into GossiperRequestSender give us: CONCURRENTLY")
-            val address = instance.getAddress(message.getDestNodeName)
-            askForData(uuid, message.getDestNodeName, new InetSocketAddress(address, instance.parsePortNumber(message.getDestNodeName)))
+            send(message.getDestNodeName, askForData(uuid))
+            /*buildAddresses(message).foreach {
+              address => askForData(uuid, message.getDestNodeName, address)
+            }*/
           }
           case _ => logger.error("unexpected match into initSecondStep")
         }
@@ -173,12 +215,12 @@ class GossiperProcess(instance: GossiperComponent,
     }
   }
 
-  private def askForData(uuid: UUID, remoteNodeName: String, address: InetSocketAddress) {
-    val messageBuilder: Message.Builder = Message.newBuilder
+  private def askForData(uuid: UUID/*, remoteNodeName: String, address: InetSocketAddress*/) : Message = {
+    /*val messageBuilder: Message.Builder = */Message.newBuilder
       .setDestName(instance.getName).setDestNodeName(instance.getNodeName)
       .setContentClass(classOf[UUIDDataRequest].getName)
-      .setContent(UUIDDataRequest.newBuilder.setUuid(uuid.toString).build.toByteString)
-    netSender.sendMessage(messageBuilder.build, address)
+      .setContent(UUIDDataRequest.newBuilder.setUuid(uuid.toString).build.toByteString).build()
+//    netSender.sendMessage(messageBuilder.build, address)
   }
 
   private def buildData(message: Message): Message = {
