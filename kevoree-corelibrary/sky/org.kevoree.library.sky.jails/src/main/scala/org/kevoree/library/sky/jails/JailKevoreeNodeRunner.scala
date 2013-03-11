@@ -147,7 +147,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode) extends Kevore
     val flavorsOption = KevoreePropertyHelper.getProperty(node, "flavor")
     if (flavorsOption.isDefined && iaasNode.getAvailableFlavors.contains(flavorsOption.get)) {
       flavorsOption.get
-    } else if (!iaasNode.getAvailableFlavors.contains(flavorsOption.get)) {
+    } else if (flavorsOption.isDefined && !iaasNode.getAvailableFlavors.contains(flavorsOption.get)) {
       logger.warn("Unknown flavor or unavailable flavor on {}", iaasNode.getName)
       null
     } else {

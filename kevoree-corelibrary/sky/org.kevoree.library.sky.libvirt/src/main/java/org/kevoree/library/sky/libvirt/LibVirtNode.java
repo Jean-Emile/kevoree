@@ -68,7 +68,7 @@ public abstract class LibVirtNode extends AbstractIaaSNode {
 				for (int i = 0; i < ips.size(); i++) {
 					String subnet = ((Element) ips.get(i)).getAttribute("address").getValue();
 					String mask = ((Element) ips.get(i)).getAttribute("netmask").getValue();
-					String[] net = SubnetUtils.toCidrNotation(subnet, mask).split("/");
+					String[] net = new SubnetUtils(subnet, mask).getInfo().getCidrSignature().split("/");
 
 					kengine.addVariable("subnet", net[0]);
 					kengine.addVariable("mask", net[1]);

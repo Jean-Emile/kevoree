@@ -2,7 +2,6 @@ package org.kevoree.library.sky.provider
 
 import org.kevoree._
 import org.kevoree.api.service.core.script.KevScriptEngine
-import framework.{NetworkHelper, Constants, KevoreePropertyHelper}
 import org.kevoree.library.sky.api.helper.KloudModelHelper
 import org.slf4j.{LoggerFactory, Logger}
 import scala.collection.JavaConversions._
@@ -30,14 +29,14 @@ object PaaSKloudReasoner extends KloudReasoner {
 
   def appendCreateGroupScript(iaasModel: ContainerRoot, id: String, nodeName: String, paasModel: ContainerRoot, kengine: KevScriptEngine) {
 
-    paasModel.findByPath("groups[" + id + "]", classOf[Group]) match {
+    paasModel.findGroupsByID(id) match {
       case null => {
         // if the paasModel doesn't contain a Kloud group, then we add a default one
-        val ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper.getNetworkProperties(iaasModel, nodeName, Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP))
+        /*val ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper.getNetworkProperties(iaasModel, nodeName, Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP))
         var ip = "127.0.0.1"
         if (ipOption.isDefined) {
           ip = ipOption.get
-        }
+        }*/
         /* Warning This method try severals Socket to determine available port */
         // FIXME
         /*val portNumber = KloudNetworkHelper.selectPortNumber(ip, Array[Int]())
@@ -51,15 +50,15 @@ object PaaSKloudReasoner extends KloudReasoner {
         kengine append "addToGroup {groupName} {nodeName}"
         kengine append "updateDictionary {groupName} {port='{port}', ip='{ip}'}@{nodeName}"*/
       }
-      case group: Group => {
+      /*case group: Group => {
         val ipOption = NetworkHelper.getAccessibleIP(KevoreePropertyHelper.getNetworkProperties(iaasModel, nodeName, Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP))
         var ip = "127.0.0.1"
         if (ipOption.isDefined) {
           ip = ipOption.get
         }
-        /* Warning This method try severals Socket to determine available port */
+        /* Warning This method try severals Socket to determine available port
         // FIXME
-        /*val portNumber = KloudNetworkHelper.selectPortNumber(ip, Array[Int]())
+        val portNumber = KloudNetworkHelper.selectPortNumber(ip, Array[Int]())
         kengine.addVariable("groupName", id)
         kengine.addVariable("nodeName", nodeName)
         kengine.addVariable("port", portNumber.toString)
@@ -68,7 +67,7 @@ object PaaSKloudReasoner extends KloudReasoner {
 
         kengine append "addGroup {groupName} : {groupType}"
         kengine append "addToGroup {groupName} {nodeName}"
-        kengine append "updateDictionary {groupName} {port='{port}', ip='{ip}'}@{nodeName}"*/
+        kengine append "updateDictionary {groupName} {port='{port}', ip='{ip}'}@{nodeName}"
 
         if (group.getDictionary != null) {
           val defaultAttributes = getDefaultNodeAttributes(iaasModel, group.getTypeDefinition.getName)
@@ -80,7 +79,7 @@ object PaaSKloudReasoner extends KloudReasoner {
               kengine append "updateDictionary {groupName} {{attributeName} = '{attributeValue}'}"
           }
         }
-      }
+      }*/*/
     }
   }
 
@@ -103,7 +102,7 @@ object PaaSKloudReasoner extends KloudReasoner {
 
   private def countSlaves(nodeName: String, iaasModel: ContainerRoot): Int = {
     /*iaasModel.getNodes.find(n => n.getName == nodeName)*/
-    iaasModel.findByPath("nodes[" + nodeName + "]", classOf[ContainerNode]) match {
+    iaasModel.findNodesByID(nodeName) match {
       case null => logger.warn("The node {} doesn't exist !", nodeName); Int.MaxValue
       case node: ContainerNode => {
         // TODO replace when the nature will be added and managed on the model
@@ -162,7 +161,7 @@ object PaaSKloudReasoner extends KloudReasoner {
 
   def releasePlatform(id: String, iaasModel: ContainerRoot, kengine: KevScriptEngine): Boolean = {
     /*iaasModel.getGroups.find(g => g.getName == id)*/
-    iaasModel.findByPath("groups[" + id + "]", classOf[Group]) match {
+    iaasModel.findGroupsByID(id) match {
       case null =>
       case group: Group => {
         group.getSubNodes.foreach {
@@ -241,7 +240,7 @@ object PaaSKloudReasoner extends KloudReasoner {
 
     kengine addVariable("channelName", channelName)
     kengine addVariable("nodeName", nodeName)
-    model.findByPath("hubs[" + channelName + "]", classOf[Channel]) match {
+    model.findHubsByID(channelName) match {
       case null => logger.warn("Unable to find channel '{}', unable to update its properties", channelName)
       case channel: Channel => {
         if (channel.getTypeDefinition.getName == "SocketChannel") {
