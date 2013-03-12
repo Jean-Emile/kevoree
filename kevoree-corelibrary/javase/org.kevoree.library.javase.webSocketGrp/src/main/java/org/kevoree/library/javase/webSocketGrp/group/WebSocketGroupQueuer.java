@@ -4,9 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.Map.Entry;
 
 import org.kevoree.ContainerNode;
 import org.kevoree.ContainerRoot;
@@ -41,26 +39,28 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
 	@Override
 	protected void onMasterServerPushEvent(WebSocketConnection connection,
 			byte[] msg) {
-		super.onMasterServerPushEvent(connection, msg);
-		
-		Group group = getModelElement();
-		ContainerRoot model = getModelService().getLastModel();
+		// deserialize the model from msg
+		ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length - 1); // offset is for the control byte
+		ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
+		updateLocalModel(model);
 		
 		// for each node in this group
+		Group group = getModelElement();
 		for (ContainerNode subNode : group.getSubNodes()) {
-			if (!subNode.getName().equals(getNodeName())) {
+			String subNodeName = subNode.getName();
+			if (!subNodeName.equals(getNodeName())) {
 				// this node is not "me" check if we already have an active connection with him or not
-				if (containsNode(subNode.getName())) {
+				if (containsNode(subNodeName)) {
 					// we already have an active connection with this client
 					// so lets send the model back
-					connection.send(msg, 1, msg.length - 1); // offset is for the control byte
+					getSocketFromNode(subNodeName).send(msg, 1, msg.length - 1); // offset is for the control byte
 					
 				} else {
 					// we do not have an active connection with this client
 					// meaning that we have to store the model and wait for
 					// him to connect in order to send the model back
-					waitingQueue.put(subNode.getName(), model);
-					logger.debug(subNode.getName()+" is not yet connected to master server. It has been added to waiting queue.");
+					waitingQueue.put(subNodeName, model);
+					logger.debug(subNodeName+" is not yet connected to master server. It has been added to waiting queue.");
 				}
 			}
 		}
@@ -87,5 +87,14 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
 			if (nodeName.equals(name)) return true;
 		}
 		return false;
+	}
+	
+	private WebSocketConnection getSocketFromNode(String nodeName) {
+		for (Entry<WebSocketConnection, String> entry : getClients().entrySet()) {
+			if (nodeName.equals(entry.getValue())) {
+				return entry.getKey();
+			}
+		}
+		return null;
 	}
 }
