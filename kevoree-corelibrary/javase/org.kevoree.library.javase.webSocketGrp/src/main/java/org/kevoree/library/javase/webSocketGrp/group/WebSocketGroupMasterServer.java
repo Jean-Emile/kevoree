@@ -270,24 +270,11 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 		public void onMessage(WebSocketConnection connection, byte[] msg) throws Throwable {
 			switch (msg[0]) {					
 				case PUSH:
-					logger.debug("PUSH: "+connection.httpRequest().remoteAddress()+" asked for a PUSH");
-					ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length-1);
-					ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
-					updateLocalModel(model);
-					
-					logger.debug("server knows: "+clients.toString());
-					// broadcasting model to each client
-					for (WebSocketConnection conn : clients) {
-						logger.debug("Trying to push model to client "+conn.httpRequest().remoteAddress());
-						conn.send(msg, 1, msg.length-1); // offset is for the control byte
-					}
+					onMasterServerPushEvent(connection, msg);
 					break;
 					
 				case PULL:
-					logger.debug("PULL: Client "+connection.httpRequest().remoteAddress()+" ask for a pull");
-					ByteArrayOutputStream output = new ByteArrayOutputStream();
-		            KevoreeXmiHelper.$instance.saveCompressedStream(output, getModelService().getLastModel());
-					connection.send(output.toByteArray());
+					onMasterServerPullEvent(connection, msg);
 					break;
 					
 				default:
@@ -388,4 +375,29 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 			return true;
 		}
 	};
+	
+	protected void onMasterServerPushEvent(WebSocketConnection connection, byte[] msg) {
+		logger.debug("PUSH: "+connection.httpRequest().remoteAddress()+" asked for a PUSH");
+		ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length-1);
+		ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
+		updateLocalModel(model);
+		
+		logger.debug("server knows: "+clients.toString());
+		// broadcasting model to each client
+		for (WebSocketConnection conn : clients) {
+			logger.debug("Trying to push model to client "+conn.httpRequest().remoteAddress());
+			conn.send(msg, 1, msg.length-1); // offset is for the control byte
+		}
+	}
+	
+	protected void onMasterServerPullEvent(WebSocketConnection connection, byte[] msg) {
+		logger.debug("PULL: Client "+connection.httpRequest().remoteAddress()+" ask for a pull");
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+        KevoreeXmiHelper.$instance.saveCompressedStream(output, getModelService().getLastModel());
+		connection.send(output.toByteArray());
+	}
+	
+	protected List<WebSocketConnection> getClients() {
+		return this.clients;
+	}
 }
