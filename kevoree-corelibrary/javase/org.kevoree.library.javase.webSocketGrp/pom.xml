@@ -77,7 +77,7 @@
 				<version>${kevoree.version}</version>
 				<configuration>
 				    <!-- === MAIN KEVS conf === -->
-					<targetNode>minicloud</targetNode>
+<!-- 					<targetNode>minicloud</targetNode> -->
 					<!-- === MAIN KEVS conf === -->
 					
 					<!-- === SIMPLE KEVS conf === -->
@@ -85,11 +85,20 @@
 <!-- 					<model>./src/main/kevs/simple.kevs</model> -->
 					<!-- === SIMPLE KEVS conf === -->
 
-					
-					<!-- === BROADCAST KEVS conf === -->
+					<!-- === MASTER SERVER KEVS conf === -->
 <!-- 					<targetNode>minicloud</targetNode> -->
-<!-- 					<model>./src/main/kevs/broadcast.kevs</model> -->
-					<!-- === BROADCAST KEVS conf === -->
+<!-- 					<model>./src/main/kevs/master_server.kevs</model> -->
+					<!-- === MASTER SERVER KEVS conf === -->
+					
+					<!-- === ECHOER KEVS conf === -->
+					<targetNode>minicloud</targetNode>
+					<model>./src/main/kevs/echoer.kevs</model>
+					<!-- === ECHOER SERVER KEVS conf === -->
+					
+					<!-- === QUEUER KEVS conf === -->
+<!-- 					<targetNode>minicloud</targetNode> -->
+<!-- 					<model>./src/main/kevs/queuer.kevs</model> -->
+					<!-- === QUEUER SERVER KEVS conf === -->
 				</configuration>
 			</plugin>
 		</plugins>
