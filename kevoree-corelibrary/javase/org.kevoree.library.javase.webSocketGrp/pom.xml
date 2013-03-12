@@ -86,13 +86,13 @@
 					<!-- === SIMPLE KEVS conf === -->
 
 					<!-- === MASTER SERVER KEVS conf === -->
-<!-- 					<targetNode>minicloud</targetNode> -->
-<!-- 					<model>./src/main/kevs/master_server.kevs</model> -->
+					<targetNode>minicloud</targetNode>
+					<model>./src/main/kevs/master_server.kevs</model>
 					<!-- === MASTER SERVER KEVS conf === -->
 					
 					<!-- === ECHOER KEVS conf === -->
-					<targetNode>minicloud</targetNode>
-					<model>./src/main/kevs/echoer.kevs</model>
+<!-- 					<targetNode>minicloud</targetNode> -->
+<!-- 					<model>./src/main/kevs/echoer.kevs</model> -->
 					<!-- === ECHOER SERVER KEVS conf === -->
 					
 					<!-- === QUEUER KEVS conf === -->
