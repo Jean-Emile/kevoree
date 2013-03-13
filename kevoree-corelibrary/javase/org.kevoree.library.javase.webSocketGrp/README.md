@@ -20,15 +20,15 @@ Each one has its own purpose and works with WebSocket API such as [Webbit] [1] &
 ### Node start
 When a node starts, this group creates a Webbit socket server that is capable of handling 4 different kinds of requests :
 
-*   host:port/ **push**
-*   host:port/ **pull**
-*   host:port/ **push/zip**
-*   host:port/ **pull/zip**
+*   host:port/push
+*   host:port/pull
+*   host:port/push/zip
+*   host:port/pull/zip
 
 ### Push process
 When a push is requested on a node. This group compresses the given model and try to send it to the targeted node on :
 
-*   ws://host:port/**push/zip**
+*   ws://host:port/push/zip
 
 The targeted node will then process the model in the **pushCompressedHandler**  
 ```java
@@ -46,7 +46,7 @@ private BaseWebSocketHandler pushCompressedHandler = new BaseWebSocketHandler() 
 ### Pull process
 When a pull is requested on a node. This group asks the targeted node via :
 
-* ws://host:port/**pull/zip**
+* ws://host:port/pull/zip
 
 The targeted node will then process the model in the **pullCompressedHandler**  
 ```java
@@ -76,15 +76,15 @@ By the way, if you initiate the push procedure on the master server node, it wil
 
 <table>
   <tr>
-  	<td>**URI**</td>
+  	<td>URI</td>
     <td>ws://host:port/</td>
   </tr>
   <tr>
-  	<td>**data[0]**</td>
+  	<td>data[0]</td>
     <td>control byte (to let the server know it is a PUSH)</td>
   </tr>
   <tr>
-  	<td>**data[1..n]**</td>
+  	<td>data[1..n]</td>
     <td>compressed model bytes</td>
   </tr>
 </table>
@@ -117,7 +117,13 @@ protected void onMasterServerPushEvent(WebSocketConnection connection, byte[] ms
 ```
 
 ### Pull process
-TODO
+WebSocketGroupMasterServer **only allows master server node** to process pull requests. So if you try to do a pull on an other node a **NotAMasterServerException** will be thrown.
+To process pull requests, this group will create a new WebSocketClient and send a message with the PULL control byte.  
+Once the server receives the message it will serialize the model from the targetted node and send it back to the client.  
+
+> This process uses *java.util.concurrent.Exchanger* in order to pass the model from the client thread to the pull method thread when it is done.  
+> The Exchanger is created with a timeout set to 5 seconds, meaning that if the model is not sent back within this time you will get a **null** in return.
+
 
 ## What about the third one : *WebSocketGroupEchoer*
 ### Node start
