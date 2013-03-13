@@ -127,23 +127,73 @@ Once the server receives the message it will serialize the model from the target
 
 ## What about the third one : *WebSocketGroupEchoer*
 ### Node start
-TODO
+Same as **WebSocketGroupMasterServer**
 
 ### Push process
-TODO
+Unlike **WebSocketGroupMasterServer** this group allows every node from the group to process PUSH requests.  
+When a push request is initiated a new client is created and it sends a message to server following the same schema as seen before in WebSocketGroupMasterServer.
+So this push is also broadcasted on each node.
 
 ### Pull process
-TODO
+Same as **WebSocketGroupMasterServer** but with the possibility to be made from every node in the group.
 
 ## What about the fourth one : *WebSocketGroupQueuer*
 ### Node start
-TODO
+On node start this group does the exact same work as **WebSocketEchoer** but it create a new Map<String, WebSocketConnection> that will keep tracks of not yet connected nodes.  
 
 ### Push process
-TODO
+When this group's master server receives a PUSH request, it will broadcast the model to each connected node **AND** if there is some nodes in this group that did not initiate a connection to the master server yet, it will keep a version of the current pushed model associated with this unconnected node to push the model back to him when it will connect.
+
+```java
+@Override
+protected void onMasterServerPushEvent(WebSocketConnection connection, byte[] msg) {
+	// deserialize the model from msg
+	ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length - 1); // offset is for the control byte
+	ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
+	updateLocalModel(model);
+	
+	// for each node in this group
+	Group group = getModelElement();
+	for (ContainerNode subNode : group.getSubNodes()) {
+		String subNodeName = subNode.getName();
+		if (!subNodeName.equals(getNodeName())) {
+			// this node is not "me" check if we already have an active connection with him or not
+			if (containsNode(subNodeName)) {
+				// we already have an active connection with this client
+				// so lets send the model back
+				getSocketFromNode(subNodeName).send(msg, 1, msg.length - 1); // offset is for the control byte
+				
+			} else {
+				// we do not have an active connection with this client
+				// meaning that we have to store the model and wait for
+				// him to connect in order to send the model back
+				waitingQueue.put(subNodeName, model);
+				logger.debug(subNodeName+" is not yet connected to master server. It has been added to waiting queue.");
+			}
+		}
+	}
+}
+```
+
+```java
+@Override
+protected void onMasterServerRegisterEvent(WebSocketConnection connection, String nodeName) {
+	super.onMasterServerRegisterEvent(connection, nodeName);
+	if (waitingQueue.containsKey(nodeName)) {
+		// if we end up here, it means that this node wasn't connected
+		// when a push request was initiated earlier and though it has
+		// to get the new model back
+		logger.debug(nodeName+" is in the waiting queue, meaning that we have to send the model back to him");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		KevoreeXmiHelper.$instance.saveStream(baos, waitingQueue.get(nodeName));
+		connection.send(baos.toByteArray());
+		waitingQueue.remove(nodeName);
+	}
+}
+```
 
 ### Pull process
-TODO
+Same as **WebSocketEchoer**
 
 [1]: https://github.com/webbit/webbit
 [2]: http://java-websocket.org
