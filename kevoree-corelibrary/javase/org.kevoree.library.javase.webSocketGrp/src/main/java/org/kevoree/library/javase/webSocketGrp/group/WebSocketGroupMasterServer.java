@@ -12,6 +12,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.Exchanger;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.JOptionPane;
+
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.kevoree.ContainerNode;
@@ -54,9 +56,9 @@ import scala.Option;
  * @author Leiko
  * 
  */
-@DictionaryType({ @DictionaryAttribute(name = "port", optional = true, fragmentDependant = true) })
-@GroupType
+@DictionaryType({@DictionaryAttribute(name = "port", optional = true, fragmentDependant = true)})
 @Library(name = "JavaSE", names = "Android")
+@GroupType
 public class WebSocketGroupMasterServer extends AbstractGroupType {
 
 	protected static final byte PUSH = 1;
