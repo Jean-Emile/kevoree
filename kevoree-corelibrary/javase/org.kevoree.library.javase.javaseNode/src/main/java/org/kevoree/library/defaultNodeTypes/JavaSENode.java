@@ -68,7 +68,6 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
         }
     }
 
-
     @Stop
     @Override
     public void stopNode() {
