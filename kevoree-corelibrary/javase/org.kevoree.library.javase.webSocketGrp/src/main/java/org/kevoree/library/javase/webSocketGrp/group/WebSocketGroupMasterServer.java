@@ -28,6 +28,7 @@ import org.kevoree.api.service.core.handler.ModelListener;
 import org.kevoree.framework.AbstractGroupType;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.KevoreeXmiHelper;
+import org.kevoree.library.NodeNetworkHelper;
 import org.kevoree.library.javase.webSocketGrp.exception.MultipleMasterServerException;
 import org.kevoree.library.javase.webSocketGrp.exception.NoMasterServerFoundException;
 import org.kevoree.library.javase.webSocketGrp.exception.NotAMasterServerException;
