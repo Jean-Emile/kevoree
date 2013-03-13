@@ -48,7 +48,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
     private final byte pushModelInternal = 3;
 
     protected Server server = null;
-    private boolean starting;
+    protected boolean starting;
     protected boolean udp = false;
     boolean ssl = false;
     protected int port = -1;
@@ -142,7 +142,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
         KevoreeXmiHelper.$instance.saveCompressedStream(output, model);
 
         int PORT = 8000;
-        Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
+        Group groupOption = model.findGroupsByID(getName());
         if (groupOption != null) {
             Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
             if (portOption.isDefined()) {
@@ -179,7 +179,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                 }
             }
         } else {
-            logger.debug("Try to send the model using le locahost ip for {}", ips.size(), targetNodeName);
+            logger.debug("Try to send the model using the locahost ip for {}", ips.size(), targetNodeName);
             try {
                 final UniClientConnection[] conns = new UniClientConnection[1];
                 conns[0] = new UniClientConnection(new ConnectionListener() {
@@ -207,7 +207,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
     public ContainerRoot pull(final String targetNodeName) throws Exception {
         ContainerRoot model = getModelService().getLastModel();
         int PORT = 8000;
-        Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
+        Group groupOption = model.findGroupsByID(getName());
         if (groupOption != null) {
             Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
             if (portOption.isDefined()) {
