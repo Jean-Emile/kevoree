@@ -87,9 +87,9 @@ public class CommandMapper {
             return new RemoveInstance((Instance) p.getRef(), nodeName, nodeType.getModelService(), nodeType.getKevScriptEngineFactory(), nodeType.getBootStrapperService());
         }
 
-       /* if (pTypeName.equals(JavaSePrimitive.AddThirdParty())) {
+        if (pTypeName.equals(JavaSePrimitive.$instance.getAddThirdParty())) {
             return new AddDeployUnit((DeployUnit) p.getRef(), nodeType.getBootStrapperService());
-        } */
+        }
         if (pTypeName.equals(JavaSePrimitive.$instance.getRemoveThirdParty())) {
             return new RemoveDeployUnit((DeployUnit) p.getRef(), nodeType.getBootStrapperService());
         }
