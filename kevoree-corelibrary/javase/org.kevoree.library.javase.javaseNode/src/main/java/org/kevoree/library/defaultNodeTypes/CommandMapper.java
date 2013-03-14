@@ -8,6 +8,7 @@ import org.kevoree.api.PrimitiveCommand;
 import org.kevoree.framework.AbstractNodeType;
 import org.kevoree.kompare.JavaSePrimitive;
 import org.kevoree.library.defaultNodeTypes.command.*;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created with IntelliJ IDEA.
@@ -92,6 +93,8 @@ public class CommandMapper {
         if (pTypeName.equals(JavaSePrimitive.$instance.getRemoveThirdParty())) {
             return new RemoveDeployUnit((DeployUnit) p.getRef(), nodeType.getBootStrapperService());
         }
+
+        //LoggerFactory.getLogger(this.getClass()).error("Return Noop command for "+pTypeName);
 
         return new NoopCommand();
     }
