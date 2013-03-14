@@ -140,7 +140,7 @@ class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode) e
       }
       exec = exec ++ List[String]("-Dnode.headless=true", "-Dnode.bootstrap=" + tempFile.getAbsolutePath, "-Dnode.name=" + nodeName, "-classpath", System.getProperty("java.class.path"),
         "org.kevoree.platform.standalone.App")
-      logger.debug("Start node with command: {}", exec.mkString(" "))
+      logger.info("Start node with command: {}", exec.mkString(" "))
       nodePlatformProcess = Runtime.getRuntime.exec(exec)
 
       configureLogFile(iaasNode, nodePlatformProcess)
@@ -172,7 +172,7 @@ class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode) e
         exec = exec ++ List[String]("-Dnode.headless=true", "-Dnode.bootstrap=" + tempFile.getAbsolutePath, "-Dnode.name=" + nodeName, "-jar", platformFile.getAbsolutePath)
 
 
-        logger.debug("Start node with command: {}", exec.mkString(" "))
+        logger.info("Start node with command: {}", exec.mkString(" "))
         nodePlatformProcess = Runtime.getRuntime.exec(exec)
 
         configureLogFile(iaasNode, nodePlatformProcess)
