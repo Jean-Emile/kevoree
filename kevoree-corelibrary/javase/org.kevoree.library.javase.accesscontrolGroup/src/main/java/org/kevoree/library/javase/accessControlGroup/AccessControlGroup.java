@@ -438,7 +438,8 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
             }
         }
 
-        List<String> ips = KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+
         for (String ip : ips) {
             final UniClientConnection[] conns = new UniClientConnection[1];
             conns[0] = new UniClientConnection(new ConnectionListener() {

@@ -1,3 +1,5 @@
+
+
 /* Look for port passed for Kevoree params */
 var port = 8022
 for(var i=0;i<process.argv.length;i++)
@@ -10,10 +12,28 @@ for(var i=0;i<process.argv.length;i++)
 }
 
 var WebSocketServer = require('ws').Server
-, wss = new WebSocketServer({port: port});
+    , wss = new WebSocketServer({port: 99996});
+
 wss.on('connection', function(ws) {
-  ws.on('message', function(message) {
-      console.log('received: %s', message);
-  });
-  ws.send('something');
+    //Noop
 });
+
+console.log("NodeJS WebServer on "+port);
+var http = require('http');
+var server = http.createServer(function(req, res) {
+    if(req.url == "/"){
+        if(gws){
+            gws.onmessage = (function(rec){
+                console.log("DaFuck"+rec);
+                res.writeHead(200);
+                res.end("Response accepted");
+            });
+            gws.send("hello");
+        } else {
+            res.writeHead(200);
+            res.end("Sub Not connected !");
+        }
+
+    }
+});
+server.listen(port);
