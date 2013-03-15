@@ -56,7 +56,11 @@ import scala.Option;
  * @author Leiko
  * 
  */
-@DictionaryType({ @DictionaryAttribute(name = "port", optional = true, fragmentDependant = true) })
+@DictionaryType({
+	@DictionaryAttribute(name = "port", optional = true, fragmentDependant = true),
+	@DictionaryAttribute(name = "key", optional = false, fragmentDependant = false),
+	@DictionaryAttribute(name = "gui", optional = false, defaultValue = "false", fragmentDependant = false, vals = {"true", "false"})
+})
 @Library(name = "JavaSE", names = "Android")
 @GroupType
 public class WebSocketGroupMasterServer extends AbstractGroupType {
@@ -342,17 +346,23 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 	}
 	
 	protected boolean checkAuth() {
-		JFileChooser jfc = new JFileChooser(new File("."));
-        if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-        	File selectedFile = jfc.getSelectedFile();
-        	if (KeyChecker.validate(selectedFile)) {
-        		// this user can push
-        		return true;
-        	}
-        }
-		JOptionPane.showMessageDialog(null, "This key does not give you the right to push. Aborting...", "Wrong keyfile selected", JOptionPane.ERROR_MESSAGE);
-		// this user does not have the right to push
-        return false;
+		String key = getDictionary().get("key").toString();
+		boolean usingGUI = Boolean.parseBoolean(getDictionary().get("gui").toString());
+		
+		if (usingGUI) {
+			// using GUI file chooser to provide a key file
+			JFileChooser jfc = new JFileChooser(new File("."));
+	        if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+	        	if (KeyChecker.validate(jfc.getSelectedFile())) {
+	        		return true;
+	        	} else {
+	        		JOptionPane.showMessageDialog(null, "This key does not give you the right to push. Aborting...", "Wrong keyfile selected", JOptionPane.ERROR_MESSAGE);
+	        		return false;
+	        	}
+	        }
+		}
+		// else using key directly provided in dictionnary
+		return KeyChecker.validate(key);
 	}
 
 	@Override
