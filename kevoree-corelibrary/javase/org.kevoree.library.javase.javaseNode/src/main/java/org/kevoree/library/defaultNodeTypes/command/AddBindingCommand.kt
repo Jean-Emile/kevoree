@@ -54,9 +54,9 @@ class AddBindingCommand(val c: MBinding, val nodeName: String): PrimitiveCommand
 
                 if(foundNeedPort == null && foundHostedPort == null){
                     logger.info("Port instance not found in component")
-                    logger.info("Look for "+portName);
-                    logger.info(""+casted.getKevoreeComponentType()!!.getNeededPorts()!!.containsKey(portName));
-                    logger.info(""+casted.getKevoreeComponentType()!!.getHostedPorts()!!.containsKey(portName));
+                    logger.info("Look for " + portName);
+                    logger.info("" + casted.getKevoreeComponentType()!!.getNeededPorts()!!.containsKey(portName));
+                    logger.info("" + casted.getKevoreeComponentType()!!.getHostedPorts()!!.containsKey(portName));
                     return false
                 }
 
@@ -77,10 +77,13 @@ class AddBindingCommand(val c: MBinding, val nodeName: String): PrimitiveCommand
                 }
                 return false
             } else {
+                logger.error("Error while apply binding , channelFound="+kevoreeChannelFound+",componentFound="+kevoreeComponentFound)
                 return false
             }
         }
     }
 
-
+    fun toString(): String {
+        return "AddBindingCommand / "+c.getHub()!!.getName();
+    }
 }
