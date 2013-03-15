@@ -296,9 +296,9 @@ public class ArduinoNode extends AbstractNodeType {
     public  boolean needAdaptation(AdaptationModel modelIn){
         boolean typeAdaptationFound = false;
         for (AdaptationPrimitive p : modelIn.getAdaptations()) {
-            Boolean addType = p.getPrimitiveType().getName().equals(JavaSePrimitive.AddType());
-            Boolean removeType = p.getPrimitiveType().getName().equals(JavaSePrimitive.RemoveType());
-            Boolean updateType = p.getPrimitiveType().getName().equals(JavaSePrimitive.UpdateType());
+            Boolean addType = p.getPrimitiveType().getName().equals(JavaSePrimitive.$instance.getAddType());
+            Boolean removeType = p.getPrimitiveType().getName().equals(JavaSePrimitive.$instance.getRemoveType());
+            Boolean updateType = p.getPrimitiveType().getName().equals(JavaSePrimitive.$instance.getUpdateType());
             if (addType || removeType || updateType) {
                 typeAdaptationFound = true;
             }

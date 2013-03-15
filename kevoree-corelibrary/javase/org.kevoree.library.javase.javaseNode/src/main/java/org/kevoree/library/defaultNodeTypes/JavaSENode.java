@@ -10,6 +10,7 @@ import org.kevoree.annotation.*;
 import org.kevoree.api.service.core.handler.ModelListener;
 import org.kevoree.api.service.core.logging.KevoreeLogLevel;
 import org.kevoree.framework.AbstractNodeType;
+import org.kevoree.framework.KevoreeXmiHelper;
 import org.kevoree.kompare.KevoreeKompareBean;
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager;
 import org.kevoreeAdaptation.AdaptationModel;
@@ -17,6 +18,7 @@ import org.kevoreeAdaptation.AdaptationPrimitive;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -193,5 +195,17 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
 	@Override
 	public void postRollback (ContainerRoot containerRoot, ContainerRoot containerRoot1) {
 		logger.warn("JavaSENode update aborted in {} ms",(System.currentTimeMillis() - preTime));
+
+        try {
+            File preModel = File.createTempFile("pre"+System.currentTimeMillis(),"pre");
+            File afterModel = File.createTempFile("post"+System.currentTimeMillis(),"post");
+            KevoreeXmiHelper.$instance.save(preModel.getAbsolutePath(),containerRoot);
+            KevoreeXmiHelper.$instance.save(afterModel.getAbsolutePath(),containerRoot1);
+            logger.error("PreModel->"+preModel.getAbsolutePath());
+            logger.error("PostModel->"+afterModel.getAbsolutePath());
+        } catch (Exception e){
+            logger.error("Error while saving debug model",e);
+        }
+
 	}
 }
