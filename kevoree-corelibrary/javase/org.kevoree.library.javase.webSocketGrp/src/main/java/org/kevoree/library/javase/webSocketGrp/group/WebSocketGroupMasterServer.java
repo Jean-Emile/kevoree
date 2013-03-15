@@ -2,6 +2,7 @@ package org.kevoree.library.javase.webSocketGrp.group;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -10,6 +11,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Exchanger;
 import java.util.concurrent.TimeUnit;
+
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -26,6 +30,7 @@ import org.kevoree.annotation.Update;
 import org.kevoree.framework.AbstractGroupType;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.KevoreeXmiHelper;
+import org.kevoree.library.javase.webSocketGrp.dummy.KeyChecker;
 import org.kevoree.library.javase.webSocketGrp.exception.MultipleMasterServerException;
 import org.kevoree.library.javase.webSocketGrp.exception.NoMasterServerFoundException;
 import org.kevoree.library.javase.webSocketGrp.exception.NotAMasterServerException;
@@ -269,20 +274,28 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 	}
 
 	@Override
-	public void push(ContainerRoot model, String targetNodeName)
-			throws Exception {
+	public void push(ContainerRoot model, String targetNodeName) throws Exception {
 		if (targetNodeName.equals(getMasterServerNodeName())) {
-			// serialize model into an OutputStream
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			KevoreeXmiHelper.$instance.saveCompressedStream(baos, model);
-			byte[] data = new byte[baos.size() + 1];
-			byte[] serializedModel = baos.toByteArray();
-			data[0] = PUSH;
-			for (int i = 1; i < data.length; i++) {
-				data[i] = serializedModel[i - 1];
-			}
+			// check user authorization
+			if (checkAuth()) {
+				// user is authenticated
+				// serialize model into an OutputStream
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				KevoreeXmiHelper.$instance.saveCompressedStream(baos, model);
+				byte[] data = new byte[baos.size() + 1];
+				byte[] serializedModel = baos.toByteArray();
+				data[0] = PUSH;
+				for (int i = 1; i < data.length; i++) {
+					data[i] = serializedModel[i - 1];
+				}
 
-			requestPush(data);
+				requestPush(data);
+				
+			} else {
+				// user is not authenticated
+				// TODO yell at him ?
+				throw new IllegalAccessError("You do not have the right to push a model");
+			}
 		} else {
 			throw new NotAMasterServerException(
 					"Push request can only be made on master server node.");
@@ -326,6 +339,20 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 				logger.error("Unable to push model to " + ip + ":" + port);
 			}
 		}
+	}
+	
+	private boolean checkAuth() {
+		JFileChooser jfc = new JFileChooser(new File("."));
+        if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+        	File selectedFile = jfc.getSelectedFile();
+        	if (KeyChecker.validate(selectedFile)) {
+        		// this user can push
+        		return true;
+        	}
+        }
+		JOptionPane.showMessageDialog(null, "This key does not give you the right to push. Aborting...", "Wrong keyfile selected", JOptionPane.ERROR_MESSAGE);
+		// this user does not have the right to push
+        return false;
 	}
 
 	@Override
