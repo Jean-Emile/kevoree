@@ -17,7 +17,7 @@ public class Tester {
 	private static final byte PUSH = 1;
 
 	public static void main(String[] args) throws FileNotFoundException {
-//		String path = "resources/model0.kevm";
+		String path = "resources/model0.kevm";
 		// TODO use your own model file & path
 		File fModel = new File(path);
 		
