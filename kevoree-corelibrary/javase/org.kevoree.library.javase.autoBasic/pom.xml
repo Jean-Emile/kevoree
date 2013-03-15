@@ -24,6 +24,11 @@
             <artifactId>org.kevoree.library.javase.jmdns</artifactId>
             <version>${kevoree.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.kevoree</groupId>
+            <artifactId>org.kevoree.merger</artifactId>
+            <version>${kevoree.version}</version>
+        </dependency>
     </dependencies>
 
 
