@@ -6,13 +6,12 @@ addRepo "http://maven.kevoree.org/snapshots"
 addRepo "http://repo.typesafe.com/typesafe/releases/"
 addRepo "http://www.libvirt.org/maven2/"
 
-merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.autoBasicGossiper/2.0.0-SNAPSHOT'
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.autoBasic/2.0.0-SNAPSHOT'
 merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.javaseNode/2.0.0-SNAPSHOT'
 merge 'mvn:org.kevoree.corelibrary.sky/org.kevoree.library.sky.minicloud/2.0.0-SNAPSHOT'
 
 addNode node0:MiniCloudNode { coreLogLevel = "INFO" }
 
-addGroup sync:AutoBasicGossiperGroup
-updateDictionary sync{interval="20000"}
+addGroup sync:AutoJmDNSBasicGroup
 addToGroup sync node0
 updateDictionary sync{port="8000",ip="0.0.0.0"}@node0
