@@ -32,6 +32,7 @@ public class WebSocketGroupEchoer extends WebSocketGroupMasterServer {
 	@Override
 	public void push(ContainerRoot model, String targetNodeName)
 			throws Exception {
+		// we do not check if targeted node is a master server
 		// serialize model into an OutputStream
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		KevoreeXmiHelper.$instance.saveCompressedStream(baos, model);
