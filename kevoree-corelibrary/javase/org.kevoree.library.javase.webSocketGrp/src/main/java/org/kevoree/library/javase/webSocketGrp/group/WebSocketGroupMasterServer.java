@@ -341,7 +341,7 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 		}
 	}
 	
-	private boolean checkAuth() {
+	protected boolean checkAuth() {
 		JFileChooser jfc = new JFileChooser(new File("."));
         if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
         	File selectedFile = jfc.getSelectedFile();
