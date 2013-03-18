@@ -1,0 +1,17 @@
+merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.javaseNode/{kevoree.version}"
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.webSocketGrp/{kevoree.version}'
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.jexxus/{kevoree.version}'
+
+addNode node2:JavaSENode {logLevel = "DEBUG"}
+
+addGroup sync : BasicGroup
+addToGroup sync node2
+
+updateDictionary sync {port="8002"}@node2
+
+// use this in another runtime, then merge queuer.kevs model and this one
+// then plug this node2 to the webSocketGrp from queuer.kevs, push models
+// then stop the runtime that handles this model and push the model anyway
+// the queuer should see that a node is missing by parsing the model so
+// it will remember the current model and push it back to node2 sometime
+// in the future when the node2 will re-establish the connection to master server

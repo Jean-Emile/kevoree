@@ -1,4 +1,4 @@
-package org.kevoree.library.javase.webSocketGrp.group;
+package org.kevoree.library.javase.webSocketGrp;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -6,14 +6,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.URI;
 
-import org.java_websocket.WebSocket.READYSTATE;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.kevoree.ContainerRoot;
 import org.kevoree.framework.KevoreeXmiHelper;
 
-public class Tester {
-	
+public class ManyPushTester {
 	private static final byte PUSH = 1;
 
 	public static void main(String[] args) throws FileNotFoundException {
