@@ -93,17 +93,22 @@
 					<!-- === ECHOER KEVS conf === -->
 <!-- 					<targetNode>minicloud</targetNode> -->
 <!-- 					<model>./src/main/kevs/echoer.kevs</model> -->
-					<!-- === ECHOER SERVER KEVS conf === -->
+					<!-- === ECHOER KEVS conf === -->
 					
 					<!-- === QUEUER KEVS conf === -->
 <!-- 					<targetNode>minicloud</targetNode> -->
 <!-- 					<model>./src/main/kevs/queuer.kevs</model> -->
-					<!-- === QUEUER SERVER KEVS conf === -->
+					<!-- === QUEUER KEVS conf === -->
 					
 					<!-- === QUEUER_TESTER KEVS conf === -->
 <!-- 					<targetNode>minicloud</targetNode> -->
 <!-- 					<model>./src/main/kevs/queuer_tester.kevs</model> -->
-					<!-- === QUEUER_TESTER SERVER KEVS conf === -->
+					<!-- === QUEUER_TESTER KEVS conf === -->
+					
+					<!-- QUEUER_TEST KEVS conf -->
+<!-- 					<targetNode>node2</targetNode> -->
+<!-- 					<model>./src/main/kevs/queuer_test.kevs</model> -->
+					<!-- QUEUER_TEST KEVS conf -->
 				</configuration>
 			</plugin>
 		</plugins>

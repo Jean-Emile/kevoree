@@ -9,6 +9,8 @@ import java.util.Map.Entry;
 import org.kevoree.ContainerNode;
 import org.kevoree.ContainerRoot;
 import org.kevoree.Group;
+import org.kevoree.annotation.DictionaryAttribute;
+import org.kevoree.annotation.DictionaryType;
 import org.kevoree.annotation.GroupType;
 import org.kevoree.annotation.Start;
 import org.kevoree.framework.KevoreeXmiHelper;
@@ -23,10 +25,15 @@ import org.webbitserver.WebSocketConnection;
  * @author Leiko
  * 
  */
+@DictionaryType({
+	@DictionaryAttribute(name = "max_queued_model", defaultValue = "150", optional = true, fragmentDependant = false)})
 @GroupType
 public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
 	
+	private static final int DEFAULT_MAX_QUEUED_MODEL = 150;
+	
 	private Map<String, ContainerRoot> waitingQueue;
+	private int maxQueuedModel;
 	
 	@Override
 	@Start
@@ -34,6 +41,13 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
 		super.start();
 		
 		waitingQueue = new HashMap<String, ContainerRoot>();
+		
+		try {
+			maxQueuedModel = Integer.parseInt(getDictionary().get("max_queued_model").toString());
+		} catch (Exception e) {
+			maxQueuedModel = DEFAULT_MAX_QUEUED_MODEL;
+			logger.warn("\"max_queued_model\" attribute malformed! Using default value {}", DEFAULT_MAX_QUEUED_MODEL);
+		}
 	}
 	
 	@Override
@@ -59,8 +73,14 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
 					// we do not have an active connection with this client
 					// meaning that we have to store the model and wait for
 					// him to connect in order to send the model back
-					waitingQueue.put(subNodeName, model);
-					logger.debug(subNodeName+" is not yet connected to master server. It has been added to waiting queue.");
+					if (waitingQueue.size() < maxQueuedModel) {
+						waitingQueue.put(subNodeName, model);
+						logger.debug(subNodeName+" is not yet connected to master server. It has been added to waiting queue.");
+					} else {
+						logger.warn(
+								"Max queued model number reached. Queueing aborted meaning that {} will not get the model once reconnected!",
+								subNodeName);
+					}
 				}
 			}
 		}
