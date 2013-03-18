@@ -58,12 +58,12 @@ fi
 
 for ip in `cat $listIPs` ; do
 	# configure basejail
-	echo "ssh root@$ip \"echo \"You need to enter CTRL-D on the terminal to pursue the configuration\";ezjail-admin update -i ; chflags -R noschg /usr/jails/\""
-	ssh root@$ip "echo \"You need to enter CTRL-D on the terminal to pursue the configuration\";ezjail-admin update -p -b ; chflags -R noschg /usr/jails/"
+	echo "ssh root@$ip \"echo \"You need to enter CTRL-D on the terminal to pursue the configuration\";ezjail-admin update -p -b\""
+	ssh root@$ip "echo \"You need to enter CTRL-D on the terminal to pursue the configuration\";ezjail-admin update -p -b"
 	
 	#update or create the jail port tree
-	echo "ssh root@$ip \"ezjail-admin update -p\""
-	ssh root@$ip "ezjail-admin create update -p"
+	echo "ssh root@$ip \"ezjail-admin update -i\""
+	ssh root@$ip "ezjail-admin update -i"
 	
 	# create a jail as build jail
 	defineIPs
@@ -168,5 +168,5 @@ for ip in `cat $listIPs` ; do
 	ssh root@$ip "echo 'linux_enable=\"YES\"' >> /usr/jails/flavours/base-linux-openjdk6/etc/rc.conf"
 	echo "ssh root@$ip \"echo 'linux_enable=\\"YES\\"' >> /usr/jails/flavours/base-linux/etc/rc.conf\""
 	ssh root@$ip "echo 'linux_enable=\"YES\"' >> /usr/jails/flavours/base-linux/etc/rc.conf"
-	
+	ssh root@$ip "chflags -R noschg /usr/jails/"
 done

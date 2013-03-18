@@ -23,7 +23,7 @@ if  [[ $VERSION != "" ]] ; then
 	#cat $listIPs
 	for ip in `cat $listIPs` ; do
 #		echo "ssh root@$ip \"freebsd-update upgrade -r $VERSION ; freebsd-update install ; reboot\""
-		ssh root@$ip "freebsd-update upgrade -r $VERSION ; freebsd-update install ; reboot"
+		ssh root@$ip "freebsd-update upgrade -r $VERSION ; freebsd-update cron fetch install ; reboot"
 	done
 	# if there is only one ip into the file then we wait to be sure that the host has been rebooted
 	if [ `cat $listIPs | grep -c "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*"` == "1" ] ; then
@@ -31,8 +31,8 @@ if  [[ $VERSION != "" ]] ; then
 		sleep 120
 	fi
 	for ip in `cat $listIPs` ; do
-#		echo "ssh root@$ip \"freebsd-update install ; portsnap cron update ; portupgrade -arR --batch\""
-		ssh root@$ip "freebsd-update install ; portsnap cron update ; portupgrade -arR --batch"
+#		echo "ssh root@$ip \"freebsd-update install ; portsnap cron fetch update\""
+		ssh root@$ip "freebsd-update install ; portsnap cron fetch extract update"
 	done
 else
 	echo "you need to specify the version you want to upgrade"

@@ -4,7 +4,7 @@
 echo "try to install needed softwares on Kloud"
 
 # java installation will fail if the needed files are not put on the /usr/ports/distfiles
-local_java_install="echo \"Where is the distfiles folder, we need to copy to build the required software: \" ; read distfiles ; if [[ -z \$distfiles ]] ; then echo \"the build of the software may fail without the distfiles\" ; fi ; scp -r \$distfiles/* root@\$ip:/usr/ports/distfiles"
+local_java_install="echo \"Where is the distfiles folder, we need to copy to build the required software: \" ; read distfiles ; if [[ -z \$distfiles ]] ; then echo \"the build of the software may fail without the distfiles\" ; fi ; scp -r \$distfiles root@\$ip:/usr/ports/"
 
 local_pre_install="$local_java_install"
 #	echo "Where is the distfiles folder, we need to copy to build the required software: "
@@ -23,9 +23,9 @@ local_pre_install="$local_java_install"
 nano="cd /usr/ports/editors/nano ; make -DBATCH install clean"
 bash="cd /usr/ports/shells/bash  ; make -DBATCH install clean ; chsh -s /usr/local/bin/bash root"
 cvsup="cd /usr/ports/editors/nano ; make -DBATCH install clean"
-portupgrade="cd /usr/ports/editors/nano ; make -DBATCH install clean"
-wget="cd /usr/ports/editors/nano ; make -DBATCH install clean"
-ezjail="cd /usr/ports/editors/nano ; make -DBATCH install clean ; ezjail-admin update -b"
+portupgrade="cd /usr/ports/ports-mgmt/portupgrade ; make -DBATCH install clean"
+wget="cd /usr/ports/ftp/wget ; make -DBATCH install clean"
+ezjail="cd /usr/ports/sysutils/ezjail ; make -DBATCH install clean"
 linux="cd /usr/ports/emulators/linux_base-f10  ; make -DBATCH install clean"
 java="cd /usr/ports/java/openjdk6 ; make -DBATCH install clean"
 
@@ -48,7 +48,7 @@ else
 fi
 
 if [ -z $RC_CONF ]; then
-	echo "User kernel configuration file = [./rc_conf]"
+	echo "rc.conf file = [./rc_conf]"
 	read RC_CONF
 
 	if [ -z $RC_CONF ]; then
@@ -56,8 +56,19 @@ if [ -z $RC_CONF ]; then
 	fi
 fi
 
+#echo "instanciate ports tree ? [yes]"
+#read instanciate_ports
+
+#if [[ -z $instanciate_ports ]]; then
+#	instanciate_ports="yes"
+#fi
+
 for ip in `cat $listIPs` ; do
-#	echo $local_pre_install
+# instanciate ports
+#	if [[ $instanciate_ports == "yes" ]]; then
+#		ssh root@$ip "portsnap cron fetch extract"
+#	fi
+	echo $local_pre_install
 	eval "$local_pre_install"
 #	echo "ssh root@$ip \"$command\""
 	ssh root@$ip "$command"

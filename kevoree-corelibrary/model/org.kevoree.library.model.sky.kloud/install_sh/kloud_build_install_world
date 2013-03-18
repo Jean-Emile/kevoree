@@ -27,7 +27,7 @@ fi
 
 # replace cvsup1 by a variable that the user defines
 cvsup="cd ~;cat /usr/share/examples/cvsup/standard-supfile | sed \"s/CHANGE_THIS/cvsup1/g\" > supfile;cvsup supfile"
-#buildworld="echo \"You need to enter CTRL-D on the terminal to pursue the configuration\";cd /usr/src;make buildworld"
+buildworld="echo \"You need to enter CTRL-D on the terminal to pursue the configuration\";cd /usr/src;make buildworld"
 buildkernel="cd /usr/src;make buildkernel KERNCONF=$KERNEL"
 installkernel="cd /usr/src;make installkernel KERNCONF=$KERNEL"
 #installworld="cd /usr/src;make installworld"
