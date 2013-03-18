@@ -32,17 +32,23 @@ public class WebSocketGroupEchoer extends WebSocketGroupMasterServer {
 	@Override
 	public void push(ContainerRoot model, String targetNodeName)
 			throws Exception {
-		// serialize model into an OutputStream
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		KevoreeXmiHelper.$instance.saveCompressedStream(baos, model);
-		byte[] data = new byte[baos.size()+1];
-		byte[] serializedModel = baos.toByteArray();
-		data[0] = PUSH;
-		for (int i=1; i<data.length; i++) {
-			data[i] = serializedModel[i-1];
+		if (checkAuth()) {
+			// we do not check if targeted node is a master server
+			// serialize model into an OutputStream
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			KevoreeXmiHelper.$instance.saveCompressedStream(baos, model);
+			byte[] data = new byte[baos.size()+1];
+			byte[] serializedModel = baos.toByteArray();
+			data[0] = PUSH;
+			for (int i=1; i<data.length; i++) {
+				data[i] = serializedModel[i-1];
+			}
+			
+			requestPush(data);
+		} else {
+			// user is not authenticated
+			throw new IllegalAccessError("You do not have the right to push a model");
 		}
-		
-		requestPush(data);
 	}
 	
 	@Override

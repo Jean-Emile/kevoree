@@ -33,11 +33,6 @@
 		    <artifactId>org.kevoree.extra.java_websocket</artifactId>
 		    <version>1.0.0-SNAPSHOT</version>
 		</dependency>
-        <dependency>
-            <groupId>org.kevoree.tools</groupId>
-            <artifactId>org.kevoree.tools.ui.framework</artifactId>
-            <version>${kevoree.version}</version>
-        </dependency>
 	</dependencies>
 
 	<pluginRepositories>
@@ -104,6 +99,11 @@
 <!-- 					<targetNode>minicloud</targetNode> -->
 <!-- 					<model>./src/main/kevs/queuer.kevs</model> -->
 					<!-- === QUEUER SERVER KEVS conf === -->
+					
+					<!-- === QUEUER_TESTER KEVS conf === -->
+<!-- 					<targetNode>minicloud</targetNode> -->
+<!-- 					<model>./src/main/kevs/queuer_tester.kevs</model> -->
+					<!-- === QUEUER_TESTER SERVER KEVS conf === -->
 				</configuration>
 			</plugin>
 		</plugins>

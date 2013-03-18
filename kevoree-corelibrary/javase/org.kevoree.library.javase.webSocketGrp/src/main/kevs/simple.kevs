@@ -4,7 +4,7 @@ merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.webSocketGr
 addNode node0:JavaSENode {logLevel = "DEBUG"}
 addNode node1:JavaSENode {logLevel = "DEBUG"}
 
-addGroup sync : WebSocketGroupQueuer
+addGroup sync : WebSocketGroupMasterServer {key = "foo"}
 addToGroup sync node0
 addToGroup sync node1
 
