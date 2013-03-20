@@ -42,7 +42,6 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
     protected GroupScorePeerSelector selector;
     private GossiperProcess processValue;
     protected Logger logger = LoggerFactory.getLogger(BasicGossiperGroup.class);
-    private boolean starting;
 
     @Start
     public void startGossiperGroup() throws IOException {

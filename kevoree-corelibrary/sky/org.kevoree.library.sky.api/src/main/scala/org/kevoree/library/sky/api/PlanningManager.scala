@@ -80,7 +80,21 @@ object PlanningManager {
                   }
               }
             }
-            case null =>
+            case null => {
+              logger.debug("Unable to find the current node on the target model, We remove all the hosted nodes from the current model")
+              node.getHosts.foreach {
+                subNode =>
+                  logger.debug("add a {} adaptation primitive with {} as parameter", Array[AnyRef](HostNode.REMOVE_NODE, subNode.getName))
+                  val command: AdaptationPrimitive = factory.createAdaptationPrimitive
+                  command.setPrimitiveType(removeNodeType)
+                  command.setRef(subNode)
+                  val subStep: ParallelStep = factory.createParallelStep
+                  subStep.addAdaptations(command)
+                  adaptationModel.addAdaptations(command)
+                  step.setNextStep(subStep)
+                  step = subStep
+              }
+            }
           }
         }
         case null =>
@@ -108,19 +122,34 @@ object PlanningManager {
                   }
               }
             }
-            case null =>
+            case null => {
+              logger.debug("Unable to find the current node on the current model, We add all the hosted nodes from the target model")
+              node.getHosts.foreach {
+                subNode =>
+                  logger.debug("add a {} adaptation primitive with {} as parameter", Array[AnyRef](HostNode.ADD_NODE, subNode.getName))
+                  val command: AdaptationPrimitive = factory.createAdaptationPrimitive
+                  command.setPrimitiveType(addNodeType)
+                  command.setRef(subNode)
+                  val subStep: ParallelStep = factory.createParallelStep
+                  subStep.addAdaptations(command)
+                  adaptationModel.addAdaptations(command)
+                  step.setNextStep(subStep)
+                  step = subStep
+              }
+            }
           }
         }
         case null =>
       }
     }
+    logger.debug("Adaptation model contain {} Host node primitives", adaptationModel.getAdaptations.size)
     val superModel: AdaptationModel = skyNode.superKompare(current, target)
     if (!skyNode.isContainer && isContaining(superModel.getOrderedPrimitiveSet)) {
       throw new Exception("This node is not a container (see \"role\" attribute)")
     }
     adaptationModel.addAllAdaptations(superModel.getAdaptations)
     step.setNextStep(superModel.getOrderedPrimitiveSet)
-    logger.debug("Kompare model contain {} primitives", adaptationModel.getAdaptations.size)
+    logger.debug("Adaptation model contain {} primitives", adaptationModel.getAdaptations.size)
 
     adaptationModel
   }

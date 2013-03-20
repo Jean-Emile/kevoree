@@ -2,6 +2,7 @@ package org.kevoree.library.javase.jmdns;
 
 import org.kevoree.*;
 import org.kevoree.Dictionary;
+import org.kevoree.api.service.core.handler.UUIDModel;
 import org.kevoree.cloner.ModelCloner;
 import org.kevoree.framework.AbstractGroupType;
 import org.kevoree.framework.KevoreePlatformHelper;
@@ -156,34 +157,50 @@ public class JmDNSComponent {
         }
     }
 
+    private ContainerRoot updateModel(ContainerRoot currentModel, String nodeName, String nodeTypeName, String groupName, String groupTypeName, InetAddress[] addresses, int port) {
+        ContainerRoot model = modelCloner.clone(currentModel);
+        addNode(model, nodeName, nodeTypeName);
+        updateNetworkProperties(model, nodeName, addresses);
+        if (groupName.equals(group.getName()) && groupTypeName.equals(group.getModelElement().getTypeDefinition().getName())) {
+            updateGroup(model, nodeName, port);
+        } else {
+            logger.debug("{} discovers a node using a group which have not the same type as the local one:{}.", new String[]{group.getName(), groupTypeName});
+        }
+        return model;
+    }
+
     private synchronized void addNodeDiscovered(ServiceInfo p1) {
         logger.debug("starting addNodeDiscovered");
         if (p1.getInetAddresses().length > 0 && p1.getPort() != 0) {
             if (!nodeAlreadyDiscovered.contains(p1.getName())) {
-                String nodeType = p1.getPropertyString("nodeType");
+                /*String nodeType = p1.getPropertyString("nodeType");
                 String groupType = p1.getPropertyString("groupType");
-                String groupName = p1.getSubtype();
-                ContainerRoot model = modelCloner.clone(group.getModelService().getLastModel());
-                addNode(model, p1.getName(), nodeType);
-                updateNetworkProperties(model, p1.getName(), p1.getInetAddresses());
-                if (groupName.equals(group.getName()) && groupType.equals(group.getModelElement().getTypeDefinition().getName())) {
-                    updateGroup(model, p1.getName(), p1.getPort());
-                } else {
-                    logger.debug("{} discovers a node using a group which is not the same as the local one:{}.", new String[]{group.getName(), p1.toString()});
-                }
-                if (listener.updateModel(model)) {
-                    nodeAlreadyDiscovered.add(p1.getName());
-                    if (!group.getNodeName().equals(p1.getName())) {
-                        listener.notifyNewSubNode(p1.getName());
+                String groupName = p1.getSubtype();*/
+                UUIDModel uuidModel = group.getModelService().getLastUUIDModel();
+                boolean modelUpdated = false;
+                int tries = 20;
+                while (!modelUpdated && tries > 0) {
+                    ContainerRoot model = updateModel(uuidModel.getModel(), p1.getName(), p1.getPropertyString("nodeType"), p1.getSubtype(), p1.getPropertyString("groupType"), p1.getInetAddresses(), p1.getPort());
+                    try {
+                        group.getModelService().atomicCompareAndSwapModel(uuidModel, model);
+                        nodeAlreadyDiscovered.add(p1.getName());
+                        if (!group.getNodeName().equals(p1.getName())) {
+                            listener.notifyNewSubNode(p1.getName());
+                        }
+                        modelUpdated = true;
+                        StringBuilder builder = new StringBuilder();
+                        for (String nodeName : nodeAlreadyDiscovered) {
+                            builder.append(nodeName).append(", ");
+                        }
+                        logger.debug("List of discovered nodes <{}>", builder.substring(0, builder.length() - 2));
+                    } catch (Exception e) {
+                        logger.debug("Unable to compare and swap model. {}th tries", 20 - tries, e);
                     }
-                } else {
+                    tries = tries - 1;
+                }
+                if (!modelUpdated) {
                     logger.warn("unable to update the current configuration");
                 }
-                StringBuilder builder = new StringBuilder();
-                for (String nodeName : nodeAlreadyDiscovered) {
-                    builder.append(nodeName).append(", ");
-                }
-                logger.debug("List of discovered nodes <{}>", builder.substring(0, builder.length() - 2));
             } else {
                 logger.debug("node already known");
             }

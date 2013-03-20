@@ -1,6 +1,5 @@
 package org.kevoree.library.javase.autoBasicGossiper;
 
-import org.kevoree.ContainerRoot;
 import org.kevoree.annotation.DictionaryAttribute;
 import org.kevoree.annotation.DictionaryType;
 import org.kevoree.annotation.GroupType;
@@ -43,25 +42,5 @@ public class AutoBasicGossiperGroup extends BasicGossiperGroup implements JmDNSL
     public void notifyNewSubNode(String remoteNodeName) {
         logger.debug("new remote node discovered, try to pull the model from {}", remoteNodeName);
         super.actor.doGossip(remoteNodeName);
-    }
-
-    public synchronized boolean updateModel(ContainerRoot model) {
-        boolean created = false;
-        int i = 1;
-        while (!created) {
-            try {
-//                group.getModelService().unregisterModelListener(group);
-                getModelService().atomicUpdateModel(model);
-//                group.getModelService().registerModelListener(group);
-                created = true;
-            } catch (Exception e) {
-                logger.warn("Error while trying to update model due to {}, try number {}", new String[]{e.getMessage(), Integer.toString(i)});
-            }
-            if (i == 20 && !created) {
-                logger.warn("Unable to update model after {} tries. Update aborted !", i);
-            }
-            i = i + 1;
-        }
-        return created;
     }
 }
