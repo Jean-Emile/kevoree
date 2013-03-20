@@ -37,7 +37,6 @@ import scala.Option;
 
 /**
  * WebSocketGroup that launches a server & a client on each fragment
- * (the dumb one)
  * 
  * @author Leiko
  *

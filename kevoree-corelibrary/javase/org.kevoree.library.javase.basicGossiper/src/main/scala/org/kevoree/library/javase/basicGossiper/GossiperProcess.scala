@@ -10,7 +10,7 @@ import org.kevoree.library.basicGossiper.protocol.version.Version.{ClockEntry, V
 import scala.collection.JavaConversions._
 import actors.Actor
 import com.google.protobuf.ByteString
-import org.kevoree.library.javase.NetworkSender
+import org.kevoree.library.javase.{INetworkSender, NetworkSender}
 import scala.Some
 import scala.Tuple2
 import java.util
@@ -21,7 +21,7 @@ class GossiperProcess(instance: GossiperComponent,
 
   implicit def vectorDebug(vc: VectorClock) = VectorClockAspect(vc)
 
-  val netSender = new NetworkSender(this)
+  var netSender: INetworkSender = new NetworkSender(this)
 
 
   private val logger = LoggerFactory.getLogger(classOf[GossiperProcess])
@@ -275,5 +275,8 @@ class GossiperProcess(instance: GossiperComponent,
     resultMessage
   }
 
+  def setNetSender(netSender: INetworkSender) {
+    this.netSender = netSender
+  }
 
 }

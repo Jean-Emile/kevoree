@@ -46,6 +46,7 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
 
     @Start
     public void startGossiperGroup() throws IOException {
+        logger.debug("START BasicGossiper");
         udp = true;
         Long timeoutLong = Long.parseLong((String) this.getDictionary().get("interval"));
         Serializer serializer = new GroupSerializer(this.getModelService());
@@ -78,6 +79,7 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
 
     @Stop
     public void stopGossiperGroup() {
+        logger.debug("STOP BasicGossiper");
         super.stopRestGroup();
         if (actor != null) {
             actor.stop();
@@ -203,7 +205,6 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
             starting = false;
         }
         broadcast(getModelService().getLastModel());
-
     }
 
 

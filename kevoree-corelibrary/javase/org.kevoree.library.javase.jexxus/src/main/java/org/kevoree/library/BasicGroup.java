@@ -179,7 +179,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                 }
             }
         } else {
-            logger.debug("Try to send the model using le locahost ip for {}", ips.size(), targetNodeName);
+            logger.debug("Try to send the model using le locahost ip for {}", targetNodeName);
             try {
                 final UniClientConnection[] conns = new UniClientConnection[1];
                 conns[0] = new UniClientConnection(new ConnectionListener() {

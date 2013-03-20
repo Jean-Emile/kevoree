@@ -33,6 +33,11 @@
 		    <artifactId>org.kevoree.extra.java_websocket</artifactId>
 		    <version>1.0.0-SNAPSHOT</version>
 		</dependency>
+        <dependency>
+            <groupId>org.kevoree.corelibrary.javase</groupId>
+            <artifactId>org.kevoree.library.javase.basicGossiper</artifactId>
+            <version>${kevoree.version}</version>
+        </dependency>
 	</dependencies>
 
 	<pluginRepositories>
@@ -71,44 +76,60 @@
 					</jvmArgs>
 				</configuration>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <showDeprecation>true</showDeprecation>
+                    <showWarnings>true</showWarnings>
+                    <fork>true</fork>
+                </configuration>
+            </plugin>
 			<plugin>
 				<groupId>org.kevoree.platform</groupId>
 				<artifactId>org.kevoree.platform.mavenrunner</artifactId>
 				<version>${kevoree.version}</version>
 				<configuration>
 				    <!-- === MAIN KEVS conf === -->
-<!-- 					<targetNode>minicloud</targetNode> -->
+ 					<!--<targetNode>minicloud</targetNode>-->
 					<!-- === MAIN KEVS conf === -->
-					
+
 					<!-- === SIMPLE KEVS conf === -->
-<!-- 					<targetNode>node0</targetNode> -->
-<!-- 					<model>./src/main/kevs/simple.kevs</model> -->
+ 					<targetNode>node0</targetNode>
+ 					<model>./src/main/kevs/simple.kevs</model>
 					<!-- === SIMPLE KEVS conf === -->
 
 					<!-- === MASTER SERVER KEVS conf === -->
-					<targetNode>minicloud</targetNode>
-					<model>./src/main/kevs/master_server.kevs</model>
+					<!--<targetNode>minicloud</targetNode>-->
+					<!--<model>./src/main/kevs/master_server.kevs</model>-->
 					<!-- === MASTER SERVER KEVS conf === -->
-					
+
 					<!-- === ECHOER KEVS conf === -->
-<!-- 					<targetNode>minicloud</targetNode> -->
-<!-- 					<model>./src/main/kevs/echoer.kevs</model> -->
+ 					<!--<targetNode>minicloud</targetNode>-->
+ 					<!--<model>./src/main/kevs/echoer.kevs</model>-->
 					<!-- === ECHOER KEVS conf === -->
-					
+
 					<!-- === QUEUER KEVS conf === -->
-<!-- 					<targetNode>minicloud</targetNode> -->
-<!-- 					<model>./src/main/kevs/queuer.kevs</model> -->
+ 					<!--<targetNode>minicloud</targetNode>-->
+ 					<!--<model>./src/main/kevs/queuer.kevs</model>-->
 					<!-- === QUEUER KEVS conf === -->
-					
+
 					<!-- === QUEUER_TESTER KEVS conf === -->
-<!-- 					<targetNode>minicloud</targetNode> -->
-<!-- 					<model>./src/main/kevs/queuer_tester.kevs</model> -->
+ 					<!--<targetNode>minicloud</targetNode> -->
+ 					<!--<model>./src/main/kevs/queuer_tester.kevs</model> -->
 					<!-- === QUEUER_TESTER KEVS conf === -->
-					
+
 					<!-- QUEUER_TEST KEVS conf -->
-<!-- 					<targetNode>node2</targetNode> -->
-<!-- 					<model>./src/main/kevs/queuer_test.kevs</model> -->
+ 					<!--<targetNode>node2</targetNode> -->
+ 					<!--<model>./src/main/kevs/queuer_test.kevs</model> -->
 					<!-- QUEUER_TEST KEVS conf -->
+
+                    <!-- === GOSSIPER KEVS conf === -->
+                    <!--<targetNode>minicloud</targetNode>-->
+                    <!--<model>./src/main/kevs/gossiper.kevs</model>-->
+                    <!-- === GOSSIPER KEVS conf === -->
 				</configuration>
 			</plugin>
 		</plugins>

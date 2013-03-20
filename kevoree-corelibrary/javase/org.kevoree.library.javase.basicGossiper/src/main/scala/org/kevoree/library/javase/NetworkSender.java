@@ -21,7 +21,7 @@ import java.net.InetSocketAddress;
  * Date: 12/11/12
  * Time: 15:46
  */
-public class NetworkSender {
+public class NetworkSender implements INetworkSender {
 
     private GossiperProcess process = null;
 
@@ -31,6 +31,7 @@ public class NetworkSender {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Override
     public void sendMessageUnreliable(KevoreeMessage.Message m, InetSocketAddress addr) {
         try {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -47,7 +48,7 @@ public class NetworkSender {
         }
     }
 
-
+    @Override
     public boolean sendMessage(KevoreeMessage.Message m, InetSocketAddress addr) {
         UniClientConnection conn = null;
         try {

@@ -1,5 +1,27 @@
 package org.kevoree.library.javase.webSocketGrp.group;
 
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+import org.kevoree.ContainerNode;
+import org.kevoree.ContainerRoot;
+import org.kevoree.Group;
+import org.kevoree.annotation.*;
+import org.kevoree.framework.AbstractGroupType;
+import org.kevoree.framework.KevoreePropertyHelper;
+import org.kevoree.framework.KevoreeXmiHelper;
+import org.kevoree.library.javase.webSocketGrp.dummy.KeyChecker;
+import org.kevoree.library.javase.webSocketGrp.exception.MultipleMasterServerException;
+import org.kevoree.library.javase.webSocketGrp.exception.NoMasterServerFoundException;
+import org.kevoree.library.javase.webSocketGrp.exception.NotAMasterServerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.webbitserver.BaseWebSocketHandler;
+import org.webbitserver.WebServer;
+import org.webbitserver.WebServers;
+import org.webbitserver.WebSocketConnection;
+import scala.Option;
+
+import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -11,39 +33,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Exchanger;
 import java.util.concurrent.TimeUnit;
-
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
-import org.kevoree.ContainerNode;
-import org.kevoree.ContainerRoot;
-import org.kevoree.Group;
-import org.kevoree.annotation.DictionaryAttribute;
-import org.kevoree.annotation.DictionaryType;
-import org.kevoree.annotation.GroupType;
-import org.kevoree.annotation.Library;
-import org.kevoree.annotation.Start;
-import org.kevoree.annotation.Stop;
-import org.kevoree.annotation.Update;
-import org.kevoree.framework.AbstractGroupType;
-import org.kevoree.framework.KevoreePropertyHelper;
-import org.kevoree.framework.KevoreeXmiHelper;
-import org.kevoree.library.BasicGroup;
-import org.kevoree.library.NodeNetworkHelper;
-import org.kevoree.library.javase.webSocketGrp.dummy.KeyChecker;
-import org.kevoree.library.javase.webSocketGrp.exception.MultipleMasterServerException;
-import org.kevoree.library.javase.webSocketGrp.exception.NoMasterServerFoundException;
-import org.kevoree.library.javase.webSocketGrp.exception.NotAMasterServerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.webbitserver.BaseWebSocketHandler;
-import org.webbitserver.WebServer;
-import org.webbitserver.WebServers;
-import org.webbitserver.WebSocketConnection;
-
-import scala.Option;
 
 /**
  * WebSocketGroup that launches a server on the node fragment if and only if a
@@ -60,9 +49,9 @@ import scala.Option;
  */
 @DictionaryType({
 		@DictionaryAttribute(name = "port", optional = true, fragmentDependant = true),
-		@DictionaryAttribute(name = "key", optional = false, fragmentDependant = false),
-		@DictionaryAttribute(name = "gui", optional = false, defaultValue = "false", fragmentDependant = false, vals = {
-				"true", "false" }) })
+		@DictionaryAttribute(name = "key"),
+		@DictionaryAttribute(name = "gui", defaultValue = "false", vals = {	"true", "false" })
+})
 @Library(name = "JavaSE", names = "Android")
 @GroupType
 public class WebSocketGroupMasterServer extends AbstractGroupType {
@@ -87,7 +76,6 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 
 		Object portVal = getDictionary().get("port");
 		if (portVal != null) {
-			logger.debug("port isnt null: " + portVal.toString());
 			port = Integer.parseInt(portVal.toString().trim());
 		}
 
@@ -285,8 +273,7 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 		server.add("/", handler);
 		server.start();
 
-		logger.debug("Master WebSocket server started on "
-				+ server.getUri().toString());
+		logger.debug("Master WebSocket server started on ws://{}:{}/", server.getUri().getHost(), server.getUri().getPort());
 	}
 
 	private void stopServer() {
@@ -317,8 +304,7 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 
 			} else {
 				// user is not authenticated
-				throw new IllegalAccessError(
-						"You do not have the right to push a model");
+				throw new IllegalAccessError("You do not have the right to push a model");
 			}
 		} else {
 			throw new NotAMasterServerException(
@@ -343,10 +329,14 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 		try {
 			client.connectBlocking();
 			client.send(data);
-			client.close();
+
 		} catch (Exception e) {
 			logger.error("Connection to server impossible", e);
-		}
+		} finally {
+            if (client != null && client.getConnection().isOpen()) {
+                try { client.close(); } catch (Exception ex) {}
+            }
+        }
 	}
 
 	protected void requestPush(byte[] data) {
@@ -390,43 +380,40 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 
 	@Override
 	public void triggerModelUpdate() {
-		logger.debug("trigger model update dude");
-		if (client != null) {
-			logger.debug("client not null");
-			final ContainerRoot modelOption = NodeNetworkHelper.updateModelWithNetworkProperty(this);
-			
-			if (modelOption != null) {
-				logger.debug("modelOption not null");
-				updateLocalModel(modelOption);
-			}
-		} else {
-//			logger.debug("we are not a client, sending trigger model update to master server");
-//			// serialize model into an OutputStream
-//			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//			KevoreeXmiHelper.$instance.saveCompressedStream(baos, getModelService().getLastModel());
-//			byte[] data = new byte[baos.size() + 1];
-//			byte[] serializedModel = baos.toByteArray();
-//			data[0] = PUSH;
-//			for (int i = 1; i < data.length; i++) {
-//				data[i] = serializedModel[i - 1];
-//			}
-//			logger.debug("requestPush is gonna be made in a second");
-//			requestPush(data);
-		}
+        logger.debug("triggerModelUpdate");
+        if (client != null) {
+            final ContainerRoot modelOption = org.kevoree.library.NodeNetworkHelper.updateModelWithNetworkProperty(this);
+            if (modelOption != null) updateLocalModel(modelOption);
+            client = null;
+        } else {
+            // serialize model into an OutputStream
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            KevoreeXmiHelper.$instance.saveCompressedStream(baos, getModelService().getLastModel());
+            byte[] data = new byte[baos.size() + 1];
+            byte[] serializedModel = baos.toByteArray();
+            data[0] = PUSH;
+            for (int i = 1; i < data.length; i++) {
+                data[i] = serializedModel[i - 1];
+            }
+
+            requestPush(data);
+        }
 	}
 
 	@Stop
 	public void stop() {
 		if (client != null) {
-			// we are a client
-			try {
-				client.closeBlocking();
-				client = null;
-				logger.debug("Client on {} closed connection with master server", getNodeName());
-			} catch (InterruptedException e) {
-				logger.warn("Client ({}) on {}: closing connection failed",
-						getNodeName(), client.getURI(), e);
-			}
+			// we are a client and we want to stop
+            if (!client.getConnection().isClosed() || !client.getConnection().isClosing()) {
+                try {
+                    client.closeBlocking();
+                    client = null;
+                    logger.debug("Client on {} closed connection with master server", getNodeName());
+                } catch (InterruptedException e) {
+                    logger.warn("Client ({}) on {}: closing connection failed",
+                            getNodeName(), client.getURI(), e);
+                }
+            }
 		} else {
 			// we are a server
 			stopServer();
@@ -439,12 +426,10 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 		checkNoMultipleMasterServer();
 
 		if (port != null) {
-			logger.debug("Updating master server node if necessary...");
 			// it means that we are a master server
-			int newPort = Integer.parseInt(getDictionary().get("port")
-					.toString());
+			int newPort = Integer.parseInt(getDictionary().get("port").toString());
 			if (newPort != port) {
-				logger.debug("Dictionnary master server port has changed, stoping old server and restarting a new one...");
+				logger.debug("Dictionary master server port has changed, stopping old server and restarting a new one...");
 				// 1_ stop current server
 				stopServer();
 
@@ -460,8 +445,8 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 			logger.debug("Updating client...");
 			// i'm just a client lets go stop/start me
 			// by doing so I'm gonna be registered on the right server for sure
-//			stop();
-//			start();
+			stop();
+			start();
 		}
 	}
 
@@ -477,9 +462,8 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 					logger.error("", e);
 				}
 
-				// if we are a client notify server that we are done updating
-				// local model
-				if (client != null) {
+				// if we are a client notify server that we are done updating local model
+				if (client != null && client.getConnection().isOpen()) {
 					try {
 						client.send(new byte[] { UPDATED });
 					} catch (Exception e) {
@@ -569,23 +553,17 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 	 */
 	protected void onMasterServerPushEvent(WebSocketConnection connection,
 			byte[] msg) {
-		logger.debug("PUSH: " + connection.httpRequest().remoteAddress()
-				+ " asked for a PUSH");
-		ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1,
-				msg.length - 1);
-		ContainerRoot model = KevoreeXmiHelper.$instance
-				.loadCompressedStream(bais);
+		logger.debug("PUSH: " + connection.httpRequest().remoteAddress() + " asked for a PUSH");
+		ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length - 1);
+		ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
 		updateLocalModel(model);
 
 		startPushBroadcastTime = System.currentTimeMillis();
 
-		logger.debug(
-				"Master websocket server is going to broadcast model over {} clients",
-				clients.size());
+		logger.debug("Master websocket server is going to broadcast model over {} clients", clients.size());
 		// broadcasting model to each client
 		for (WebSocketConnection conn : clients.keySet()) {
-			logger.debug("Trying to push model to client "
-					+ conn.httpRequest().remoteAddress());
+			logger.debug("Trying to push model to client " + conn.httpRequest().remoteAddress());
 			conn.send(msg, 1, msg.length - 1); // offset is for the control byte
 		}
 	}
@@ -629,11 +607,9 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 	 * @param nodeName
 	 *            the node that initiated the registration
 	 */
-	static int count = 0;
 
 	protected void onMasterServerRegisterEvent(WebSocketConnection connection,
 			String nodeName) {
-		count++;
 		clients.put(connection, nodeName);
 		logger.debug(
 				"REGISTER: New client ({}) added to active connections: {}",
@@ -656,7 +632,7 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 
 	/**
 	 * In this context you are a master server and you should do the work
-	 * associated with the CLOSE event requested from another client.
+	 * associated with the CLOSE event triggered by a client.
 	 * 
 	 * @param connection
 	 *            a client
@@ -675,4 +651,16 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 	protected Map<WebSocketConnection, String> getClients() {
 		return this.clients;
 	}
+
+    @Override
+    public boolean preUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
+        logger.debug("preUpdate");
+        return super.preUpdate(currentModel, proposedModel);
+    }
+
+    @Override
+    public boolean afterLocalUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
+        logger.debug("afterLocalUpdate");
+        return super.afterLocalUpdate(currentModel, proposedModel);
+    }
 }
