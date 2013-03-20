@@ -1,5 +1,22 @@
 package org.kevoree.library.javase.webSocketGrp.group;
 
+import org.kevoree.ContainerNode;
+import org.kevoree.ContainerRoot;
+import org.kevoree.Group;
+import org.kevoree.annotation.*;
+import org.kevoree.framework.AbstractGroupType;
+import org.kevoree.framework.KevoreePropertyHelper;
+import org.kevoree.framework.KevoreeXmiHelper;
+import org.kevoree.library.NodeNetworkHelper;
+import org.kevoree.library.javase.webSocketGrp.client.WebSocketClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.webbitserver.BaseWebSocketHandler;
+import org.webbitserver.WebServer;
+import org.webbitserver.WebServers;
+import org.webbitserver.WebSocketConnection;
+import scala.Option;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -8,31 +25,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.Exchanger;
 import java.util.concurrent.TimeUnit;
-
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
-import org.kevoree.ContainerNode;
-import org.kevoree.ContainerRoot;
-import org.kevoree.Group;
-import org.kevoree.annotation.DictionaryAttribute;
-import org.kevoree.annotation.DictionaryType;
-import org.kevoree.annotation.GroupType;
-import org.kevoree.annotation.Library;
-import org.kevoree.annotation.Start;
-import org.kevoree.annotation.Stop;
-import org.kevoree.annotation.Update;
-import org.kevoree.framework.AbstractGroupType;
-import org.kevoree.framework.KevoreePropertyHelper;
-import org.kevoree.framework.KevoreeXmiHelper;
-import org.kevoree.library.NodeNetworkHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.webbitserver.BaseWebSocketHandler;
-import org.webbitserver.WebServer;
-import org.webbitserver.WebServers;
-import org.webbitserver.WebSocketConnection;
-
-import scala.Option;
 
 
 /**
@@ -171,10 +163,6 @@ public class WebSocketGroup extends AbstractGroupType {
 			}
 
 			@Override
-			public void onOpen(ServerHandshake sh) {
-			}
-
-			@Override
 			public void onError(Exception e) {
 				close();
 				try {
@@ -182,10 +170,6 @@ public class WebSocketGroup extends AbstractGroupType {
 				} catch (InterruptedException ex) {
 					logger.error("", ex);
 				}
-			}
-
-			@Override
-			public void onClose(int code, String reason, boolean flag) {
 			}
 		};
 		client.connectBlocking();
@@ -274,23 +258,7 @@ public class WebSocketGroup extends AbstractGroupType {
 		logger.debug("Trying to push model to " + "ws://" + ip + ":" + port
 				+ PUSH_RES + _ZIP);
 		WebSocketClient client = new WebSocketClient(URI.create("ws://" + ip
-				+ ":" + port + PUSH_RES + _ZIP)) {
-			@Override
-			public void onMessage(String msg) {
-			}
-
-			@Override
-			public void onOpen(ServerHandshake arg0) {
-			}
-
-			@Override
-			public void onError(Exception arg0) {
-			}
-
-			@Override
-			public void onClose(int arg0, String arg1, boolean arg2) {
-			}
-		};
+				+ ":" + port + PUSH_RES + _ZIP));
 		client.connectBlocking();
 		client.send(data);
 		client.close();

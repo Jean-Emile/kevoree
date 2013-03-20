@@ -1,5 +1,10 @@
 package org.kevoree.library.javase.webSocketGrp.group;
 
+import org.kevoree.ContainerRoot;
+import org.kevoree.annotation.GroupType;
+import org.kevoree.framework.KevoreeXmiHelper;
+import org.kevoree.library.javase.webSocketGrp.client.WebSocketClient;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
@@ -8,12 +13,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Exchanger;
 import java.util.concurrent.TimeUnit;
-
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
-import org.kevoree.ContainerRoot;
-import org.kevoree.annotation.GroupType;
-import org.kevoree.framework.KevoreeXmiHelper;
 
 
 /**
@@ -72,14 +71,6 @@ public class WebSocketGroupEchoer extends WebSocketGroupMasterServer {
 						close();
 					}
 	        	}
-				@Override
-				public void onMessage(String msg) {}
-	        	@Override
-				public void onOpen(ServerHandshake arg0) {}
-				@Override
-				public void onError(Exception arg0) {}
-				@Override
-				public void onClose(int arg0, String arg1, boolean arg2) {}
 			};
 			client.connectBlocking();
 			client.send(new byte[] {PULL});

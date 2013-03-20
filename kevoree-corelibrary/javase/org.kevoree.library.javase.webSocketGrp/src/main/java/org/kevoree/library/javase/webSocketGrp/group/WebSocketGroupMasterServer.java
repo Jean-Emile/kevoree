@@ -1,7 +1,5 @@
 package org.kevoree.library.javase.webSocketGrp.group;
 
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
 import org.kevoree.ContainerNode;
 import org.kevoree.ContainerRoot;
 import org.kevoree.Group;
@@ -9,6 +7,7 @@ import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractGroupType;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.KevoreeXmiHelper;
+import org.kevoree.library.javase.webSocketGrp.client.WebSocketClient;
 import org.kevoree.library.javase.webSocketGrp.dummy.KeyChecker;
 import org.kevoree.library.javase.webSocketGrp.exception.MultipleMasterServerException;
 import org.kevoree.library.javase.webSocketGrp.exception.NoMasterServerFoundException;
@@ -118,18 +117,6 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 								updateLocalModel(model);
 								logger.debug("Model loaded from XMI compressed bytes");
 							}
-
-							@Override
-							public void onMessage(String msg) {}
-
-							@Override
-							public void onOpen(ServerHandshake sh) {}
-
-							@Override
-							public void onError(Exception e) {}
-
-							@Override
-							public void onClose(int code, String reason, boolean flag) {}
 						};
 						client.connectBlocking();
 						logger.debug(
@@ -207,18 +194,6 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 							close();
 						}
 					}
-
-					@Override
-					public void onMessage(String msg) {}
-
-					@Override
-					public void onOpen(ServerHandshake arg0) {}
-
-					@Override
-					public void onError(Exception arg0) {}
-
-					@Override
-					public void onClose(int arg0, String arg1, boolean arg2) {}
 				};
 				client.connectBlocking();
 				client.send(new byte[] { PULL });
@@ -316,16 +291,7 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 		logger.debug("Sending model via webSocket client to master server "
 				+ "ws://" + ip + ":" + port + "/");
 		URI uri = URI.create("ws://" + ip + ":" + port + "/");
-		WebSocketClient client = new WebSocketClient(uri) {
-			@Override
-			public void onMessage(String msg) {}
-			@Override
-			public void onOpen(ServerHandshake sh) {}
-			@Override
-			public void onError(Exception e) {}
-			@Override
-			public void onClose(int code, String reason, boolean flag) {}
-		};
+		WebSocketClient client = new WebSocketClient(uri);
 		try {
 			client.connectBlocking();
 			client.send(data);
