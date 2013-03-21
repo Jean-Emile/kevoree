@@ -161,7 +161,6 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
     }
 
     private void notifyPeersInternal(List<String> l) {
-        logger.debug("DDDDDDDDDDDDDDDDD notifyPeersInternal");
         KevoreeMessage.Message.Builder messageBuilder = KevoreeMessage.Message.newBuilder().setDestName(getName()).setDestNodeName(getNodeName());
         messageBuilder.setContentClass(Gossip.UpdatedValueNotification.class.getName()).setContent(Gossip.UpdatedValueNotification.newBuilder().build().toByteString());
         for (String peer : l) {
@@ -248,8 +247,12 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
         return exchanger.exchange(null, 5000, TimeUnit.MILLISECONDS);
     }
 
-
-
+    /**
+     * Returns a map of IP:PORT for the given node in the given model
+     * @param model model in which data will be looked for
+     * @param nodeName target node name
+     * @return
+     */
     private Map<String, Integer> getNodeNetworkDef(ContainerRoot model, String nodeName) {
         Map<String, Integer> entries = new HashMap<String, Integer>();
         int port = 8000;
@@ -285,6 +288,12 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
         return entries;
     }
 
+    /**
+     * This is the process done when the control byte is unknown in serverHandler
+     *
+     * @param conn WebSocketConnection that delivers the message
+     * @param data the message
+     */
     protected void onExternalMessageReceived(WebSocketConnection conn, byte[] data) {
         try {
             ByteArrayInputStream stin = new ByteArrayInputStream(data);
@@ -300,6 +309,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
             logger.error("", e);
         }
     }
+
 
     private BaseWebSocketHandler serverHandler = new BaseWebSocketHandler() {
         @Override

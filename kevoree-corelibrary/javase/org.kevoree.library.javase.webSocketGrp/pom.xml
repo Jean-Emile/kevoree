@@ -112,8 +112,8 @@
 					<!-- === ECHOER KEVS conf === -->
 
 					<!-- === QUEUER KEVS conf === -->
- 					<targetNode>minicloud</targetNode>
- 					<model>./src/main/kevs/queuer.kevs</model>
+ 					<!--<targetNode>minicloud</targetNode>-->
+ 					<!--<model>./src/main/kevs/queuer.kevs</model>-->
 					<!-- === QUEUER KEVS conf === -->
 
 					<!-- === QUEUER_TESTER KEVS conf === -->
@@ -130,6 +130,11 @@
                     <!--<targetNode>minicloud</targetNode>-->
                     <!--<model>./src/main/kevs/gossiper.kevs</model>-->
                     <!-- === GOSSIPER KEVS conf === -->
+
+                    <!-- === CHANNEL KEVS conf === -->
+                    <targetNode>node0</targetNode>
+                    <model>./src/main/kevs/channel.kevs</model>
+                    <!-- === CHANNEL KEVS conf === -->
 				</configuration>
 			</plugin>
 		</plugins>
