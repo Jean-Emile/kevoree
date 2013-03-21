@@ -235,8 +235,7 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 					" this group. Just give a port to one and only one node in this group.");
 		} else if (portDefined == 0) {
 			//we have no master server defined...abort
-			throw new NoMasterServerFoundException(
-					"Unable to find a master server node in this group.");
+			throw new NoMasterServerFoundException("Unable to find a master server node in this group.");
 		} else {
 			// we have the name of the master server node
 			return masterServerNodeName;
