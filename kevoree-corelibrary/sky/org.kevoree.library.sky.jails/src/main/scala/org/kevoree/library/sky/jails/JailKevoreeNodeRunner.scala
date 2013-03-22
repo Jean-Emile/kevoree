@@ -19,15 +19,16 @@ import scala.collection.JavaConversions._
  * @author Erwan Daubert
  * @version 1.0
  */
-class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode) extends KevoreeNodeRunner(nodeName) {
+class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout : Long, removeTimeout : Long, managedChildKevoreePlatform : Boolean) extends KevoreeNodeRunner(nodeName) {
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  val processExecutor = new ProcessExecutor(Integer.parseInt(iaasNode.getDictionary.get("jailCreationTimeout").toString), Integer.parseInt(iaasNode.getDictionary.get("jailStartTimeout").toString))
+  val processExecutor = new ProcessExecutor()
 
   //  var nodeProcess: Process = null
 
   def startNode(iaasModel: ContainerRoot, childBootstrapModel: ContainerRoot): Boolean = {
+    val beginTimestamp = System.currentTimeMillis()
     logger.debug("Starting " + nodeName)
     iaasModel.findByPath("nodes[" + iaasNode.getName + "]/hosts[" + nodeName + "]", classOf[ContainerNode]) match {
       case node: ContainerNode => {
@@ -49,7 +50,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode) extends Kevore
               flavor = iaasNode.getDefaultFlavor
             }
             // create the new jail
-            if (processExecutor.createJail(flavor, nodeName, newIp, findArchive(nodeName))) {
+            if (processExecutor.createJail(flavor, nodeName, newIp, findArchive(nodeName), addTimeout - (System.currentTimeMillis() - beginTimestamp))) {
               var jailPath = processExecutor.findPathForJail(nodeName)
               // find the needed version of Kevoree for the child node
               val version = findVersionForChildNode(nodeName, childBootstrapModel, iaasModel.getNodes.find(n => n.getName == iaasNode.getNodeName).get)
@@ -62,7 +63,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode) extends Kevore
                   // configure ssh access
                   configureSSHServer(jailPath, newIp)
                   // launch the jail
-                  if (processExecutor.startJail(nodeName)) {
+                  if (processExecutor.startJail(nodeName, addTimeout - (System.currentTimeMillis() - beginTimestamp))) {
                     logger.debug("{} started", nodeName)
                     val jailData = processExecutor.findJail(nodeName)
                     jailPath = jailData._1
@@ -72,7 +73,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode) extends Kevore
                       val logFile = System.getProperty("java.io.tmpdir") + File.separator + nodeName + ".log"
                       outFile = new File(logFile + ".out")
                       errFile = new File(logFile + ".err")
-                      processExecutor.startKevoreeOnJail(jailId, KevoreePropertyHelper.getProperty(node, "RAM").getOrElse("N/A"), nodeName /*, outFile, errFile*/ , this, iaasNode)
+                      processExecutor.startKevoreeOnJail(jailId, KevoreePropertyHelper.getProperty(node, "RAM").getOrElse("N/A"), nodeName /*, outFile, errFile*/ , this, iaasNode, managedChildKevoreePlatform)
                     } else {
                       logger.error("Unable to find the jail {}", nodeName)
                       false
@@ -110,14 +111,15 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode) extends Kevore
   }
 
   def stopNode(): Boolean = {
+    val beginTimestamp = System.currentTimeMillis()
     logger.info("stop " + nodeName)
     // looking for the jail that must be at least created
     val oldIP = processExecutor.findJail(nodeName)._3
     if (oldIP != "-1") {
       // stop the jail
-      if (processExecutor.stopJail(nodeName)) {
+      if (processExecutor.stopJail(nodeName, removeTimeout - (System.currentTimeMillis() - beginTimestamp))) {
         // delete the jail
-        if (processExecutor.deleteJail(nodeName)) {
+        if (processExecutor.deleteJail(nodeName, removeTimeout - (System.currentTimeMillis() - beginTimestamp))) {
           // release IP alias to allow next IP select to use this one
           if (!processExecutor.deleteNetworkAlias(iaasNode.getNetworkInterface, oldIP)) {
             logger.warn("unable to release ip alias {} for the network interface {}", Array[AnyRef](oldIP, iaasNode.getNetworkInterface))

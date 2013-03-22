@@ -4,10 +4,9 @@ import org.kevoree.annotation.*;
 import org.kevoree.api.service.core.script.KevScriptEngine;
 import org.kevoree.library.sky.api.KevoreeNodeRunner;
 import org.kevoree.library.sky.api.nodeType.AbstractIaaSNode;
+import org.kevoree.library.sky.api.nodeType.HostNode;
 import org.kevoree.library.sky.jails.JailKevoreeNodeRunner;
 import org.kevoree.library.sky.jails.JailsReasoner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * User: Erwan Daubert - erwan.daubert@gmail.com
@@ -21,24 +20,32 @@ import org.slf4j.LoggerFactory;
 @Library(name = "SKY")
 @DictionaryType({
         @DictionaryAttribute(name = "defaultFlavor", optional = true),
-        @DictionaryAttribute(name = "jailCreationTimeout", defaultValue = "240000", optional = true), // TODO check with Timeout on adaptation primitive
-        @DictionaryAttribute(name = "jailStartTimeout", defaultValue = "10000", optional = true),/*
+        /*@DictionaryAttribute(name = "jailCreationTimeout", defaultValue = "240000", optional = true),
+        @DictionaryAttribute(name = "jailStartTimeout", defaultValue = "10000", optional = true),
         @DictionaryAttribute(name = "useArchive", defaultValue = "false", vals= {"true", "false"}, optional = true),
-		@DictionaryAttribute(name = "archives", defaultValue = "http://localhost:8080/archives/", optional = true)*/
+		@DictionaryAttribute(name = "archives", defaultValue = "http://localhost:8080/archives/", optional = true),*/
         @DictionaryAttribute(name = "MODE", defaultValue = "RELAX", vals = {"STRICT", "RELAX", "AVOID"}, optional = true),
-        // how the restrictions are manage : STRICT = the jail is stopped, RELAX = the jail continue to execute, AVOID means to refused to execute something that break the limitation
+        // how the restrictions are managed : STRICT = the jail is stopped, RELAX = the jail continue to execute, AVOID means to refused to execute something that break the limitation
         @DictionaryAttribute(name = "alias_mask", defaultValue = "24", optional = true),
-        @DictionaryAttribute(name = "availableFlavors", optional = true, defaultValue = "example")
+        @DictionaryAttribute(name = "availableFlavors", optional = true, defaultValue = "example"),
+        @DictionaryAttribute(name = "manageChildKevoreePlatform", defaultValue = "false", vals = {"true", "false"})
 })
 @NodeType
+@PrimitiveCommands(value = {
+        @PrimitiveCommand(name = HostNode.ADD_NODE, maxTime = JailNode.ADD_TIMEOUT),
+        @PrimitiveCommand(name = HostNode.REMOVE_NODE, maxTime = JailNode.REMOVE_TIMEOUT)
+})
 public class JailNode extends AbstractIaaSNode {
-    private static final Logger logger = LoggerFactory.getLogger(JailNode.class);
+//    private static final Logger logger = LoggerFactory.getLogger(JailNode.class);
 
     private String inet;
     private String subnet;
     private String mask;
     private String aliasMask;
     boolean initialization;
+    public static final long ADD_TIMEOUT = 600000l;
+    public static final long REMOVE_TIMEOUT = 180000l;
+
 
     @Start
     public void startNode() {
@@ -52,9 +59,9 @@ public class JailNode extends AbstractIaaSNode {
 
     @Update
     public void updateNode() {
-        if (!inet.equals(this.getDictionary().get("inet").toString())
-                || !subnet.equals(this.getDictionary().get("subnet").toString())
-                || !mask.equals(this.getDictionary().get("mask").toString())) {
+        if ((inet != null && this.getDictionary().get("inet") != null && !inet.equals(this.getDictionary().get("inet").toString()))
+                || (subnet != null && this.getDictionary().get("subnet") != null && !subnet.equals(this.getDictionary().get("subnet").toString()))
+                || (mask != null && this.getDictionary().get("mask") != null && !mask.equals(this.getDictionary().get("mask").toString()))) {
             stopNode();
             startNode();
         }
@@ -79,7 +86,7 @@ public class JailNode extends AbstractIaaSNode {
 
     @Override
     public KevoreeNodeRunner createKevoreeNodeRunner(String nodeName) {
-        return new JailKevoreeNodeRunner(nodeName, this);
+        return new JailKevoreeNodeRunner(nodeName, this, ADD_TIMEOUT, REMOVE_TIMEOUT, getDictionary().get("manageChildKevoreePlatform").equals("true"));
     }
 
     public String getNetworkInterface() {
