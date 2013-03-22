@@ -29,6 +29,7 @@ import java.util.Map;
  * Time: 3:10 PM
  * To change this template use File | Settings | File Templates.
  */
+@Library(name = "JavaSE", names = "Android")
 @DictionaryType({
         @DictionaryAttribute(name = "port", defaultValue = "8000", fragmentDependant = true),
         @DictionaryAttribute(name = "replay", defaultValue = "false", vals = {"true", "false"}),
