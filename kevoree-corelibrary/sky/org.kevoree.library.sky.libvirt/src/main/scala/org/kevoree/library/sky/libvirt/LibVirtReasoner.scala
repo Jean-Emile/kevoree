@@ -44,7 +44,7 @@ object LibVirtReasoner {
       kengine addVariable("nodeName", hosts.get(i).asInstanceOf[Element].getAttributeValue("name"))
       kengine addVariable("ip", hosts.get(i).asInstanceOf[Element].getAttributeValue("ip"))
       kengine append "network {nodeName} => {nodeName} { 'KEVOREE.remote.node.ip' = '{ip}' }"
-      logger.debug("try to add IP '{}'for node '{}'", Array[AnyRef](hosts.get(i).asInstanceOf[Element].getAttributeValue("ip"), hosts.get(i).asInstanceOf[Element].getAttributeValue("name")))
+      logger.debug("try to add IP '{}'for node '{}'", Array[String](hosts.get(i).asInstanceOf[Element].getAttributeValue("ip"), hosts.get(i).asInstanceOf[Element].getAttributeValue("name")))
     }
   }
 

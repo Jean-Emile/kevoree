@@ -95,7 +95,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout : L
               false
             }
           } else {
-            logger.error("Unable to define a new alias {} with {}", Array[AnyRef](nodeName, newIp))
+            logger.error("Unable to define a new alias {} with {}", Array[String](nodeName, newIp))
             false
           }
         } else {
@@ -122,7 +122,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout : L
         if (processExecutor.deleteJail(nodeName, removeTimeout - (System.currentTimeMillis() - beginTimestamp))) {
           // release IP alias to allow next IP select to use this one
           if (!processExecutor.deleteNetworkAlias(iaasNode.getNetworkInterface, oldIP)) {
-            logger.warn("unable to release ip alias {} for the network interface {}", Array[AnyRef](oldIP, iaasNode.getNetworkInterface))
+            logger.warn("unable to release ip alias {} for the network interface {}", Array[String](oldIP, iaasNode.getNetworkInterface))
           }
           // remove rctl constraint using rctl -r jail:<jailNode>
           if (!JailsConstraintsConfiguration.removeJailConstraints(nodeName)) {
@@ -150,7 +150,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout : L
     if (flavorsOption.isDefined && iaasNode.getAvailableFlavors.contains(flavorsOption.get)) {
       flavorsOption.get
     } else if (flavorsOption.isDefined && !iaasNode.getAvailableFlavors.contains(flavorsOption.get)) {
-      logger.warn("Unknown flavor or unavailable flavor on {}", iaasNode.getName)
+      logger.warn("Unknown flavor ({}) or unavailable flavor on {}", Array[String] (flavorsOption.get, iaasNode.getName))
       null
     } else {
       null

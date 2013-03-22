@@ -85,7 +85,7 @@ class LibVirtKvmKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode, 
       new Thread(new ProcessStreamFileLogger(process.getInputStream, outFile)).start()
       new Thread(new ProcessStreamFileLogger(process.getErrorStream, errFile)).start()
       if (process.waitFor() != 0) {
-        logger.error("Unable to create a disk at '{}' based on '{}'", Array[AnyRef](newDiskPath, diskPath))
+        logger.error("Unable to create a disk at '{}' based on '{}'", Array[String](newDiskPath, diskPath))
         false
       } else {
         true
@@ -99,7 +99,7 @@ class LibVirtKvmKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode, 
       new Thread(new ProcessStreamFileLogger(process.getInputStream, outFile)).start()
       new Thread(new ProcessStreamFileLogger(process.getErrorStream, errFile)).start()
       if (process.waitFor() != 0) {
-        logger.error("Unable to create a disk at '{}' as a clone of '{}'", Array[AnyRef](newDiskPath, diskPath))
+        logger.error("Unable to create a disk at '{}' as a clone of '{}'", Array[String](newDiskPath, diskPath))
         false
       } else {
         true

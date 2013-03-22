@@ -65,7 +65,7 @@ class ProcessExecutor() {
   def addNetworkAlias(networkInterface: String, newIp: String, mask: String = "24"): Boolean = {
 
     val netmask = new SubnetUtils(newIp + "/" + mask).getInfo.getNetmask
-    logger.debug("running {} {} alias {} netmask {}", Array[AnyRef](ifconfig, networkInterface, newIp, netmask))
+    logger.debug("running {} {} alias {} netmask {}", Array[String](ifconfig, networkInterface, newIp, netmask))
     val resultActor = new ResultManagementActor()
     resultActor.starting()
     val p = Runtime.getRuntime.exec(Array[String](ifconfig, networkInterface, "alias", newIp, "netmask", netmask))
@@ -81,11 +81,11 @@ class ProcessExecutor() {
     var exec = Array[String]()
     if (flavor == null) {
       // TODO add archive attribute and use it to save the jail => the archive must be available from all nodes of the network
-      logger.debug("running {} create {} {}", Array[AnyRef](ezjailAdmin, nodeName, newIp))
+      logger.debug("running {} create {} {}", Array[String](ezjailAdmin, nodeName, newIp))
       exec = Array[String](ezjailAdmin, "create") ++ Array[String](nodeName, newIp)
     } else {
       // TODO add archive attribute and use it to save the jail => the archive must be available from all nodes of the network
-      logger.debug("running {} create -f {} {} {}", Array[AnyRef](ezjailAdmin, flavor, nodeName, newIp))
+      logger.debug("running {} create -f {} {} {}", Array[String](ezjailAdmin, flavor, nodeName, newIp))
       exec = Array[String](ezjailAdmin, "create", "-f") ++ Array[String](flavor) ++ Array[String](nodeName, newIp)
     }
 
@@ -127,7 +127,7 @@ class ProcessExecutor() {
   }
 
   def startJail(nodeName: String, timeout: Long): Boolean = {
-    logger.debug("running {} onestart {}", Array[AnyRef](ezjailAdmin, nodeName))
+    logger.debug("running {} onestart {}", Array[String](ezjailAdmin, nodeName))
     val resultActor = new ResultManagementActor()
     resultActor.starting()
     val p = Runtime.getRuntime.exec(Array[String](ezjailAdmin, "onestart", nodeName))
@@ -180,7 +180,7 @@ class ProcessExecutor() {
         limit = PropertyConversionHelper.getRAM(ram)
         exec = exec ++ Array[String](/*"-Xms512m", */ "-Xmx" + limit + "m")
       } catch {
-        case e: NumberFormatException => logger.warn("Unable to take into account RAM limitation because the value {} is not well defined for {}. Default value used.", Array[AnyRef](ram, nodeName))
+        case e: NumberFormatException => logger.warn("Unable to take into account RAM limitation because the value {} is not well defined for {}. Default value used.", Array[String](ram, nodeName))
       }
 
     }
@@ -188,7 +188,7 @@ class ProcessExecutor() {
       "-Dnode.name=" + nodeName, "-Dnode.update.timeout=" + System.getProperty("node.update.timeout"),
       "-Dnode.bootstrap=" + File.separator + "root" + File.separator + "bootstrapmodel.kev", "-jar",
       File.separator + "root" + File.separator + "kevoree-runtime.jar")
-    logger.debug("trying to launch {} {} {} {} {} {} {} {}", exec.asInstanceOf[Array[AnyRef]])
+    logger.debug("trying to launch {} {} {} {} {} {} {} {}", exec)
     val nodeProcess = Runtime.getRuntime.exec(exec)
     /*logger.debug("writing logs about {} on {}", nodeName, outFile.getAbsolutePath)
     new Thread(new ProcessStreamFileLogger(nodeProcess.getInputStream, outFile)).start()
@@ -202,7 +202,7 @@ class ProcessExecutor() {
         false
       } catch {
         case e: IllegalThreadStateException => {
-          logger.debug("platform " + nodeName + " is started")
+          logger.debug("platform {} is started", nodeName)
           true
         }
       }
@@ -215,7 +215,7 @@ class ProcessExecutor() {
   def stopJail(nodeName: String, timeout: Long): Boolean = {
     val resultActor = new ResultManagementActor()
     resultActor.starting()
-    logger.debug("running {} onestop {}", Array[AnyRef](ezjailAdmin, nodeName))
+    logger.debug("running {} onestop {}", Array[String](ezjailAdmin, nodeName))
     val p = Runtime.getRuntime.exec(Array[String](ezjailAdmin, "onestop", nodeName))
     new Thread(new ProcessStreamManager(resultActor, p.getInputStream, Array(), Array(), p)).start()
     val result = resultActor.waitingFor(timeout)
@@ -228,7 +228,7 @@ class ProcessExecutor() {
   def deleteJail(nodeName: String, timeout: Long): Boolean = {
     val resultActor = new ResultManagementActor()
     resultActor.starting()
-    logger.debug("running {} delete -w {}", Array[AnyRef](ezjailAdmin, nodeName))
+    logger.debug("running {} delete -w {}", Array[String](ezjailAdmin, nodeName))
     val p = Runtime.getRuntime.exec(Array[String](ezjailAdmin, "delete", "-w", nodeName))
     new Thread(new ProcessStreamManager(resultActor, p.getInputStream, Array(), Array(), p)).start()
     val result = resultActor.waitingFor(timeout)
@@ -241,7 +241,7 @@ class ProcessExecutor() {
   def deleteNetworkAlias(networkInterface: String, oldIP: String): Boolean = {
     val resultActor = new ResultManagementActor()
     resultActor.starting()
-    logger.debug("running {} {} -alias {}", Array[AnyRef](ezjailAdmin, networkInterface, oldIP))
+    logger.debug("running {} {} -alias {}", Array[String](ezjailAdmin, networkInterface, oldIP))
     val p = Runtime.getRuntime.exec(Array[String](ifconfig, networkInterface, "-alias", oldIP))
     new Thread(new ProcessStreamManager(resultActor, p.getInputStream, Array(), Array(new Regex("ifconfig: ioctl \\(SIOCDIFADDR\\): .*")), p)).start()
     val result = resultActor.waitingFor(1000)

@@ -43,7 +43,7 @@ public class JailNode extends AbstractIaaSNode {
     private String mask;
     private String aliasMask;
     boolean initialization;
-    public static final long ADD_TIMEOUT = 600000l;
+    public static final long ADD_TIMEOUT = 300000l;
     public static final long REMOVE_TIMEOUT = 180000l;
 
 
