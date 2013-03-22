@@ -1,9 +1,8 @@
 package org.kevoree.library.javase.webSocketGrp.channel;
 
 import org.kevoree.annotation.*;
-import org.kevoree.framework.AbstractChannelFragment;
-import org.kevoree.framework.ChannelFragmentSender;
-import org.kevoree.framework.KevoreeChannelFragment;
+import org.kevoree.annotation.ChannelTypeFragment;
+import org.kevoree.framework.*;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.message.Message;
 import org.kevoree.library.javase.webSocketGrp.client.WebSocketClient;
@@ -32,12 +31,13 @@ import java.util.Map;
 @Library(name = "JavaSE", names = "Android")
 @DictionaryType({
         @DictionaryAttribute(name = "port", defaultValue = "8000", fragmentDependant = true),
-        @DictionaryAttribute(name = "replay", defaultValue = "false", vals = {"true", "false"}),
+        @DictionaryAttribute(name = "replay", defaultValue = "true", vals = {"true", "false"}),
         @DictionaryAttribute(name = "maxQueued", defaultValue = "42")
 })
 @ChannelTypeFragment
 public class WebSocketChannel extends AbstractChannelFragment {
 
+    private static final String RES_TAG = "/channel";
     private static final int DEFAULT_PORT = 8000;
     private static final int DEFAULT_MAX_QUEUED = 42;
 
@@ -53,6 +53,8 @@ public class WebSocketChannel extends AbstractChannelFragment {
 
     @Start
     public void startChannel() {
+        logger.debug("START DA CHAN");
+
         // get "port" from dictionary or DEFAULT_PORT if there is any trouble getting it
         try {
             port = Integer.parseInt(getDictionary().get("port").toString());
@@ -85,15 +87,33 @@ public class WebSocketChannel extends AbstractChannelFragment {
 
         // initialize web socket server
         server = WebServers.createWebServer(port);
-        server.add("/", serverHandler);
+        server.add(RES_TAG, serverHandler);
         server.start();
+
+        logger.debug("WebSocket server started on ws://{}:{}{}", server.getUri().getHost(), server.getPort(), RES_TAG);
     }
 
     @Stop
     public void stopChannel() {
+        logger.debug("STOP DAT CHAN");
         if (server != null) {
             server.stop();
             server = null;
+        }
+
+        if (clients != null) {
+            for (WebSocketClient cli : clients.values()) {
+                cli.close();
+
+            }
+            clients.clear();
+            clients = null;
+        }
+
+        if (queuer != null) {
+            logger.debug("FLUSH DAT QUEUE");
+            queuer.flush();
+            queuer = null;
         }
     }
 
@@ -110,6 +130,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
         }
 
         if (currentPort != port) {
+            logger.debug("UPDATE DAT CHAN");
             stopChannel();
             startChannel();
         }
@@ -117,9 +138,12 @@ public class WebSocketChannel extends AbstractChannelFragment {
 
     @Override
     public Object dispatch(Message msg) {
-        for (org.kevoree.framework.KevoreePort p : getBindedPorts()) {
+        for (KevoreePort p : getBindedPorts()) {
             forward(p, msg);
         }
+
+        logger.debug("getOtherFragments: "+getOtherFragments().toString());
+
         for (KevoreeChannelFragment cf : getOtherFragments()) {
             if (!msg.getPassedNodes().contains(cf.getNodeName())) {
                 forward(cf, msg);
@@ -134,6 +158,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
         return new ChannelFragmentSender() {
             @Override
             public Object sendMessageToRemote(Message message) {
+                logger.debug("createSender: "+remoteNodeName);
                 byte[] data = null;
 
                 try {
@@ -154,10 +179,17 @@ public class WebSocketChannel extends AbstractChannelFragment {
 
                     // check if there's already a connection with the remote node
                     if (clients.containsKey(remoteNodeName)) {
+                        logger.debug("I have the client conn with {} !", remoteNodeName);
                         // we already have a connection with this node, use it
                         conn = clients.get(remoteNodeName);
+                        if (!conn.getConnection().isOpen()) {
+                            logger.debug("BUT this conn is down, so PortUnreachable exception !");
+                            clients.remove(remoteNodeName);
+                            throw new PortUnreachableException();
+                        }
 
                     } else {
+                        logger.debug("I dont have conn with {}, gonna create one !", remoteNodeName);
                         // we need to create a new connection with this node
                         conn = createNewConnection(remoteNodeName);
                     }
@@ -181,7 +213,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
                                 StringBuilder scheme = new StringBuilder();
                                 scheme.append("ws://");
                                 scheme.append(ip+":");
-                                scheme.append(nodePort+"/");
+                                scheme.append(nodePort+RES_TAG);
                                 msg.addURI(URI.create(scheme.toString()));
                             }
 
@@ -211,7 +243,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
         for (String nodeIp : getAddresses(remoteNodeName)) {
             logger.debug("Trying to connect to server {}:{} ({}) ...", nodeIp, nodePort, remoteNodeName);
 
-            URI uri = URI.create("ws://"+nodeIp+":"+nodePort+"/");
+            URI uri = URI.create("ws://"+nodeIp+":"+nodePort+RES_TAG);
             WebSocketClient client = new WebSocketClient(uri) {
                 @Override
                 public void onClose(int code, String reason, boolean flag) {
@@ -221,18 +253,19 @@ public class WebSocketChannel extends AbstractChannelFragment {
             };
 
             try {
-                // connect to server
-                client.connectBlocking();
-                // add this client to the map
-                clients.put(remoteNodeName, client);
+                // try to connect to server
+                if (client.connectBlocking()) {
+                    // add this client to the map
+                    clients.put(remoteNodeName, client);
 
-                return client;
+                    return client;
+                }
 
             } catch (InterruptedException e) {
                 logger.error("Unable to connect to server {}:{} ({})", nodeIp, nodePort, remoteNodeName);
             }
         }
-
+        logger.debug("gonna throw PortUnreachable ! for message to {}", remoteNodeName);
         throw new PortUnreachableException("No WebSocket server are reachable on "+remoteNodeName);
     }
 

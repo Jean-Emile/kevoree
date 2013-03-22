@@ -28,15 +28,15 @@ public class MessageQueuer {
     public MessageQueuer(int maxQueued, final Map<String, WebSocketClient> clients) {
         this.maxQueued = maxQueued;
         this.clients = clients;
-        this.queue = new ArrayDeque<MessageHolder>();
+        this.queue = new ArrayDeque<MessageHolder>(maxQueued);
 
         // create the thread that will handle message sending
         new Thread(new Runnable() {
             @Override
             public void run() {
                 while (!doStop) {
-                    // try to send message to the last item in queue
-                    final MessageHolder msg = queue.pollLast();
+                    // try to send message to the last added item in queue
+                    final MessageHolder msg = queue.pollFirst();
                     if (msg != null) {
                         boolean sent = false;
                         String strURI = null;
@@ -49,12 +49,13 @@ public class MessageQueuer {
                                 }
                             };
                             try {
-                                client.connectBlocking();
-                                client.send(msg.getData());
-                                clients.put(msg.getNodeName(), client);
+                                if (client.connectBlocking()) {
+                                    client.send(msg.getData());
+                                    clients.put(msg.getNodeName(), client);
 
-                                strURI = uri.toString();
-                                sent = true;
+                                    strURI = uri.toString();
+                                    sent = true;
+                                }
 
                             } catch (InterruptedException e) {
                                 // connection failed, we will try it later
@@ -66,21 +67,34 @@ public class MessageQueuer {
                             logger.debug("Message from queue delivered to {}", strURI);
                         } else {
                             // put that message back in the queue
-                            queue.addLast(msg);
+                            queue.addFirst(msg);
                         }
                     }
+
+                    try {
+                        // take a break dude
+                        Thread.sleep(100);
+                    } catch (Exception e) {/* no one cares */}
                 }
+                queue.clear();
+                clients.clear();
             }
         }).start();
     }
 
     public void addToQueue(MessageHolder msg) {
-        synchronized (queue) {
-            queue.addLast(msg);
+        try {
+            queue.addFirst(msg);
+        } catch (IllegalStateException e) {
+            // if we end up here the queue is full
+            // so get rid of the oldest message
+            queue.pollLast();
+            // and add the new one
+            queue.addFirst(msg);
         }
     }
 
-    public void stop() {
+    public void flush() {
         doStop = true;
     }
 }

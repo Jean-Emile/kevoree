@@ -102,8 +102,8 @@
                     <!-- === SIMPLE KEVS conf === -->
 
                     <!-- === MASTER SERVER KEVS conf === -->
-                    <targetNode>minicloud</targetNode>
-                    <model>./src/main/kevs/master_server.kevs</model>
+                    <!--<targetNode>minicloud</targetNode>-->
+                    <!--<model>./src/main/kevs/master_server.kevs</model>-->
                     <!-- === MASTER SERVER KEVS conf === -->
 
                     <!-- === ECHOER KEVS conf === -->
@@ -132,8 +132,8 @@
                     <!-- === GOSSIPER KEVS conf === -->
 
                     <!-- === CHANNEL KEVS conf === -->
-                    <!--<targetNode>minicloud</targetNode>-->
-                    <!--<model>./src/main/kevs/channel.kevs</model>-->
+                    <targetNode>node0</targetNode>
+                    <model>./src/main/kevs/channel_withoutKloud.kevs</model>
                     <!-- === CHANNEL KEVS conf === -->
                 </configuration>
             </plugin>
