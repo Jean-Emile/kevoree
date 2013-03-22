@@ -16,6 +16,7 @@ import org.webbitserver.WebSocketConnection;
 import scala.Option;
 
 import java.io.*;
+import java.net.PortUnreachableException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -29,21 +30,29 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 @DictionaryType({
-        @DictionaryAttribute(name = "port", defaultValue = "8000", fragmentDependant = true)
+        @DictionaryAttribute(name = "port", defaultValue = "8000", fragmentDependant = true),
+        @DictionaryAttribute(name = "replay", defaultValue = "false", vals = {"true", "false"}),
+        @DictionaryAttribute(name = "maxQueued", defaultValue = "42")
 })
 @ChannelTypeFragment
 public class WebSocketChannel extends AbstractChannelFragment {
 
     private static final int DEFAULT_PORT = 8000;
+    private static final int DEFAULT_MAX_QUEUED = 42;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private WebServer server;
     private Map<String, WebSocketClient> clients;
-    private int port = -1;
+    private MessageQueuer queuer;
+
+    // dictionary attributes
+    private int port = DEFAULT_PORT;
+    private boolean replay = false;
 
     @Start
     public void startChannel() {
+        // get "port" from dictionary or DEFAULT_PORT if there is any trouble getting it
         try {
             port = Integer.parseInt(getDictionary().get("port").toString());
         } catch (NumberFormatException e) {
@@ -52,8 +61,26 @@ public class WebSocketChannel extends AbstractChannelFragment {
             logger.warn("Using default port {} to proceed channel start...", DEFAULT_PORT);
         }
 
+        // get "maxQueued" from dictionary or DEFAULT_MAX_QUEUED if there is any trouble getting it
+        int maxQueued = DEFAULT_MAX_QUEUED;
+        try {
+            maxQueued = Integer.parseInt(getDictionary().get("maxQueued").toString());
+            if (maxQueued < 0) throw new NumberFormatException();
+
+        } catch (NumberFormatException e) {
+            logger.error("maxQueued attribute must be a valid positive integer port number");
+        }
+
         // initialize active connections map
         clients = new HashMap<String, WebSocketClient>();
+
+        // get replay from dictionary
+        replay = Boolean.parseBoolean(getDictionary().get("replay").toString());
+
+        if (replay) {
+            // create MessageQueuer with maxQueued attribute
+            queuer = new MessageQueuer(maxQueued, clients);
+        }
 
         // initialize web socket server
         server = WebServers.createWebServer(port);
@@ -106,6 +133,8 @@ public class WebSocketChannel extends AbstractChannelFragment {
         return new ChannelFragmentSender() {
             @Override
             public Object sendMessageToRemote(Message message) {
+                byte[] data = null;
+
                 try {
                     // save the current node in the message if it isn't there already
                     if (!message.getPassedNodes().contains(getNodeName())) {
@@ -116,7 +145,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     ObjectOutput out = new ObjectOutputStream(baos);
                     out.writeObject(message);
-                    byte[] data = baos.toByteArray();
+                    data = baos.toByteArray();
                     out.close();
 
                     // initialize a web socket client
@@ -134,6 +163,38 @@ public class WebSocketChannel extends AbstractChannelFragment {
 
                     // send data to remote node
                     conn.send(data);
+
+                } catch (PortUnreachableException e) {
+                    // if we reach this point it means that we do not succeed
+                    // in connecting to a web socket server on the targeted node.
+                    // Knowing that, if "replay" is set to "true" we keep tracks of
+                    // this message and node to retry the process later.
+                    if (replay) {
+                        try {
+                            // create the message to add to the queue
+                            MessageHolder msg = new MessageHolder(remoteNodeName, data);
+
+                            // add URIs to message
+                            int nodePort = parsePortNumber(remoteNodeName);
+                            for (String ip : getAddresses(remoteNodeName)) {
+                                StringBuilder scheme = new StringBuilder();
+                                scheme.append("ws://");
+                                scheme.append(ip+":");
+                                scheme.append(nodePort+"/");
+                                msg.addURI(URI.create(scheme.toString()));
+                            }
+
+                            // add message to queue
+                            queuer.addToQueue(msg);
+                        } catch (IOException ioEx) {
+                            logger.error("", ioEx);
+                        }
+
+                    } else {
+                        // "replay" is set to "false" just drop that message
+                        logger.warn("Unable to reach web socket server on {}, forgetting this send message request...",
+                                remoteNodeName);
+                    }
 
                 } catch (Exception e) {
                     logger.debug("Error while sending message to " + remoteNodeName + "-" + remoteChannelName);
@@ -159,14 +220,19 @@ public class WebSocketChannel extends AbstractChannelFragment {
             };
 
             try {
+                // connect to server
                 client.connectBlocking();
+                // add this client to the map
+                clients.put(remoteNodeName, client);
+
                 return client;
 
             } catch (InterruptedException e) {
                 logger.error("Unable to connect to server {}:{} ({})", nodeIp, nodePort, remoteNodeName);
             }
         }
-        throw new Exception("No WebSocket server are reachable on "+remoteNodeName);
+
+        throw new PortUnreachableException("No WebSocket server are reachable on "+remoteNodeName);
     }
 
     protected List<String> getAddresses(String remoteNodeName) {
