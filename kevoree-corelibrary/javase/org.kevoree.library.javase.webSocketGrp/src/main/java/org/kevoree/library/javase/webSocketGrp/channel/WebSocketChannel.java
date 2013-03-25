@@ -1,7 +1,9 @@
 package org.kevoree.library.javase.webSocketGrp.channel;
 
-import org.kevoree.annotation.*;
+import org.kevoree.ContainerRoot;
 import org.kevoree.annotation.ChannelTypeFragment;
+import org.kevoree.annotation.*;
+import org.kevoree.api.service.core.handler.ModelListener;
 import org.kevoree.framework.*;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.message.Message;
@@ -17,6 +19,7 @@ import scala.Option;
 import java.io.*;
 import java.net.PortUnreachableException;
 import java.net.URI;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +40,7 @@ import java.util.Map;
 @ChannelTypeFragment
 public class WebSocketChannel extends AbstractChannelFragment {
 
-    private static final String RES_TAG = "/channel";
+    private static final String RES_TAG = "/channel/";
     private static final int DEFAULT_PORT = 8000;
     private static final int DEFAULT_MAX_QUEUED = 42;
 
@@ -53,8 +56,6 @@ public class WebSocketChannel extends AbstractChannelFragment {
 
     @Start
     public void startChannel() {
-        logger.debug("START DA CHAN");
-
         // get "port" from dictionary or DEFAULT_PORT if there is any trouble getting it
         try {
             port = Integer.parseInt(getDictionary().get("port").toString());
@@ -87,15 +88,16 @@ public class WebSocketChannel extends AbstractChannelFragment {
 
         // initialize web socket server
         server = WebServers.createWebServer(port);
-        server.add(RES_TAG, serverHandler);
+        server.add(RES_TAG+getNodeName(), serverHandler);
         server.start();
 
-        logger.debug("WebSocket server started on ws://{}:{}{}", server.getUri().getHost(), server.getPort(), RES_TAG);
+        logger.debug("WebSocket server started on {}", server.getUri());
+
+        getModelService().registerModelListener(modelListener);
     }
 
     @Stop
     public void stopChannel() {
-        logger.debug("STOP DAT CHAN");
         if (server != null) {
             server.stop();
             server = null;
@@ -111,7 +113,6 @@ public class WebSocketChannel extends AbstractChannelFragment {
         }
 
         if (queuer != null) {
-            logger.debug("FLUSH DAT QUEUE");
             queuer.flush();
             queuer = null;
         }
@@ -141,8 +142,6 @@ public class WebSocketChannel extends AbstractChannelFragment {
         for (KevoreePort p : getBindedPorts()) {
             forward(p, msg);
         }
-
-        logger.debug("getOtherFragments: "+getOtherFragments().toString());
 
         for (KevoreeChannelFragment cf : getOtherFragments()) {
             if (!msg.getPassedNodes().contains(cf.getNodeName())) {
@@ -179,17 +178,14 @@ public class WebSocketChannel extends AbstractChannelFragment {
 
                     // check if there's already a connection with the remote node
                     if (clients.containsKey(remoteNodeName)) {
-                        logger.debug("I have the client conn with {} !", remoteNodeName);
                         // we already have a connection with this node, use it
                         conn = clients.get(remoteNodeName);
                         if (!conn.getConnection().isOpen()) {
-                            logger.debug("BUT this conn is down, so PortUnreachable exception !");
                             clients.remove(remoteNodeName);
                             throw new PortUnreachableException();
                         }
 
                     } else {
-                        logger.debug("I dont have conn with {}, gonna create one !", remoteNodeName);
                         // we need to create a new connection with this node
                         conn = createNewConnection(remoteNodeName);
                     }
@@ -203,25 +199,17 @@ public class WebSocketChannel extends AbstractChannelFragment {
                     // Knowing that, if "replay" is set to "true" we keep tracks of
                     // this message and node to retry the process later.
                     if (replay) {
-                        try {
-                            // create the message to add to the queue
-                            MessageHolder msg = new MessageHolder(remoteNodeName, data);
+                        // create the message to add to the queue
+                        MessageHolder msg = new MessageHolder(remoteNodeName, data);
 
-                            // add URIs to message
-                            int nodePort = parsePortNumber(remoteNodeName);
-                            for (String ip : getAddresses(remoteNodeName)) {
-                                StringBuilder scheme = new StringBuilder();
-                                scheme.append("ws://");
-                                scheme.append(ip+":");
-                                scheme.append(nodePort+RES_TAG);
-                                msg.addURI(URI.create(scheme.toString()));
-                            }
-
-                            // add message to queue
-                            queuer.addToQueue(msg);
-                        } catch (IOException ioEx) {
-                            logger.error("", ioEx);
+                        // add URIs to message
+                        int nodePort = parsePortNumber(remoteNodeName);
+                        for (String ip : getAddresses(remoteNodeName)) {
+                            msg.addURI(getWellFormattedURI(ip, nodePort, remoteNodeName));
                         }
+
+                        // add message to queue
+                        queuer.addToQueue(msg);
 
                     } else {
                         // "replay" is set to "false" just drop that message
@@ -243,7 +231,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
         for (String nodeIp : getAddresses(remoteNodeName)) {
             logger.debug("Trying to connect to server {}:{} ({}) ...", nodeIp, nodePort, remoteNodeName);
 
-            URI uri = URI.create("ws://"+nodeIp+":"+nodePort+RES_TAG);
+            URI uri = getWellFormattedURI(nodeIp, nodePort, remoteNodeName);
             WebSocketClient client = new WebSocketClient(uri) {
                 @Override
                 public void onClose(int code, String reason, boolean flag) {
@@ -265,30 +253,41 @@ public class WebSocketChannel extends AbstractChannelFragment {
                 logger.error("Unable to connect to server {}:{} ({})", nodeIp, nodePort, remoteNodeName);
             }
         }
-        logger.debug("gonna throw PortUnreachable ! for message to {}", remoteNodeName);
+
         throw new PortUnreachableException("No WebSocket server are reachable on "+remoteNodeName);
     }
 
     protected List<String> getAddresses(String remoteNodeName) {
-        return KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        // if there is no IP defined in node network properties
+        // then give it a try locally
+        if (ips.isEmpty()) ips.add("127.0.0.1");
+        return ips;
     }
 
-    protected int parsePortNumber(String nodeName) throws IOException {
-        try {
-            Option<String> portOption = org.kevoree.framework.KevoreePropertyHelper.getProperty(getModelElement(), "port", true, nodeName);
-            if (portOption.isDefined()) {
-                try {
-                    return Integer.parseInt(portOption.get());
-                } catch (NumberFormatException e) {
-                    logger.warn("Attribute \"port\" of {} is not an Integer", getName());
-                    return 0;
-                }
-            } else {
-                return DEFAULT_PORT;
+    protected int parsePortNumber(String nodeName) {
+        Option<String> portOption = org.kevoree.framework.KevoreePropertyHelper.getProperty(getModelElement(), "port", true, nodeName);
+        if (portOption.isDefined()) {
+            try {
+                return Integer.parseInt(portOption.get());
+            } catch (NumberFormatException e) {
+                logger.warn("Attribute \"port\" of {} is not an Integer", getName());
+                return 0;
             }
-        } catch (NumberFormatException e) {
-            throw new IOException(e.getMessage());
+        } else {
+            return DEFAULT_PORT;
         }
+    }
+
+    protected URI getWellFormattedURI(String host, int port, String nodeName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ws://");
+        sb.append(host);
+        sb.append(":");
+        sb.append(port);
+        sb.append(RES_TAG);
+        sb.append(nodeName);
+        return URI.create(sb.toString());
     }
 
     private BaseWebSocketHandler serverHandler = new BaseWebSocketHandler() {
@@ -305,6 +304,53 @@ public class WebSocketChannel extends AbstractChannelFragment {
         public void onMessage(WebSocketConnection connection, String msg) throws Throwable {
             // forward to onMessage(WebSocketConnection, byte[])
             onMessage(connection, msg.getBytes());
+        }
+    };
+
+    private ModelListener modelListener = new ModelListener() {
+        @Override
+        public boolean preUpdate(ContainerRoot containerRoot, ContainerRoot containerRoot2) {
+            return true;
+        }
+
+        @Override
+        public boolean initUpdate(ContainerRoot containerRoot, ContainerRoot containerRoot2) {
+            return true;
+        }
+
+        @Override
+        public boolean afterLocalUpdate(ContainerRoot containerRoot, ContainerRoot containerRoot2) {
+            return true;
+        }
+
+        @Override
+        public void modelUpdated() {
+            queuer.updateMessages(new MessageQueuer.MessageUpdater() {
+                @Override
+                public void updateMessages(Deque<MessageHolder> queue) {
+                    for (MessageHolder msg : queue) {
+                        // remove all URIs from message
+                        msg.clearURIs();
+
+                        // update msg URIs
+                        String nodeName = msg.getNodeName();
+                        int nodePort = parsePortNumber(nodeName);
+                        for (String ip : getAddresses(nodeName)) {
+                            msg.addURI(getWellFormattedURI(ip, nodePort, nodeName));
+                        }
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void preRollback(ContainerRoot containerRoot, ContainerRoot containerRoot2) {
+
+        }
+
+        @Override
+        public void postRollback(ContainerRoot containerRoot, ContainerRoot containerRoot2) {
+
         }
     };
 }

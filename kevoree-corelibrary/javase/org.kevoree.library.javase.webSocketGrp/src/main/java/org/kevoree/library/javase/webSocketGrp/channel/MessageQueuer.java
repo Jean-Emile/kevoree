@@ -94,7 +94,17 @@ public class MessageQueuer {
         }
     }
 
+    public void updateMessages(MessageUpdater syncCallback) {
+        synchronized (queue) {
+            syncCallback.updateMessages(queue);
+        }
+    }
+
     public void flush() {
         doStop = true;
+    }
+
+    public interface MessageUpdater {
+        public void updateMessages(Deque<MessageHolder> queue);
     }
 }

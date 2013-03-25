@@ -38,4 +38,8 @@ public class MessageHolder {
     public byte[] getData() {
         return this.data;
     }
+
+    public void clearURIs() {
+        this.uris.clear();
+    }
 }
