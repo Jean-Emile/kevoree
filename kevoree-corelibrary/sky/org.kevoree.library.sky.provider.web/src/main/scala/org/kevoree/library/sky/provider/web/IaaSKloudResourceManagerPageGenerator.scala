@@ -206,11 +206,17 @@ class IaaSKloudResourceManagerPageGenerator(instance: IaaSKloudResourceManagerPa
   private def removeChild(request: KevoreeHttpRequest, response: KevoreeHttpResponse): KevoreeHttpResponse = {
     val nodeName = request.getResolvedParams.get("name")
 
-    try {
-      instance.remove(cleanModel(instance.getModelService.getLastModel, List[String](nodeName)))
-    } catch {
-      case e: Throwable => logger.warn("Unable to clean the current model to remove the child " + nodeName, e)
-    }
+
+    new Thread() {
+      override def run() {
+        try {
+          instance.remove(cleanModel(instance.getModelService.getLastModel, List[String](nodeName)))
+        } catch {
+          case e: Throwable => logger.warn("Unable to clean the current model to remove the child " + nodeName, e)
+        }
+      }
+    }.start()
+
     getRedirectionPage(request, response, pattern)
   }
 

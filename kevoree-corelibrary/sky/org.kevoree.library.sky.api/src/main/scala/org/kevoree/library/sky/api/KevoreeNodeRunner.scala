@@ -136,7 +136,7 @@ abstract class KevoreeNodeRunner(var nodeName: String) {
         reader.close()
         stringBuilder append new String(writer.toByteArray)
         if (stringBuilder.indexOf(dataToReplace) == -1) {
-          logger.debug("Unable to find {} on file {} so replacement cannot be done", Array[AnyRef](dataToReplace, file))
+          logger.debug("Unable to find {} on file {} so replacement cannot be done", Array[String](dataToReplace, file))
         } else {
           stringBuilder.replace(stringBuilder.indexOf(dataToReplace), stringBuilder.indexOf(dataToReplace) + dataToReplace.length(), newData)
 
@@ -179,10 +179,10 @@ abstract class KevoreeNodeRunner(var nodeName: String) {
     }
     val logFile = logFolder + File.separator + nodeName + ".log"
     outFile = new File(logFile + ".out")
-    logger.info("writing logs about {} on {}", Array[AnyRef](nodeName, outFile.getAbsolutePath))
+    logger.info("writing logs about {} on {}", Array[String](nodeName, outFile.getAbsolutePath))
     new Thread(new ProcessStreamFileLogger(process.getInputStream, outFile)).start()
     errFile = new File(logFile + ".err")
-    logger.info("writing logs about {} on {}", Array[AnyRef](nodeName, errFile.getAbsolutePath))
+    logger.info("writing logs about {} on {}", Array[String](nodeName, errFile.getAbsolutePath))
     new Thread(new ProcessStreamFileLogger(process.getErrorStream, errFile)).start()
   }
 }

@@ -66,7 +66,7 @@ object PlanningManager {
                 subNode =>
                   node1.findByPath("hosts[" + subNode.getName + "]", classOf[ContainerNode]) match {
                     case null => {
-                      logger.debug("add a {} adaptation primitive with {} as parameter", Array[AnyRef](HostNode.REMOVE_NODE, subNode.getName))
+                      logger.debug("add a {} adaptation primitive with {} as parameter", Array[String](HostNode.REMOVE_NODE, subNode.getName))
                       val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                       command.setPrimitiveType(removeNodeType)
                       command.setRef(subNode)
@@ -84,7 +84,7 @@ object PlanningManager {
               logger.debug("Unable to find the current node on the target model, We remove all the hosted nodes from the current model")
               node.getHosts.foreach {
                 subNode =>
-                  logger.debug("add a {} adaptation primitive with {} as parameter", Array[AnyRef](HostNode.REMOVE_NODE, subNode.getName))
+                  logger.debug("add a {} adaptation primitive with {} as parameter", Array[String](HostNode.REMOVE_NODE, subNode.getName))
                   val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                   command.setPrimitiveType(removeNodeType)
                   command.setRef(subNode)
@@ -108,7 +108,7 @@ object PlanningManager {
                 subNode =>
                   node1.findByPath("hosts[" + subNode.getName + "]", classOf[ContainerNode]) match {
                     case null => {
-                      logger.debug("add a {} adaptation primitive with {} as parameter", Array[AnyRef](HostNode.ADD_NODE, subNode.getName))
+                      logger.debug("add a {} adaptation primitive with {} as parameter", Array[String](HostNode.ADD_NODE, subNode.getName))
                       val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                       command.setPrimitiveType(addNodeType)
                       command.setRef(subNode)
@@ -126,7 +126,7 @@ object PlanningManager {
               logger.debug("Unable to find the current node on the current model, We add all the hosted nodes from the target model")
               node.getHosts.foreach {
                 subNode =>
-                  logger.debug("add a {} adaptation primitive with {} as parameter", Array[AnyRef](HostNode.ADD_NODE, subNode.getName))
+                  logger.debug("add a {} adaptation primitive with {} as parameter", Array[String](HostNode.ADD_NODE, subNode.getName))
                   val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                   command.setPrimitiveType(addNodeType)
                   command.setRef(subNode)

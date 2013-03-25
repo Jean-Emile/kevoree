@@ -88,7 +88,7 @@ object IaaSKloudReasoner extends KloudReasoner {
             kengine append "updateDictionary {groupName} {ip='{ip}'}@{nodeName}"
         }
 
-        logger.debug("Add {} as child of {}", Array[AnyRef](node.getName, parentName))
+        logger.debug("Add {} as child of {}", Array[String](node.getName, parentName))
         doSomething = true
       }
     }
@@ -123,7 +123,7 @@ object IaaSKloudReasoner extends KloudReasoner {
           kengine.addVariable("nodeType", node.getTypeDefinition.getName)
           // TODO maybe we need to merge the deploy unit that offer this type if it is not one of our types
           // add node
-          logger.debug("addNode {} : {}", Array[AnyRef](node.getName, node.getTypeDefinition.getName))
+          logger.debug("addNode {} : {}", Array[String](node.getName, node.getTypeDefinition.getName))
           kengine append "addNode {nodeName} : {nodeType}"
           // set dictionary attributes of node
           if (node.getDictionary != null) {

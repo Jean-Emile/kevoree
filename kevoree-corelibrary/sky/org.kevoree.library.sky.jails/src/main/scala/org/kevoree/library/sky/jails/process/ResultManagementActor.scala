@@ -14,7 +14,7 @@ class ResultManagementActor extends Actor {
 
   //case class STOP()
 
-  case class WAITINGFOR (timeout: Int)
+  case class WAITINGFOR (timeout: Long)
 
   case class STARTING ()
 
@@ -33,7 +33,7 @@ class ResultManagementActor extends Actor {
     this ! STARTING()
   }
 
-  def waitingFor (timeout: Int): (Boolean, String) = {
+  def waitingFor (timeout: Long): (Boolean, String) = {
     (this !? WAITINGFOR(timeout)).asInstanceOf[(Boolean, String)]
   }
 
