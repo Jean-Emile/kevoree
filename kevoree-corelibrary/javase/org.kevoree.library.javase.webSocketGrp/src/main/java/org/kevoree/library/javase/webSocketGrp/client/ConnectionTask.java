@@ -32,6 +32,7 @@ public class ConnectionTask extends Thread {
     public void run() {
         while (run) {
             try {
+                logger.debug("ConnectionTask: creating new client and tries to connect to {}", uri);
                 WebSocketClient client = new WebSocketClient(uri) {
                     @Override
                     public void onMessage(ByteBuffer bytes) {
@@ -40,17 +41,18 @@ public class ConnectionTask extends Thread {
                 };
                 boolean connSucceeded = client.connectBlocking();
                 if (connSucceeded) {
-                    handler.onConnectionSucceed(client);
+                    handler.onConnectionSucceeded(client);
                     return;
+                } else {
+                    logger.debug("Unable to connect to {}, new attempt in {}ms", uri, loopTime);
                 }
             } catch (InterruptedException e) {
                 logger.warn("", e);
-            } finally {
-                logger.debug("Unable to connect to {}, new attempt in {}ms", uri, loopTime);
-                // take a nap
-                try { Thread.sleep(loopTime); }
-                catch (InterruptedException e1) {/* one does not simply care */}
             }
+
+            // take a nap
+            try { Thread.sleep(loopTime); }
+            catch (InterruptedException e) {/* one does not simply care */}
         }
         handler.onStop();
         logger.debug("ConnectionTask on {} stopped", uri);
@@ -65,7 +67,7 @@ public class ConnectionTask extends Thread {
     // ===============
     public interface Handler {
         void onMessage(ByteBuffer bytes);
-        void onConnectionSucceed(WebSocketClient client);
+        void onConnectionSucceeded(WebSocketClient client);
         void onStop();
     }
 }

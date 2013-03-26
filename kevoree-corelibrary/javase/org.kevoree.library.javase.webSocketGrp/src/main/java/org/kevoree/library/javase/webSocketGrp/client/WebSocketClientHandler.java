@@ -59,6 +59,7 @@ public class WebSocketClientHandler {
 
         if (tasks.containsKey(uri)) {
             tasks.get(uri).kill();
+            tasks.remove(uri);
             res = true;
         } else {
             res = false;
@@ -68,8 +69,8 @@ public class WebSocketClientHandler {
     }
 
     public void stopAllTasks() {
-        for (ConnectionTask task : tasks.values()) {
-            task.kill();
+        for (URI uri : tasks.keySet()) {
+            stopTask(uri);
         }
     }
 
@@ -80,7 +81,7 @@ public class WebSocketClientHandler {
         }
 
         @Override
-        public void onConnectionSucceed(WebSocketClient client) {
+        public void onConnectionSucceeded(WebSocketClient client) {
             logger.debug("DefaultHandler: onConnectionSucceed(WebSocketClient) called.");
         }
 

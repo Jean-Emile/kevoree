@@ -22,8 +22,7 @@ import scala.Option;
 import java.io.*;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -41,7 +40,6 @@ import java.util.List;
 @ChannelTypeFragment
 public class WebSocketChannelMasterServer extends AbstractChannelFragment {
 
-    private static final String RES_TAG = "/ms_channel/";
     private static final int DEFAULT_MAX_QUEUED = 42;
 
     protected static final byte REGISTER = 0;
@@ -53,15 +51,15 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
     private WebServer server;
     private Integer port = null;
     private BiMap<WebSocketConnection, String> clients;
+    private WebSocketClientHandler wsClientHandler;
+    private Deque<MessageHolder> waitingQueue;
 
     @Start
     public void startChannel() throws Exception {
         logger.debug("START DAT CHAN");
 
-        // first of all, check if model is well written = ONE AND ONLY ONE MASTER SERVER
+        // first of all check if the model is alright
         checkNoMultipleMasterServer();
-
-        logger.debug("NO PROBLEM WITH MODEL CHECKER");
 
         // get "maxQueued" from dictionary or DEFAULT_MAX_QUEUED if there is any trouble getting it
         int maxQueued = DEFAULT_MAX_QUEUED;
@@ -82,25 +80,26 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
             // dictionary key "port" is defined so it means that this node wants to be a master server
             // it's ok: this node is gonna be the master server
             clients = HashBiMap.create();
+            waitingQueue = new ArrayDeque<MessageHolder>(maxQueued);
             server = WebServers.createWebServer(port);
-            server.add(RES_TAG+getNodeName(), serverHandler);
+            server.add("/" +getNodeName()+"/"+getName(), serverHandler);
             server.start();
 
             logger.debug("Channel WebSocket server started on ws://{}:{}{}", server.getUri().getHost(),
-                    server.getPort(), RES_TAG+getNodeName());
+                    server.getPort(), "/"+getNodeName()+"/"+getName());
 
         } else {
             // we are just a client initiating a connection to master server
             List<URI> uris = getMasterServerURIs();
-            final WebSocketClientHandler wsHandler = new WebSocketClientHandler();
-            wsHandler.setHandler(new ConnectionTask.Handler() {
+            wsClientHandler = new WebSocketClientHandler();
+            wsClientHandler.setHandler(new ConnectionTask.Handler() {
                 @Override
-                public void onConnectionSucceed(WebSocketClient cli) {
+                public void onConnectionSucceeded(WebSocketClient cli) {
                     // connection to master server succeed on one of the different URIs
                     logger.debug("Connection to master server {} succeeded", cli.getURI());
 
                     // stop all other connection attempts
-                    wsHandler.stopAllTasks();
+                    wsClientHandler.stopAllTasks();
 
                     try {
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -118,6 +117,8 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
 
                 @Override
                 public void onMessage(ByteBuffer bytes) {
+                    // if we end up here, it means that master server just forward
+                    // a Message for us, so process it
                     remoteDispatchByte(bytes.array());
                 }
 
@@ -127,7 +128,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                 }
             });
             for (URI uri : uris) {
-                wsHandler.startConnectionTask(uri);
+                wsClientHandler.startConnectionTask(uri);
             }
         }
     }
@@ -143,11 +144,27 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
             client.close();
             client = null;
         }
+
+        if (wsClientHandler != null) {
+            wsClientHandler.stopAllTasks();
+        }
     }
 
     @Update
-    public void updateChannel() throws MultipleMasterServerException {
+    public void updateChannel() throws Exception {
         // TODO
+//        checkNoMultipleMasterServer();
+        if (client != null) {
+            if (!client.getConnection().isOpen()) {
+                stopChannel();
+                startChannel();
+            }
+        }
+
+        if (server != null) {
+            stopChannel();
+            startChannel();
+        }
     }
 
     @Override
@@ -188,7 +205,16 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                         } else {
                             // remote node has not established a connection with master server yet
                             // or connection has been closed, so putting message in the waiting queue
-                            // TODO
+                            MessageHolder msgHolder = new MessageHolder(remoteNodeName, msg.getByteContent());
+                            try {
+                                waitingQueue.addFirst(msgHolder);
+                            } catch (IllegalStateException e) {
+                                // if we end up here the queue is full
+                                // so get rid of the oldest message
+                                waitingQueue.pollLast();
+                                // and add the new one
+                                waitingQueue.addFirst(msgHolder);
+                            }
                         }
 
                     } else {
@@ -226,7 +252,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                 List<String> ips = getAddresses(kfc.getNodeName());
 
                 for (String ip : ips) {
-                    uris.add(getWellFormattedURI(ip, port, kfc.getNodeName()));
+                    uris.add(getWellFormattedURI(ip, port, kfc.getNodeName(), kfc.getName()));
                 }
             }
         }
@@ -241,22 +267,23 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
         return ips;
     }
 
-    protected URI getWellFormattedURI(String host, int port, String nodeName) {
+    protected URI getWellFormattedURI(String host, int port, String nodeName, String chanName) {
         StringBuilder sb = new StringBuilder();
         sb.append("ws://");
         sb.append(host);
         sb.append(":");
         sb.append(port);
-        sb.append(RES_TAG);
+        sb.append("/");
         sb.append(nodeName);
+        sb.append("/");
+        sb.append(chanName);
         return URI.create(sb.toString());
     }
 
     private void checkNoMultipleMasterServer() throws MultipleMasterServerException {
-        logger.debug("checkNoMultipleMasterServer checkNoMultipleMasterServer checkNoMultipleMasterServer");
         int portPropertyCounter = 0;
 
-        logger.debug("getOtherFragment {} >> {}", getNodeName(), getOtherFragments().toString());
+        logger.debug("getName: {}, getModelElement(): {}, node: {}", getName(), getModelElement(), getNodeName());
 
         // check other fragment port property
         for (KevoreeChannelFragment kfc : getOtherFragments()) {
@@ -289,6 +316,26 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
         }
     }
 
+    private boolean waitingQueueContains(String nodeName) {
+        for (MessageHolder msg : waitingQueue) {
+            if (msg.getNodeName().equals(nodeName)) return true;
+        }
+        return false;
+    }
+
+    private List<byte[]> getPendingMessages(String nodeName) {
+        List<byte[]> pendingList = new ArrayList<byte[]>();
+
+        for (MessageHolder msg : waitingQueue) {
+            if (msg.getNodeName().equals(nodeName)) {
+                pendingList.add(msg.getData());
+                waitingQueue.remove(msg);
+            }
+        }
+
+        return pendingList;
+    }
+
     private BaseWebSocketHandler serverHandler = new BaseWebSocketHandler() {
         @Override
         public void onMessage(WebSocketConnection connection, String msg) throws Throwable {
@@ -303,8 +350,19 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
             switch (msg[0]) {
                 case REGISTER:
                     String nodeName = new String(msg, 1, msg.length-1);
-                    clients.put(connection, nodeName);
+                    if (clients.containsValue(nodeName)) {
+                        clients.inverse().get(nodeName).close();
+                    }
+                    clients.forcePut(connection, nodeName);
                     logger.debug("New registered client \"{}\" from {}", nodeName, connection.httpRequest().remoteAddress());
+
+                    List<byte[]> pendingList = getPendingMessages(nodeName);
+                    if (!pendingList.isEmpty()) {
+                        logger.debug("Sending pending messages from waiting queue to {} ...", nodeName);
+                        for (byte[] data : pendingList) {
+                            connection.send(data);
+                        }
+                    }
                     break;
 
                 case FORWARD:
@@ -334,6 +392,8 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                     break;
 
                 default:
+                    // message recipient is master server
+                    // process message
                     remoteDispatchByte(msg);
                     break;
             }
