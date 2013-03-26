@@ -160,7 +160,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
         }
     }
 
-    private void notifyPeersInternal(List<String> l) {
+    protected void notifyPeersInternal(List<String> l) {
         KevoreeMessage.Message.Builder messageBuilder = KevoreeMessage.Message.newBuilder().setDestName(getName()).setDestNodeName(getNodeName());
         messageBuilder.setContentClass(Gossip.UpdatedValueNotification.class.getName()).setContent(Gossip.UpdatedValueNotification.newBuilder().build().toByteString());
         for (String peer : l) {
