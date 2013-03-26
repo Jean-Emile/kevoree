@@ -88,9 +88,8 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 			clients = new HashMap<WebSocketConnection, String>();
 			
 			startServer();
-		}
 
-		if (port == null) {
+		} else {
 			// this node is just a client
 			Map<String, Integer> serverEntries = getMasterServerEntries();
 			if (serverEntries.isEmpty()) {

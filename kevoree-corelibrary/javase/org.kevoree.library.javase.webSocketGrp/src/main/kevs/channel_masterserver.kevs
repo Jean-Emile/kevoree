@@ -1,0 +1,28 @@
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.javaseNode/{kevoree.version}'
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.fakeDomo/{kevoree.version}'
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.webSocketGrp/{kevoree.version}'
+
+addNode node1:JavaSENode {logLevel="DEBUG"}
+addNode node0:JavaSENode {logLevel="DEBUG"}
+
+addGroup sync:BasicGroup
+
+addToGroup sync node1
+addToGroup sync node0
+
+addComponent console0@node0 : FakeConsole
+addComponent console1@node1 : FakeConsole
+
+addChannel ws0 : WebSocketChannelMasterServer
+addChannel ws1 : WebSocketChannelMasterServer
+
+bind console0.showText@node0 => ws1
+bind console0.textEntered@node0 => ws0
+
+bind console1.showText@node1 => ws0
+bind console1.textEntered@node1 => ws1
+
+updateDictionary sync {port="8001"}@node1
+updateDictionary sync {port="8000"}@node0
+updateDictionary ws0 {port="8003"}@node0
+updateDictionary ws1 {port="8004"}@node1

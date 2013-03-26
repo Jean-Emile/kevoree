@@ -38,6 +38,11 @@
             <artifactId>org.kevoree.library.javase.basicGossiper</artifactId>
             <version>${kevoree.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>14.0.1</version>
+        </dependency>
     </dependencies>
 
     <pluginRepositories>
@@ -92,49 +97,8 @@
                 <artifactId>org.kevoree.platform.mavenrunner</artifactId>
                 <version>${kevoree.version}</version>
                 <configuration>
-                    <!-- === MAIN KEVS conf === -->
-                    <!--<targetNode>minicloud</targetNode>-->
-                    <!-- === MAIN KEVS conf === -->
-
-                    <!-- === SIMPLE KEVS conf === -->
-                    <!--<targetNode>node0</targetNode>-->
-                    <!--<model>./src/main/kevs/simple.kevs</model>-->
-                    <!-- === SIMPLE KEVS conf === -->
-
-                    <!-- === MASTER SERVER KEVS conf === -->
-                    <!--<targetNode>minicloud</targetNode>-->
-                    <!--<model>./src/main/kevs/master_server.kevs</model>-->
-                    <!-- === MASTER SERVER KEVS conf === -->
-
-                    <!-- === ECHOER KEVS conf === -->
-                    <!--<targetNode>minicloud</targetNode>-->
-                    <!--<model>./src/main/kevs/echoer.kevs</model>-->
-                    <!-- === ECHOER KEVS conf === -->
-
-                    <!-- === QUEUER KEVS conf === -->
-                    <!--<targetNode>minicloud</targetNode>-->
-                    <!--<model>./src/main/kevs/queuer.kevs</model>-->
-                    <!-- === QUEUER KEVS conf === -->
-
-                    <!-- === QUEUER_TESTER KEVS conf === -->
-                    <!--<targetNode>minicloud</targetNode> -->
-                    <!--<model>./src/main/kevs/queuer_tester.kevs</model> -->
-                    <!-- === QUEUER_TESTER KEVS conf === -->
-
-                    <!-- QUEUER_TEST KEVS conf -->
-                    <!--<targetNode>node2</targetNode> -->
-                    <!--<model>./src/main/kevs/queuer_test.kevs</model> -->
-                    <!-- QUEUER_TEST KEVS conf -->
-
-                    <!-- === GOSSIPER KEVS conf === -->
-                    <!--<targetNode>minicloud</targetNode>-->
-                    <!--<model>./src/main/kevs/gossiper.kevs</model>-->
-                    <!-- === GOSSIPER KEVS conf === -->
-
-                    <!-- === CHANNEL KEVS conf === -->
                     <targetNode>node0</targetNode>
-                    <model>./src/main/kevs/channel_withoutKloud.kevs</model>
-                    <!-- === CHANNEL KEVS conf === -->
+                    <model>./src/main/kevs/channel_masterserver.kevs</model>
                 </configuration>
             </plugin>
         </plugins>
