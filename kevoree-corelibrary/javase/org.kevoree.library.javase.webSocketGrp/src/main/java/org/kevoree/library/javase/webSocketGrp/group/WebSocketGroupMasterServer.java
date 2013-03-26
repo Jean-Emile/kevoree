@@ -2,8 +2,10 @@ package org.kevoree.library.javase.webSocketGrp.group;
 
 import org.kevoree.ContainerNode;
 import org.kevoree.ContainerRoot;
+import org.kevoree.DeployUnit;
 import org.kevoree.Group;
 import org.kevoree.annotation.*;
+import org.kevoree.api.service.core.classloading.DeployUnitResolver;
 import org.kevoree.framework.AbstractGroupType;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.KevoreeXmiHelper;
@@ -14,10 +16,8 @@ import org.kevoree.library.javase.webSocketGrp.exception.NoMasterServerFoundExce
 import org.kevoree.library.javase.webSocketGrp.exception.NotAMasterServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.webbitserver.BaseWebSocketHandler;
-import org.webbitserver.WebServer;
-import org.webbitserver.WebServers;
-import org.webbitserver.WebSocketConnection;
+import org.webbitserver.*;
+import org.webbitserver.handler.StaticFileHandler;
 import scala.Option;
 
 import javax.swing.*;
@@ -26,12 +26,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Exchanger;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * WebSocketGroup that launches a server on the node fragment if and only if a
@@ -49,11 +53,20 @@ import java.util.concurrent.TimeUnit;
 @DictionaryType({
 		@DictionaryAttribute(name = "port", optional = true, fragmentDependant = true),
 		@DictionaryAttribute(name = "key"),
-		@DictionaryAttribute(name = "gui", defaultValue = "false", vals = {	"true", "false" })
+		@DictionaryAttribute(name = "gui", defaultValue = "false", vals = {	"true", "false" }),
+        // mvn_serv: tells wether or not you want a maven repo on the master node
+        @DictionaryAttribute(name = "mvn_repo", defaultValue = "false", vals = {"true", "false"}),
+        // indicate which port to use for the maven server
+        // yes I use "puertos" instead of "port" because the checker won't let me use
+        // a non-fragmentDependant port value otherwise cause the checker only speaks english
+        // I'm cool with the Spanish one "puerto"
+        @DictionaryAttribute(name = "repo_puerto", optional = true)
 })
 @Library(name = "JavaSE", names = "Android")
 @GroupType
-public class WebSocketGroupMasterServer extends AbstractGroupType {
+public class WebSocketGroupMasterServer extends AbstractGroupType implements DeployUnitResolver {
+
+    private static final int DEFAULT_MVN_PORT = 8042;
 
 	protected static final byte PUSH = 1;
 	protected static final byte PULL = 2;
@@ -68,6 +81,12 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 	private Integer port = null;
 	private int updatedClientCounter = 0;
 	private long startPushBroadcastTime;
+    private boolean mvnRepo = false;
+    private int mvnRepoPort = DEFAULT_MVN_PORT;
+    private ExecutorService pool = null;
+    private AtomicReference<ContainerRoot> cachedModel = new AtomicReference<ContainerRoot>();
+    private WebServer mvnServer;
+    private AtomicReference<List<String>> remoteURLS;
 
 	@Start
 	public void start() throws MultipleMasterServerException {
@@ -88,6 +107,25 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 			clients = new HashMap<WebSocketConnection, String>();
 			
 			startServer();
+
+            mvnRepo = Boolean.parseBoolean(getDictionary().get("mvn_repo").toString());
+            if (mvnRepo) {
+                try {
+                    mvnRepoPort = Integer.parseInt(getDictionary().get("repo_puerto").toString());
+                } catch (NumberFormatException e) {
+                    logger.warn("Unable to parse \"repo_port\" from dictionary. Using default value {} instead.", DEFAULT_MVN_PORT);
+                }
+
+                pool = Executors.newSingleThreadExecutor();
+                mvnServer = WebServers.createWebServer(mvnRepoPort);
+                mvnServer.add(new StaticFileHandler(System.getProperty("user.home").toString() + File.separator + ".m2" + File.separator + "repository"));
+                mvnServer.start();
+            } else {
+                remoteURLS = new AtomicReference<List<String>>();
+                remoteURLS.set(new ArrayList<String>());
+                getBootStrapperService().getKevoreeClassLoaderHandler().registerDeployUnitResolver(this);
+            }
+
 
 		} else {
 			// this node is just a client
@@ -384,6 +422,47 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 		}
 	}
 
+    @Override
+    public boolean preUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
+        cachedModel.set(proposedModel);
+        if (mvnRepo) {
+            pool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    ContainerRoot model = cachedModel.get();
+                    if (model != null) {
+                        for (DeployUnit du : model.getDeployUnits()) {
+                            logger.debug("CacheFile for DU : " + du.getUnitName() + ":" + du.getGroupName() + ":" + du.getVersion());
+                            File cachedFile = getBootStrapperService().resolveDeployUnit(du);
+                        }
+                    }
+                }
+            });
+        } else {
+            List<String> urls = new ArrayList<String>();
+            ContainerRoot model = getModelService().getLastModel();
+            for (Group group : model.getGroups()) {
+                if (group.getTypeDefinition().getName().equals(WebSocketGroupMasterServer.class.getSimpleName())) {
+                    for (ContainerNode child : group.getSubNodes()) {
+                        Object server = KevoreePropertyHelper.getProperty(group, "mvn_repo", true, child.getName());
+                        if (server != null) {
+                            logger.info("Cache Found on node " + child.getName());
+                            List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, child.getName(), org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+                            Object port = KevoreePropertyHelper.getProperty(child, "repo_puerto", false, null);
+                            for (String remoteIP : ips) {
+                                String url = "http://" + remoteIP + ":" + port;
+                                logger.info("Add URL " + url);
+                                urls.add(url);
+                            }
+                        }
+                    }
+                }
+            }
+            remoteURLS.set(urls);
+        }
+        return true;
+    }
+
 	@Update
 	public void update() throws MultipleMasterServerException {
 		logger.debug("UPDATE");
@@ -405,6 +484,7 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 			} else {
 				logger.debug("No update needed, server has kept the same state as before");
 			}
+
 		} else {
 			logger.debug("Updating client...");
 			// i'm just a client lets go stop/start me
@@ -412,6 +492,32 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 			stop();
 			start();
 		}
+
+        if (mvnRepo) {
+            // we were a mvn repo too
+            // now check if we still are one
+            if (Boolean.parseBoolean(getDictionary().get("mvn_repo").toString())) {
+                // yes we still are one
+                // do we need to restart the server ?
+                if (mvnRepoPort != Integer.parseInt(getDictionary().get("repo_puerto").toString())) {
+                    try {
+                        mvnRepoPort = Integer.parseInt(getDictionary().get("repo_puerto").toString());
+                    } catch (NumberFormatException e) {
+                        logger.warn("Unable to parse \"repo_port\" from dictionary. Using default value {} instead.", DEFAULT_MVN_PORT);
+                    }
+
+                    mvnServer = WebServers.createWebServer(mvnRepoPort);
+                    mvnServer.add(new StaticFileHandler(System.getProperty("user.home").toString() + File.separator + ".m2" + File.separator + "repository"));
+                    mvnServer.start();
+                    logger.debug("Maven repo server started on {}", mvnServer.getUri());
+                }
+            } else {
+                // no we do not want to be a maven repo anymore
+                // stoping maven server
+                mvnServer.stop();
+                mvnRepo = false;
+            }
+        }
 	}
 
 	protected void updateLocalModel(final ContainerRoot model) {
@@ -617,14 +723,9 @@ public class WebSocketGroupMasterServer extends AbstractGroupType {
 	}
 
     @Override
-    public boolean preUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
-        logger.debug("preUpdate");
-        return super.preUpdate(currentModel, proposedModel);
-    }
-
-    @Override
-    public boolean afterLocalUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
-        logger.debug("afterLocalUpdate");
-        return super.afterLocalUpdate(currentModel, proposedModel);
+    public File resolve(DeployUnit du) {
+        File resolved = getBootStrapperService().resolveArtifact(du.getUnitName(), du.getGroupName(), du.getVersion(), remoteURLS.get());
+        logger.info("DU " + du.getUnitName() + " from cache resolution " + (resolved != null));
+        return null;
     }
 }

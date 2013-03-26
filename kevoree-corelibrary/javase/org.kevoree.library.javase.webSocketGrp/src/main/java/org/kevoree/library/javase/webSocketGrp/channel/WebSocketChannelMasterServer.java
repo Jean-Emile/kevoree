@@ -152,6 +152,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
 
     @Update
     public void updateChannel() throws Exception {
+        logger.debug("UPDATE");
         if (client != null) {
             if (!client.getConnection().isOpen()) {
                 stopChannel();

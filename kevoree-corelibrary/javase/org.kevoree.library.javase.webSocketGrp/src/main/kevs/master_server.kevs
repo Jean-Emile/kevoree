@@ -13,7 +13,7 @@ addNode node1 : JavaSENode {logLevel = "DEBUG"}
 addChild node0@minicloud
 addChild node1@minicloud
 
-addGroup webSocketGrp : WebSocketGroupMasterServer {key = "foo"}
+addGroup webSocketGrp : WebSocketGroupMasterServer {key = "foo", mvn_repo = "true", repo_puerto = "8484"}
 addGroup sync : BasicGroup
 addToGroup sync minicloud
 addToGroup webSocketGrp minicloud
