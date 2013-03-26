@@ -152,8 +152,6 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
 
     @Update
     public void updateChannel() throws Exception {
-        // TODO
-//        checkNoMultipleMasterServer();
         if (client != null) {
             if (!client.getConnection().isOpen()) {
                 stopChannel();
