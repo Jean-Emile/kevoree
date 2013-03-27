@@ -44,7 +44,7 @@ public class WebSocketClientHandler {
         this.handler = handler;
     }
 
-    public void addConnectionTask(final URI uri) {
+    private void addConnectionTask(final URI uri) {
         ConnectionTask task = new ConnectionTask(uri, loopTime, handler);
         tasks.put(uri, task);
     }
@@ -55,7 +55,7 @@ public class WebSocketClientHandler {
     }
 
     public boolean stopTask(URI uri) {
-        boolean res = false;
+        boolean res;
 
         if (tasks.containsKey(uri)) {
             tasks.get(uri).kill();
@@ -86,7 +86,7 @@ public class WebSocketClientHandler {
         }
 
         @Override
-        public void onStop() {
+        public void onKilled() {
             logger.debug("DefaultHandler: onStop() called.");
         }
     };

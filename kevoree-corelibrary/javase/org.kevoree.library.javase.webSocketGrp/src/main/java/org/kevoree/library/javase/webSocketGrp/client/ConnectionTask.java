@@ -54,7 +54,7 @@ public class ConnectionTask extends Thread {
             try { Thread.sleep(loopTime); }
             catch (InterruptedException e) {/* one does not simply care */}
         }
-        handler.onStop();
+        handler.onKilled();
         logger.debug("ConnectionTask on {} stopped", uri);
     }
 
@@ -68,6 +68,6 @@ public class ConnectionTask extends Thread {
     public interface Handler {
         void onMessage(ByteBuffer bytes);
         void onConnectionSucceeded(WebSocketClient client);
-        void onStop();
+        void onKilled();
     }
 }

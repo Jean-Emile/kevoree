@@ -123,11 +123,12 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                 }
 
                 @Override
-                public void onStop() {
+                public void onKilled() {
 
                 }
             });
             for (URI uri : uris) {
+                logger.debug("Add {} to WebSocketClientHandler", uri.toString());
                 wsClientHandler.startConnectionTask(uri);
             }
         }
