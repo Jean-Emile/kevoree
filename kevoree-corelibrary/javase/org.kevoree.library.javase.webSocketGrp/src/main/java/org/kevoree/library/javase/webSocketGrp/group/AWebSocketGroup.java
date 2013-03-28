@@ -75,13 +75,12 @@ import java.util.concurrent.atomic.AtomicReference;
         // mvn_serv: tells wether or not you want a maven repo on the master node
         @DictionaryAttribute(name = "mvn_repo", defaultValue = "false", vals = {"true", "false"}),
         // indicate which port to use for the maven server
-        // yes I use "puertos" instead of "port" because the checker won't let me use
+        // yes I use "puerto" instead of "port" because the checker won't let me use
         // a non-fragmentDependant port value otherwise cause the checker only speaks english
         // I'm cool with the Spanish one "puerto"
         @DictionaryAttribute(name = "repo_puerto", optional = true),
         @DictionaryAttribute(name = "reconnectDelay", defaultValue = "5000", optional = false, fragmentDependant = true)
 })
-@Library(name = "JavaSE", names = "Android")
 @GroupType
 public abstract class AWebSocketGroup extends AbstractGroupType implements DeployUnitResolver {
 
