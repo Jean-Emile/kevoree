@@ -540,7 +540,7 @@
 </mappings>
 </provided>
 </typeDefinitions>
-<typeDefinitions xsi:type="kevoree:GroupType" name="WebSocketGroupMasterServer" factoryBean="org.kevoree.library.javase.webSocketGrp.group.WebSocketGroupMasterServerFactory" bean="org.kevoree.library.javase.webSocketGrp.group.WebSocketGroupMasterServer" startMethod="start" stopMethod="stop" updateMethod="update" deployUnits="//@deployUnits.25">
+<typeDefinitions xsi:type="kevoree:GroupType" name="WebSocketGroupMasterServer" factoryBean="org.kevoree.library.javase.webSocketGrp.group.WebSocketGroupMasterServerFactory" bean="org.kevoree.library.javase.webSocketGrp.group.WebSocketGroupMasterServerOld" startMethod="start" stopMethod="stop" updateMethod="update" deployUnits="//@deployUnits.25">
 <dictionaryType>
 <attributes xsi:type="kevoree:DictionaryAttribute" name="port" optional="true" state="false" fragmentDependant="true">
 </attributes>
@@ -656,7 +656,7 @@
 </typeDefinitions>
 <typeDefinitions xsi:type="kevoree:ChannelType" name="defMSG" factoryBean="org.kevoree.library.defaultChannels.defMSGFactory" bean="org.kevoree.library.defaultChannels.defMSG" startMethod="startHello" stopMethod="stopHello" updateMethod="updateHello" lowerBindings="0" upperBindings="0" lowerFragments="0" upperFragments="0" deployUnits="//@deployUnits.38">
 </typeDefinitions>
-<typeDefinitions xsi:type="kevoree:GroupType" name="WebSocketGroupQueuer" factoryBean="org.kevoree.library.javase.webSocketGrp.group.WebSocketGroupQueuerFactory" bean="org.kevoree.library.javase.webSocketGrp.group.WebSocketGroupQueuer" startMethod="start" stopMethod="stop" updateMethod="update" deployUnits="//@deployUnits.25" superTypes="//@typeDefinitions.27 //@typeDefinitions.46">
+<typeDefinitions xsi:type="kevoree:GroupType" name="WebSocketGroupQueuer" factoryBean="org.kevoree.library.javase.webSocketGrp.group.WebSocketGroupQueuerFactory" bean="org.kevoree.library.javase.webSocketGrp.group.WebSocketGroupQueuerOld" startMethod="start" stopMethod="stop" updateMethod="update" deployUnits="//@deployUnits.25" superTypes="//@typeDefinitions.27 //@typeDefinitions.46">
 <dictionaryType>
 <attributes xsi:type="kevoree:DictionaryAttribute" name="port" optional="true" state="false" fragmentDependant="true">
 </attributes>
@@ -852,7 +852,7 @@
 </parameters>
 </operations>
 </typeDefinitions>
-<typeDefinitions xsi:type="kevoree:GroupType" name="WebSocketGroupEchoer" factoryBean="org.kevoree.library.javase.webSocketGrp.group.WebSocketGroupEchoerFactory" bean="org.kevoree.library.javase.webSocketGrp.group.WebSocketGroupEchoer" startMethod="start" stopMethod="stop" updateMethod="update" deployUnits="//@deployUnits.25" superTypes="//@typeDefinitions.27">
+<typeDefinitions xsi:type="kevoree:GroupType" name="WebSocketGroupEchoer" factoryBean="org.kevoree.library.javase.webSocketGrp.group.WebSocketGroupEchoerFactory" bean="org.kevoree.library.javase.webSocketGrp.group.WebSocketGroupEchoerOld" startMethod="start" stopMethod="stop" updateMethod="update" deployUnits="//@deployUnits.25" superTypes="//@typeDefinitions.27">
 <dictionaryType>
 <attributes xsi:type="kevoree:DictionaryAttribute" name="port" optional="true" state="false" fragmentDependant="true">
 </attributes>
