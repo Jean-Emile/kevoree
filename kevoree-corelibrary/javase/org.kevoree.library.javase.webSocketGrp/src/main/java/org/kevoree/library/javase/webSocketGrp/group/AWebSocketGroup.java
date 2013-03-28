@@ -82,6 +82,7 @@ import java.util.concurrent.atomic.AtomicReference;
         @DictionaryAttribute(name = "reconnectDelay", defaultValue = "5000", optional = false, fragmentDependant = true)
 })
 @Library(name = "JavaSE", names = "Android")
+@GroupType
 public abstract class AWebSocketGroup extends AbstractGroupType implements DeployUnitResolver {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -121,7 +122,7 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
     protected AtomicReference<ContainerRoot> cachedModel = new AtomicReference<ContainerRoot>();
 
     @Start
-    private void startGroup() throws Exception {
+    public void startWSGroup() throws Exception {
         // first of all : check if model is ok
         checkNoMultipleMasterServer();
 
@@ -169,7 +170,7 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
     }
 
     @Stop
-    private void stopGroup() {
+    public void stopWSGroup() {
         if (isClient) {
             localStopClient();
             onClientStop();
@@ -180,7 +181,7 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
     }
 
     @Update
-    private void updateGroup() throws Exception {
+    public void updateWSGroup() throws Exception {
         if (isClient) {
             localClientUpdate();
             onClientUpdate();
@@ -436,8 +437,8 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
             }
 
             if (hasChanged) {
-                stopGroup();
-                startGroup();
+                stopWSGroup();
+                startWSGroup();
             }
         }
     }
@@ -446,8 +447,8 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
         if (server != null) {
             int portProp = Integer.parseInt(getDictionary().get("port").toString());
             if (portProp != port) {
-                stopGroup();
-                startGroup();
+                stopWSGroup();
+                startWSGroup();
             }
         }
     }
@@ -618,7 +619,8 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
     protected void onMasterServerCloseEvent(WebSocketConnection conn) {}
     protected abstract void onServerPush(ContainerRoot model, String masterServerNodeName, List<URI> addresses)
             throws MultipleMasterServerException, NoMasterServerFoundException;
-    protected abstract ContainerRoot onServerPull(String masterServerNodeName, List<URI> addresses) throws Exception;
+    protected abstract ContainerRoot onServerPull(String masterServerNodeName, List<URI> addresses)
+            throws Exception;
     protected abstract void onServerTriggerModelUpdate();
 
     //========================================

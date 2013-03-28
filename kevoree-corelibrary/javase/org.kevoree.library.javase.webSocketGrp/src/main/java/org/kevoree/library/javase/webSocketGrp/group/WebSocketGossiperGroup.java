@@ -51,8 +51,6 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
     private static final byte PUSH = 1;
     private static final byte PULL = 2;
 
-
-
     private GossiperProcess processValue;
     private INetworkSender netSender = new NetworkSender();
     private WebServer server;
