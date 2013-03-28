@@ -21,7 +21,7 @@ import java.util.Map;
  * Date: 3/28/13
  * Time: 10:46 AM
  *
- * This WebSocketGroup do the exact same work as WebSocketGroupEchoerOld but
+ * This WebSocketGroup do the exact same work as WebSocketGroupEchoer but
  * it adds a handler to queue the push requests to the nodes that have not
  * already established a connection to the master server.
  */

@@ -13,7 +13,7 @@ import org.kevoree.library.javase.webSocketGrp.exception.NotAMasterServerExcepti
  * Date: 3/28/13
  * Time: 10:42 AM
  *
- * This WebSocketGroup do the exact same work as WebSocketGroupMasterServerOld but it adds
+ * This WebSocketGroup do the exact same work as WebSocketGroupMasterServer but it adds
  * more flexibility for push requests.
  * With this group you are not forced to push a model on the master server node. Each node can
  * process the request: if the node is just a client it will forward the push request to the master server
