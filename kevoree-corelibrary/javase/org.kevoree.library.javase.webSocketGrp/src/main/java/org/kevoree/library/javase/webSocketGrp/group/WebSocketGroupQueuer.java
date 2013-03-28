@@ -90,9 +90,9 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
     }
 
     @Override
-    protected void onMasterServerRegisterEvent(WebSocketConnection connection,
-                                               String nodeName) {
+    protected void onMasterServerRegisterEvent(WebSocketConnection connection, String nodeName) {
         super.onMasterServerRegisterEvent(connection, nodeName);
+
         if (waitingQueue.containsKey(nodeName)) {
             // if we ends up here, it means that this node wasn't connected
             // when a push request was initiated earlier and though it has

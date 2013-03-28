@@ -11,55 +11,42 @@ import java.nio.ByteBuffer;
  * User: leiko
  * Date: 3/26/13
  * Time: 9:56 AM
- * To change this template use File | Settings | File Templates.
+ *
  */
-public class ConnectionTask extends Thread {
+public class ConnectionTask implements Runnable {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private URI uri;
     private Handler handler;
-    private long loopTime;
-    private boolean run = true;
 
-    public ConnectionTask(URI uri, long loopTime, Handler handler) {
+    public ConnectionTask(URI uri, Handler handler) {
         this.uri = uri;
         this.handler = handler;
-        this.loopTime = loopTime;
     }
 
     @Override
     public void run() {
-        while (run) {
-            try {
-                logger.debug("ConnectionTask: creating new client and tries to connect to {}", uri);
-                WebSocketClient client = new WebSocketClient(uri) {
-                    @Override
-                    public void onMessage(ByteBuffer bytes) {
-                        handler.onMessage(bytes);
-                    }
-                };
-                boolean connSucceeded = client.connectBlocking();
-                if (connSucceeded) {
-                    handler.onConnectionSucceeded(client);
-                    return;
-                } else {
-                    logger.debug("Unable to connect to {}, new attempt in {}ms", uri, loopTime);
+        logger.debug("[START] ConnectionTask: trying to connect to {} ...", uri);
+        try {
+            WebSocketClient client = new WebSocketClient(uri) {
+                @Override
+                public void onMessage(ByteBuffer bytes) {
+                    handler.onMessage(bytes);
                 }
-            } catch (InterruptedException e) {
-                logger.warn("", e);
+            };
+
+            boolean connSucceeded = client.connectBlocking();
+
+            if (connSucceeded) {
+                handler.onConnectionSucceeded(client);
+                return;
+            } else {
+                logger.debug("Unable to connect to {}", uri);
             }
-
-            // take a nap
-            try { Thread.sleep(loopTime); }
-            catch (InterruptedException e) {/* one does not simply care */}
+        } catch (InterruptedException e) {
+            logger.debug("[STOP] ConnectionTask to {} = interrupted", uri);
         }
-        handler.onKilled();
-        logger.debug("ConnectionTask on {} stopped", uri);
-    }
-
-    public void kill() {
-        this.run = false;
     }
 
     // ===============
@@ -68,6 +55,5 @@ public class ConnectionTask extends Thread {
     public interface Handler {
         void onMessage(ByteBuffer bytes);
         void onConnectionSucceeded(WebSocketClient client);
-        void onKilled();
     }
 }

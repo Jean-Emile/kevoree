@@ -97,8 +97,8 @@
                 <artifactId>org.kevoree.platform.mavenrunner</artifactId>
                 <version>${kevoree.version}</version>
                 <configuration>
-                    <targetNode>node0</targetNode>
-                    <model>./src/main/kevs/simple.kevs</model>
+                    <targetNode>minicloud</targetNode>
+                    <model>./src/main/kevs/channel.kevs</model>
                 </configuration>
             </plugin>
         </plugins>

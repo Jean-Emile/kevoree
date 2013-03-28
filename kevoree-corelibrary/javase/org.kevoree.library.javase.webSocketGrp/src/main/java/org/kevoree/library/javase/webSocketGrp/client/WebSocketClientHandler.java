@@ -5,8 +5,9 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created with IntelliJ IDEA.
@@ -23,12 +24,12 @@ public class WebSocketClientHandler {
 
     private long loopTime;
     private ConnectionTask.Handler handler;
-    private Map<URI, ConnectionTask> tasks;
+    private ScheduledExecutorService pool;
 
     public WebSocketClientHandler(long loopTime) {
-        this.tasks = new HashMap<URI, ConnectionTask>();
         this.loopTime = loopTime;
         this.handler = defaultHandler;
+        this.pool = Executors.newScheduledThreadPool(10);
     }
 
     public WebSocketClientHandler(ConnectionTask.Handler handler) {
@@ -44,34 +45,12 @@ public class WebSocketClientHandler {
         this.handler = handler;
     }
 
-    private void addConnectionTask(final URI uri) {
-        ConnectionTask task = new ConnectionTask(uri, loopTime, handler);
-        tasks.put(uri, task);
-    }
-
     public void startConnectionTask(URI uri) {
-        addConnectionTask(uri);
-        tasks.get(uri).start();
-    }
-
-    public boolean stopTask(URI uri) {
-        boolean res;
-
-        if (tasks.containsKey(uri)) {
-            tasks.get(uri).kill();
-            tasks.remove(uri);
-            res = true;
-        } else {
-            res = false;
-        }
-
-        return res;
+        pool.scheduleWithFixedDelay(new ConnectionTask(uri, handler), 0, loopTime, TimeUnit.MILLISECONDS);
     }
 
     public void stopAllTasks() {
-        for (URI uri : tasks.keySet()) {
-            stopTask(uri);
-        }
+        this.pool.shutdownNow();
     }
 
     private ConnectionTask.Handler defaultHandler = new ConnectionTask.Handler() {
@@ -83,11 +62,6 @@ public class WebSocketClientHandler {
         @Override
         public void onConnectionSucceeded(WebSocketClient client) {
             logger.debug("DefaultHandler: onConnectionSucceed(WebSocketClient) called.");
-        }
-
-        @Override
-        public void onKilled() {
-            logger.debug("DefaultHandler: onStop() called.");
         }
     };
 }
