@@ -97,7 +97,7 @@
                 <artifactId>org.kevoree.platform.mavenrunner</artifactId>
                 <version>${kevoree.version}</version>
                 <configuration>
-                    <targetNode>node1</targetNode>
+                    <targetNode>node0</targetNode>
                     <model>./src/main/kevs/channel_masterserver.kevs</model>
                 </configuration>
             </plugin>

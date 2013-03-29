@@ -4,17 +4,17 @@ merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.webSocketGr
 
 addNode node0:JavaSENode {logLevel="DEBUG"}
 addNode node1:JavaSENode {logLevel="DEBUG"}
-addNode node2:JavaSENode {logLevel="DEBUG"}
+//addNode node2:JavaSENode {logLevel="DEBUG"}
 
 addGroup sync:BasicGroup
 
 addToGroup sync node0
 addToGroup sync node1
-addToGroup sync node2
+//addToGroup sync node2
 
 addComponent console0@node0 : FakeConsole
 addComponent console1@node1 : FakeConsole
-addComponent console2@node2 : FakeConsole
+//addComponent console2@node2 : FakeConsole
 
 //addChannel ws0 : WebSocketChannelMasterServer
 //addChannel ws1 : WebSocketChannelMasterServer
@@ -27,7 +27,7 @@ addComponent console2@node2 : FakeConsole
 
 updateDictionary sync {port="8000"}@node0
 updateDictionary sync {port="8001"}@node1
-updateDictionary sync {port="8002"}@node2
+//updateDictionary sync {port="8002"}@node2
 
 //updateDictionary ws0 {port="8003"}@node0
 //updateDictionary ws1 {port="8004"}@node1
