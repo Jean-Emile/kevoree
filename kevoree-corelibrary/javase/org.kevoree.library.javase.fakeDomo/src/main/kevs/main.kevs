@@ -8,9 +8,9 @@ addNode node0 : JavaSENode
 addComponent light@node0 : FakeSimpleLight
 addComponent sw@node0 : FakeSimpleSwitch
 
-addChannel onQ : defMSGT
+addChannel onQ : defMSG
 addChannel offQ : defMSGT
-addChannel toggleQ : defSERVICET
+addChannel toggleQ : defSERVICE
 
 bind light.on@node0 => onQ
 bind light.off@node0 => offQ

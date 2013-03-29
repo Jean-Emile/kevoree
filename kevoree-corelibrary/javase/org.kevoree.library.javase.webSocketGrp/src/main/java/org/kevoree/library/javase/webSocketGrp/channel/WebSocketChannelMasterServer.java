@@ -34,7 +34,7 @@ import java.util.*;
 @Library(name = "JavaSE", names = "Android")
 @DictionaryType({
         @DictionaryAttribute(name = "port", fragmentDependant = true, optional = true),
-        @DictionaryAttribute(name = "replay", defaultValue = "true", vals = {"true", "false"}),
+        @DictionaryAttribute(name = "use_queue", defaultValue = "true", vals = {"true", "false"}),
         @DictionaryAttribute(name = "maxQueued", defaultValue = "42")
 })
 @ChannelTypeFragment
@@ -53,6 +53,8 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
     private BiMap<WebSocketConnection, String> clients;
     private WebSocketClientHandler wsClientHandler;
     private Deque<MessageHolder> waitingQueue;
+    private int maxQueued = DEFAULT_MAX_QUEUED;
+    private boolean useQueue = true;
 
     @Start
     public void startChannel() throws Exception {
@@ -62,7 +64,6 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
         checkNoMultipleMasterServer();
 
         // get "maxQueued" from dictionary or DEFAULT_MAX_QUEUED if there is any trouble getting it
-        int maxQueued = DEFAULT_MAX_QUEUED;
         try {
             maxQueued = Integer.parseInt(getDictionary().get("maxQueued").toString());
             if (maxQueued < 0) throw new NumberFormatException();
@@ -70,6 +71,26 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
         } catch (NumberFormatException e) {
             logger.error("maxQueued attribute must be a valid positive integer number");
         }
+
+        useQueue = Boolean.parseBoolean(getDictionary().get("use_queue").toString());
+
+        // create queue with that property value
+        if (waitingQueue != null) {
+            // this is an update, keep old values in the new waiting queue
+            Deque<MessageHolder> bkpQueue = new ArrayDeque<MessageHolder>(waitingQueue);
+            // create the fresh new waitingQueue
+            waitingQueue = new ArrayDeque<MessageHolder>(maxQueued);
+            try {
+                // try to add all the old values to the new one
+                waitingQueue.addAll(bkpQueue);
+            } catch (IllegalStateException e) {
+                logger.warn("\"maxQueued\" property has been reduced since last update, dropping some pending messages...");
+            }
+        } else {
+            // this is not an update
+            waitingQueue = new ArrayDeque<MessageHolder>(maxQueued);
+        }
+
 
         Object portVal = getDictionary().get("port");
         if (portVal != null) {
@@ -80,13 +101,12 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
             // dictionary key "port" is defined so it means that this node wants to be a master server
             // it's ok: this node is gonna be the master server
             clients = HashBiMap.create();
-            waitingQueue = new ArrayDeque<MessageHolder>(maxQueued);
             server = WebServers.createWebServer(port);
             server.add("/" +getNodeName()+"/"+getName(), serverHandler);
             server.start();
 
-            logger.debug("Channel WebSocket server started on ws://{}:{}{}", server.getUri().getHost(),
-                    server.getPort(), "/"+getNodeName()+"/"+getName());
+            logger.debug("[SERVER] Started on ws://{}:{}{} (use_queue = {}, maxQueued = {})",
+                    server.getUri().getHost(), server.getPort(), "/"+getNodeName()+"/"+getName(), useQueue, maxQueued);
 
         } else {
             // we are just a client initiating a connection to master server
@@ -96,7 +116,8 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                 @Override
                 public void onConnectionSucceeded(WebSocketClient cli) {
                     // connection to master server succeed on one of the different URIs
-                    logger.debug("Connection to master server {} succeeded", cli.getURI());
+                    logger.debug("[CLIENT] Connected to master server {} (use_queue = {}, maxQueued = {})",
+                            cli.getURI(), useQueue, maxQueued);
 
                     // stop all other connection attempts
                     wsClientHandler.stopAllTasks();
@@ -110,8 +131,35 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                         // keep a pointer on this winner
                         client = cli;
 
+                        // if use_queue is true, check if there is any message in the waitingQueue
+                        if (useQueue && !waitingQueue.isEmpty()) {
+                            logger.debug("[CLIENT] {} pending message{}, sending them right now...", waitingQueue.size(),
+                                    (waitingQueue.size() > 1 ? "s" : ""));
+                            Iterator<MessageHolder> it = waitingQueue.iterator();
+
+                            while (it.hasNext()) {
+                                // client is connected: sending data to master server
+                                MessageHolder msgHolder = it.next();
+                                client.send(msgHolder.getData());
+                                // remove sent message from queue
+                                waitingQueue.remove(msgHolder);
+                            }
+                        }
+
                     } catch (IOException e) {
                         logger.warn("Unable to send registration message to master server");
+                    }
+                }
+
+                @Override
+                public void onConnectionClosed(WebSocketClient cli) {
+                    logger.debug("Connection has been closed");
+                    if (cli.equals(client)) {
+                        logger.debug("Gonna try to reconnect to server...");
+                        client = null;
+                        for (URI uri : getMasterServerURIs()) {
+                            wsClientHandler.startConnectionTask(uri);
+                        }
                     }
                 }
 
@@ -120,11 +168,6 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                     // if we end up here, it means that master server just forward
                     // a Message for us, so process it
                     remoteDispatchByte(bytes.array());
-                }
-
-                @Override
-                public void onKilled() {
-
                 }
             });
             for (URI uri : uris) {
@@ -154,17 +197,8 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
     @Update
     public void updateChannel() throws Exception {
         logger.debug("UPDATE");
-        if (client != null) {
-            if (!client.getConnection().isOpen()) {
-                stopChannel();
-                startChannel();
-            }
-        }
-
-        if (server != null) {
-            stopChannel();
-            startChannel();
-        }
+        stopChannel();
+        startChannel();
     }
 
     @Override
@@ -186,55 +220,68 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
         return new ChannelFragmentSender() {
             @Override
             public Object sendMessageToRemote(Message message) {
-                // save the current node in the message if it isn't there already
-                if (!message.getPassedNodes().contains(getNodeName())) {
-                    message.getPassedNodes().add(getNodeName());
-                }
+                synchronized (WebSocketChannelMasterServer.this) {
 
-                try {
-                    // create a message packet
-                    MessagePacket msg = new MessagePacket(remoteNodeName, message);
+                    // save the current node in the message if it isn't there already
+                    if (!message.getPassedNodes().contains(getNodeName())) {
+                        message.getPassedNodes().add(getNodeName());
+                    }
 
-                    if (server != null) {
-                        // we are the master server
-                        if (clients.containsValue(remoteNodeName)) {
-                            // remoteNode is already connected to master server
-                            WebSocketConnection conn = clients.inverse().get(remoteNodeName);
-                            conn.send(msg.getByteContent());
+                    try {
+                        // create a message packet
+                        MessagePacket msg = new MessagePacket(remoteNodeName, message);
+                        byte[] msgBytes = msg.getByteContent();
+
+                        if (server != null) {
+                            // we are the master server
+                            if (clients.containsValue(remoteNodeName)) {
+                                // remoteNode is already connected to master server
+                                WebSocketConnection conn = clients.inverse().get(remoteNodeName);
+                                conn.send(msgBytes);
+
+                            } else {
+                                // remote node has not established a connection with master server yet
+                                // or connection has been closed, so putting message in the waiting queue
+                                if (useQueue) {
+                                    logger.debug("Message added to queue." +
+                                            " {} is not yet connected to master server on {}/{}", remoteNodeName, getName(), getNodeName());
+                                    addMessageToQueue(remoteNodeName, msgBytes);
+                                } else {
+                                    logger.debug("{} is not connected, \"use_queue = false : dropping message\"");
+                                }
+                            }
 
                         } else {
-                            // remote node has not established a connection with master server yet
-                            // or connection has been closed, so putting message in the waiting queue
-                            MessageHolder msgHolder = new MessageHolder(remoteNodeName, msg.getByteContent());
-                            try {
-                                waitingQueue.addFirst(msgHolder);
-                            } catch (IllegalStateException e) {
-                                // if we end up here the queue is full
-                                // so get rid of the oldest message
-                                waitingQueue.pollLast();
-                                // and add the new one
-                                waitingQueue.addFirst(msgHolder);
+                            // we are a client, so we need to send a message packet to master server
+                            // and it will forward the message for us
+                            // create a byte array output stream and write a FORWARD control byte first
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            baos.write(FORWARD);
+
+                            // serialize the message packet into the ByteArrayOutputStream
+                            ObjectOutput out = new ObjectOutputStream(baos);
+                            out.writeObject(msg);
+                            out.close();
+
+                            // check if client is connected
+                            if (client != null) {
+                                // client is connected: sending data to master server
+                                client.send(baos.toByteArray());
+
+                            } else {
+                                if (useQueue) {
+                                    // client is not connected yet, holding message in a queue
+                                    logger.debug("Not connected to master server yet: message to {} added to queue.", remoteNodeName);
+                                    addMessageToQueue(remoteNodeName, baos.toByteArray());
+                                } else {
+                                    logger.debug("Not connected to master and \"use_queue = false\": dropping message");
+                                }
                             }
                         }
 
-                    } else {
-                        // we are a client, so we need to send a message packet to master server
-                        // and it will forward the message for us
-                        // create a byte array output stream and write a FORWARD control byte first
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        baos.write(FORWARD);
-
-                        // serialize the message packet into the ByteArrayOutputStream
-                        ObjectOutput out = new ObjectOutputStream(baos);
-                        out.writeObject(msg);
-                        out.close();
-
-                        // send data to master server
-                        client.send(baos.toByteArray());
+                    } catch (IOException e) {
+                        logger.debug("Error while sending message to {} (remoteChannel: {})", remoteNodeName, remoteChannelName);
                     }
-
-                } catch (IOException e) {
-                    logger.debug("Error while sending message to " + remoteNodeName + "-" + remoteChannelName);
                 }
 
                 return message;
@@ -283,13 +330,10 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
     private void checkNoMultipleMasterServer() throws MultipleMasterServerException {
         int portPropertyCounter = 0;
 
-        logger.debug("getName: {}, getModelElement(): {}, node: {}", getName(), getModelElement(), getNodeName());
-
         // check other fragment port property
         for (KevoreeChannelFragment kfc : getOtherFragments()) {
             Option<String> portOption = KevoreePropertyHelper.getProperty(getModelElement(), "port", true, kfc.getNodeName());
             if (portOption.isDefined()) {
-                logger.debug("port defined is : "+portOption.get());
                 portPropertyCounter++;
             }
         }
@@ -298,9 +342,12 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
         Option<String> portOption = KevoreePropertyHelper.getProperty(getModelElement(), "port", true, getNodeName());
         if (portOption.isDefined()) portPropertyCounter++;
 
-        if (portPropertyCounter == 0 || portPropertyCounter > 1) {
-            throw new MultipleMasterServerException("You are not supposed to give multiple master server for this " +
-                    "channel, nor none. Specify one port, and only one, in order for this channel to work properly.");
+        if (portPropertyCounter == 0) {
+            throw new MultipleMasterServerException("You are supposed to give one master server! None found.");
+        }
+
+        if (portPropertyCounter > 1) {
+            throw new MultipleMasterServerException("You are not supposed to give more or less than one master server! "+portPropertyCounter+" found.");
         }
     }
 
@@ -316,13 +363,6 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
         }
     }
 
-    private boolean waitingQueueContains(String nodeName) {
-        for (MessageHolder msg : waitingQueue) {
-            if (msg.getNodeName().equals(nodeName)) return true;
-        }
-        return false;
-    }
-
     private List<byte[]> getPendingMessages(String nodeName) {
         List<byte[]> pendingList = new ArrayList<byte[]>();
 
@@ -336,6 +376,19 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
         return pendingList;
     }
 
+    private void addMessageToQueue(String recipientNode, byte[] msgBytes) {
+        MessageHolder msgHolder = new MessageHolder(recipientNode, msgBytes);
+        try {
+            waitingQueue.addFirst(msgHolder);
+        } catch (IllegalStateException e) {
+            // if we end up here the queue is full
+            // so get rid of the oldest message
+            waitingQueue.pollLast();
+            // and add the new one
+            waitingQueue.addFirst(msgHolder);
+        }
+    }
+
     private BaseWebSocketHandler serverHandler = new BaseWebSocketHandler() {
         @Override
         public void onMessage(WebSocketConnection connection, String msg) throws Throwable {
@@ -345,19 +398,20 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
 
         @Override
         public void onMessage(WebSocketConnection connection, byte[] msg) throws Throwable {
-            // TODO i am afraid that if a random message starts by "0" byte, then it will
-            // TODO be considered as a REGISTER event, so we are kinda trapped :/
             switch (msg[0]) {
                 case REGISTER:
                     String nodeName = new String(msg, 1, msg.length-1);
                     if (clients.containsValue(nodeName)) {
+                        logger.debug("Already got {} in my active connection," +
+                                " gonna close the old one, and keep the fresh new", nodeName);
                         clients.inverse().get(nodeName).close();
+                        clients.inverse().remove(nodeName);
                     }
-                    clients.forcePut(connection, nodeName);
+                    clients.put(connection, nodeName);
                     logger.debug("New registered client \"{}\" from {}", nodeName, connection.httpRequest().remoteAddress());
 
                     List<byte[]> pendingList = getPendingMessages(nodeName);
-                    if (!pendingList.isEmpty()) {
+                    if (useQueue && !pendingList.isEmpty()) {
                         logger.debug("Sending pending messages from waiting queue to {} ...", nodeName);
                         for (byte[] data : pendingList) {
                             connection.send(data);
@@ -375,14 +429,21 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                         ois.close();
 
                         if (clients.containsValue(mess.recipient)) {
+
                             // sending message to recipient
                             WebSocketConnection recipient = clients.inverse().get(mess.recipient);
                             recipient.send(mess.getByteContent());
 
+                        } else if (mess.recipient.equals(getNodeName())) {
+                            remoteDispatchByte(mess.getByteContent());
+
+
                         } else {
-                            // recipient has not yet established a connection with master server
-                            // putting it in the queue
-                            // TODO
+                            if (useQueue) {
+                                // recipient has not yet established a connection with master server
+                                // putting it in the queue
+                                addMessageToQueue(mess.recipient, mess.getByteContent());
+                            }
                         }
 
 

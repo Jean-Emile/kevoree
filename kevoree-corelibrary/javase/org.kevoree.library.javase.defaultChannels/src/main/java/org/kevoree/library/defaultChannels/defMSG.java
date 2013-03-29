@@ -75,4 +75,9 @@ public class defMSG extends AbstractChannelFragment {
         return new NoopChannelFragmentSender();
     }
 
+    @LocalBindingUpdated
+    public void updateLocalBinding(){
+         logger.info("New local binding");
+    }
+
 }

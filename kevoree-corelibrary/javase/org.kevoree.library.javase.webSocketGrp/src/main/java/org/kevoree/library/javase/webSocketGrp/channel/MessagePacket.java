@@ -1,9 +1,6 @@
 package org.kevoree.library.javase.webSocketGrp.channel;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
+import java.io.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,7 +9,7 @@ import java.io.ObjectOutputStream;
  * Time: 2:52 PM
  * To change this template use File | Settings | File Templates.
  */
-public class MessagePacket {
+public class MessagePacket implements Serializable {
 
     public String recipient;
     public Object content;
