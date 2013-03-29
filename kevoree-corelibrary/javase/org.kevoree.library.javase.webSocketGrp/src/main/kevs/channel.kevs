@@ -29,8 +29,8 @@ bind iaasPage.content@minicloud => responseChannel
 addComponent console0@node0 : FakeConsole {}
 addComponent console1@node1 : FakeConsole {}
 
-addChannel wsChan0 : WebSocketChannelMasterServer
-addChannel wsChan1 : WebSocketChannelMasterServer
+addChannel wsChan0 : WebSocketChannel
+addChannel wsChan1 : WebSocketChannel
 
 bind console0.textEntered@node0 => wsChan1
 bind console0.showText@node0 => wsChan0
@@ -39,9 +39,9 @@ bind console1.textEntered@node1 => wsChan0
 bind console1.showText@node1 => wsChan1
 
 updateDictionary wsChan0 {port='8001'}@node0
-//updateDictionary wsChan0 {port='8002'}@node1
+updateDictionary wsChan0 {port='8002'}@node1
 
-//updateDictionary wsChan1 {port='8003'}@node0
+updateDictionary wsChan1 {port='8003'}@node0
 updateDictionary wsChan1 {port='8004'}@node1
 
 updateDictionary sync {port="8000"}@minicloud

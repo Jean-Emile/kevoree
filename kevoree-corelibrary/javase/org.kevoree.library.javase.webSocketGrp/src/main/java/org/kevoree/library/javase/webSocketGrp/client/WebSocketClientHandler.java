@@ -63,5 +63,10 @@ public class WebSocketClientHandler {
         public void onConnectionSucceeded(WebSocketClient client) {
             logger.debug("DefaultHandler: onConnectionSucceed(WebSocketClient) called.");
         }
+
+        @Override
+        public void onConnectionClosed(WebSocketClient client) {
+            logger.debug("DefaultHandler: onConnectionClosed(WebSocketClient) called.");
+        }
     };
 }

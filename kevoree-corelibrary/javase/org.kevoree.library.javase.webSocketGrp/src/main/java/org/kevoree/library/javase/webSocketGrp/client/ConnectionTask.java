@@ -34,6 +34,11 @@ public class ConnectionTask implements Runnable {
                 public void onMessage(ByteBuffer bytes) {
                     handler.onMessage(bytes);
                 }
+
+                @Override
+                public void onClose(int code, String reason, boolean flag) {
+                    handler.onConnectionClosed(this);
+                }
             };
 
             boolean connSucceeded = client.connectBlocking();
@@ -55,5 +60,6 @@ public class ConnectionTask implements Runnable {
     public interface Handler {
         void onMessage(ByteBuffer bytes);
         void onConnectionSucceeded(WebSocketClient client);
+        void onConnectionClosed(WebSocketClient client);
     }
 }

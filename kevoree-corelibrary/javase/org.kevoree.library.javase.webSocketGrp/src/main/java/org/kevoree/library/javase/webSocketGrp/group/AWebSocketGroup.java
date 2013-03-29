@@ -392,6 +392,13 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
                         logger.error("", e);
                     }
                 }
+
+                @Override
+                public void onConnectionClosed(WebSocketClient cli) {
+                    if (cli.equals(client)) {
+                        client = null;
+                    }
+                }
             });
 
             // start a connection task in the WebSocketClientHandler for each IP found for master server
