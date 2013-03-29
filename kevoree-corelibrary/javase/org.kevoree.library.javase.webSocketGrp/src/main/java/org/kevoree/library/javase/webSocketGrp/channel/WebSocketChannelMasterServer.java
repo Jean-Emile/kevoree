@@ -247,7 +247,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                                             " {} is not yet connected to master server on {}/{}", remoteNodeName, getName(), getNodeName());
                                     addMessageToQueue(remoteNodeName, msgBytes);
                                 } else {
-                                    logger.debug("{} is not connected, \"use_queue = false : dropping message\"");
+                                    logger.debug("{} is not connected, \"use_queue\" = false : dropping message");
                                 }
                             }
 
@@ -414,7 +414,17 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                     if (useQueue && !pendingList.isEmpty()) {
                         logger.debug("Sending pending messages from waiting queue to {} ...", nodeName);
                         for (byte[] data : pendingList) {
-                            connection.send(data);
+                            // we to process the data to be sure we were not a client before
+                            // because if we were a client, messages in waitingQueue are not
+                            // exactly the same as in a waitingQueue of server
+                            try {
+                                ObjectInput oi = new ObjectInputStream(new ByteArrayInputStream(data));
+                                MessagePacket msgPkt = (MessagePacket) oi.readObject();
+                                connection.send(msgPkt.getByteContent());
+
+                            } catch (ClassNotFoundException e) {
+                                connection.send(data);
+                            }
                         }
                     }
                     break;

@@ -7,58 +7,58 @@ In this module you have 4 different kinds of group.
 Each one has its own purpose and works with WebSocket API such as [Webbit] [1] & [Java_WebSocket] [2]
 
 ## The 4 different groups
-* **WebSocketGroup**: starts a server & a client on each fragment meaning that if a node is behind a router you won't probably be able to push/pull anything from it
+* **WebSocketGroup**: starts a server on each fragment meaning that if a node is behind a router you probably won't be able to push/pull anything from it. Plus, for each request (pull, push) a dedicated client will be created.
 
-* **WebSocketGroupMasterServer**: requires that you specify **one** (and only one) master server within your group nodes making this group a fully centralized network. Each other nodes will connect themselves to this master server.  
-								  This group disallows push/pull requests on other nodes than the **master server one** throwing exceptions back at you if you dare to try.
+* **WebSocketGroupMasterServer**: requires that you specify **one** (and only one) master server within your group nodes making this group a fully centralized network. Each other nodes will connect themselves to this master server. This group disallows push/pull requests on every nodes but the **master server** one; throwing exceptions back at you if you dare to try anyway :D
 								  
-* **WebSocketGroupEchoer**: same as **WebSocketGroupMasterServer** but this one allows you (or your puppy who knows ?) to push/pull on every nodes
+* **WebSocketGroupEchoer**: same as **WebSocketGroupMasterServer** but this one allows you to push/pull on each node
 
-* **WebSocketGroupQueuer**: same as **WebSocketGroupEchoer** but this one is able to recognize that some nodes from its group are not yet connected to him so it will keep a **waitingQueue** up-to-date and then echo back models when those waiting nodes will initiate a connection
+* **WebSocketGroupQueuer**: same as **WebSocketGroupEchoer** but this one is able to acknowledge that some nodes from its group are not yet connected to him so it will keep a **waitingQueue** up-to-date with the different push requests in order to dispatch pushed models to client when they will initiate a connection to the master server
 
 ## What about the first one : *WebSocketGroup*
 ### Node start
-When a node starts, this group creates a Webbit socket server that is capable of handling 4 different kinds of requests :
+When a node starts, this group creates a Webbit socket server listening on the given "port" property set in the fragment-dependant dictionary attribute. With this group, server are able to handle 2 kinds of request:
 
-*   host:port/push
-*   host:port/pull
-*   host:port/push/zip
-*   host:port/pull/zip
+*   PUSH
+*   PULL
+
+In order to recognize those requests, WebSocketGroup uses a really simple control-byte protocol:
+
+```java
+protected static final byte PUSH = 1;
+protected static final byte PULL = 2;
+```
 
 ### Push process
 When a push is requested on a node. This group compresses the given model and try to send it to the targeted node on :
 
-*   ws://host:port/push/zip
+*   ws://host:port/
 
-The targeted node will then process the model in the **pushCompressedHandler**  
+The targeted node will then process the model  
 ```java
-private BaseWebSocketHandler pushCompressedHandler = new BaseWebSocketHandler() {
-    public void onMessage(WebSocketConnection connection, byte[] msg) throws Throwable {
-		logger.debug("Compressed model received from "+connection.httpRequest().header("Host")+": loading...");
-		ByteArrayInputStream bais = new ByteArrayInputStream(msg);
-		ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
-		updateLocalModel(model);
-		logger.debug("Model loaded from XMI String");
-    }
-};
+case PUSH:
+    logger.debug("Compressed model received from "+ connection.httpRequest().header("Host") + ": loading...");
+    ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length-1);
+    ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
+    updateLocalModel(model);
+    logger.debug("Model loaded from XMI String");
+    break;
 ```
 
 ### Pull process
 When a pull is requested on a node. This group asks the targeted node via :
 
-* ws://host:port/pull/zip
+* ws://host:port/
 
-The targeted node will then process the model in the **pullCompressedHandler**  
+The targeted node will then process the model  
 ```java
-private BaseWebSocketHandler pullCompressedHandler = new BaseWebSocketHandler() {
-    public void onMessage(WebSocketConnection connection, byte[] msg) throws Throwable {
-		logger.debug("Pull request received from "+connection.httpRequest().header("Host")+": loading...");
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-			KevoreeXmiHelper.$instance.saveCompressedStream(output, getModelService().getLastModel());
-		connection.send(output.toByteArray());
-		logger.debug("Compressed model pulled back to "+connection.httpRequest().header("Host"));
-    }
-};
+case PULL:
+    logger.debug("Pull request received from "+ connection.httpRequest().header("Host") + ": loading...");
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    KevoreeXmiHelper.$instance.saveCompressedStream(output, getModelService().getLastModel());
+    connection.send(output.toByteArray());
+    logger.debug("Compressed model pulled back to "+ connection.httpRequest().header("Host"));
+    break;
 ```
 
 ## What about the second one : *WebSocketGroupMasterServer*
