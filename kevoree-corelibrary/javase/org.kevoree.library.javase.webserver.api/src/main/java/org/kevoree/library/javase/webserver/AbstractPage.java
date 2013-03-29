@@ -110,7 +110,8 @@ public abstract class AbstractPage extends AbstractComponentType {
 			getPortByName("forward", MessagePort.class).process(request);
 			response.setStatus(NO_RETURN_RESPONSE);
 		} else {
-			response.setContent("Bad request from " + getName() + "@" + getNodeName());
+            logger.debug("Unable to forward request because the forward port is not bind for {}", getName());
+			response.setContent("Unable to forward request because the forward port is not bound for " + getName() + "@" + getNodeName());
 		}
 		return response;
 	}
