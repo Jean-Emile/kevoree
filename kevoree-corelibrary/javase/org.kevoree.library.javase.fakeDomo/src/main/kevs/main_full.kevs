@@ -1,0 +1,25 @@
+merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.javaseNode/{kevoree.version}"
+merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.fakeDomo/{kevoree.version}"
+merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.defaultChannels/{kevoree.version}"
+merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.nanohttp/{kevoree.version}"
+
+
+addNode node0 : JavaSENode
+addComponent light@node0 : FakeSimpleLight
+addComponent sw@node0 : FakeSimpleSwitch
+
+addChannel onQ : defMSG
+addChannel offQ : defMSGT
+addChannel toggleQ : defSERVICE
+
+bind light.on@node0 => onQ
+bind light.off@node0 => offQ
+bind sw.on@node0 => onQ
+bind sw.off@node0 => offQ
+
+bind sw.toggle@node0 => toggleQ
+bind light.toggle@node0 => toggleQ
+
+
+addGroup sync : NanoRestGroup
+addToGroup sync node0

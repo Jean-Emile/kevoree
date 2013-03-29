@@ -16,7 +16,6 @@ package org.kevoree.library.defaultNodeTypes.command
 
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
 import org.slf4j.LoggerFactory
-import org.kevoree.framework.osgi.KevoreeInstanceFactory
 import org.kevoree.*
 import org.kevoree.api.service.core.handler.KevoreeModelHandlerService
 import org.kevoree.api.service.core.script.KevScriptEngineFactory
@@ -38,6 +37,7 @@ class RemoveInstance(val c: Instance, val nodeName: String, val modelservice: Ke
     override fun execute(): Boolean {
         logger.debug("CMD REMOVE INSTANCE EXECUTION  - " + c.getName() + " - type - " + c.getTypeDefinition()!!.getName())
         try {
+            /*
             val instanceRef = KevoreeDeployManager.getRef(c.javaClass.getName(), c.getName())
             val model = c.getTypeDefinition()!!.eContainer() as ContainerRoot
             val node = model.findNodesByID(nodeName)
@@ -56,7 +56,8 @@ class RemoveInstance(val c: Instance, val nodeName: String, val modelservice: Ke
             {
                 logger.error(" TypeCache "+c.getName()+"does not exist.")
                 return false
-            }
+            } */
+            KevoreeDeployManager.clearRef(c.javaClass.getName()+"_wrapper", c.getName())
             KevoreeDeployManager.clearRef(c.javaClass.getName(), c.getName())
             return true
         } catch(e: Exception){

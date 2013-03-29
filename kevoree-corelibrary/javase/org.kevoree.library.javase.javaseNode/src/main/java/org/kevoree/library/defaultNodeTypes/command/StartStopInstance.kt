@@ -1,9 +1,9 @@
 package org.kevoree.library.defaultNodeTypes.command
 
-import org.kevoree.Instance
 import org.kevoree.ContainerRoot
+import org.kevoree.Instance
+import org.kevoree.framework.KInstance
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
-import org.kevoree.framework.osgi.KevoreeInstanceActivator
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
@@ -18,11 +18,6 @@ import org.kevoree.framework.osgi.KevoreeInstanceActivator
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 
 class StartStopInstance(c: Instance, nodeName: String, val start: Boolean): LifeCycleCommand(c, nodeName) {
 
@@ -32,17 +27,16 @@ class StartStopInstance(c: Instance, nodeName: String, val start: Boolean): Life
 
     override fun execute(): Boolean {
         val root = c.getTypeDefinition()!!.eContainer() as ContainerRoot
-
-        val ref = KevoreeDeployManager.getRef(c.javaClass.getName(), c.getName())
-        if(ref != null && ref is KevoreeInstanceActivator){
-            val iact = ref as KevoreeInstanceActivator
-            Thread.currentThread().setContextClassLoader(iact.getKInstance().javaClass.getClassLoader())
+        val ref = KevoreeDeployManager.getRef(c.javaClass.getName()+"_wrapper", c.getName())
+        if(ref != null && ref is KInstance){
+            val iact = ref as KInstance
+            Thread.currentThread().setContextClassLoader(iact.javaClass.getClassLoader())
             if(start){
                 Thread.currentThread().setName("KevoreeStartInstance" + c.getName())
-                return iact.getKInstance()!!.kInstanceStart(root)
+                return iact.kInstanceStart(root)
             } else {
                 Thread.currentThread().setName("KevoreeStopInstance" + c.getName())
-                val res = iact.getKInstance()!!.kInstanceStop(root)
+                val res = iact.kInstanceStop(root)
                 Thread.currentThread().setContextClassLoader(null)
                 return res
             }

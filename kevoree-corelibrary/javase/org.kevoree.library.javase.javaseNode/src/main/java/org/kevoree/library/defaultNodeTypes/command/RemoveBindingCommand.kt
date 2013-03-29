@@ -5,14 +5,13 @@ import org.kevoree.api.PrimitiveCommand
 import org.slf4j.LoggerFactory
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
 import org.kevoree.ComponentInstance
-import org.kevoree.framework.osgi.KevoreeComponentActivator
 import org.kevoree.framework.AbstractComponentType
 import org.kevoree.framework.KevoreeChannelFragment
 import org.kevoree.framework.KevoreePort
 import org.kevoree.framework.message.PortUnbindMessage
 import org.kevoree.framework.message.FragmentUnbindMessage
 import org.kevoree.framework.KevoreeComponent
-import org.kevoree.framework.osgi.KevoreeInstanceActivator
+import org.kevoree.framework.ChannelFragment
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
@@ -43,30 +42,27 @@ class RemoveBindingCommand(val c : MBinding,val nodeName:String) : PrimitiveComm
         }else{
             val kevoreeChannelFound = KevoreeDeployManager.getRef(c.getHub().javaClass.getName(), c.getHub()!!.getName())
             val kevoreeComponentFound = KevoreeDeployManager.getRef((c.getPort()!!.eContainer()as ComponentInstance).javaClass.getName(), (c.getPort()!!.eContainer()as ComponentInstance).getName())
-            if(kevoreeChannelFound != null && kevoreeComponentFound != null && kevoreeComponentFound is KevoreeComponentActivator){
-                val casted = kevoreeComponentFound.getKInstance() as KevoreeComponent
-                val channelCasted = kevoreeChannelFound as KevoreeInstanceActivator
-                val foundNeedPort = casted.getKevoreeComponentType()!!.getNeededPorts()!!.get(c.getPort()!!.getPortTypeRef()!!.getName())
-                val foundHostedPort = casted.getKevoreeComponentType()!!.getHostedPorts()!!.get(c.getPort()!!.getPortTypeRef()!!.getName())
+            if(kevoreeChannelFound != null && kevoreeComponentFound != null && kevoreeComponentFound is AbstractComponentType){
+                val casted = kevoreeComponentFound as AbstractComponentType
+                val channelCasted = kevoreeChannelFound as KevoreeChannelFragment
+                val foundNeedPort = casted.getNeededPorts()!!.get(c.getPort()!!.getPortTypeRef()!!.getName())
+                val foundHostedPort = casted.getHostedPorts()!!.get(c.getPort()!!.getPortTypeRef()!!.getName())
 
                 if(foundNeedPort == null && foundHostedPort == null){
                     logger.info("Port instance not found in component")
                     logger.info("Look for "+c.getPort()!!.getPortTypeRef()!!.getName());
-                    logger.info(casted.getKevoreeComponentType()!!.getNeededPorts()!!.values().toString());
+                    logger.info(casted.getNeededPorts()!!.values().toString());
                     return false
                 }
                 if (foundNeedPort != null) {
                     /* Bind port to Channel */
-                    val newbindmsg = FragmentUnbindMessage()
-                    newbindmsg.setChannelName(c.getHub()!!.getName())
+                    val newbindmsg = FragmentUnbindMessage(c.getHub()!!.getName(),null)
                     return (foundNeedPort as KevoreePort).processAdminMsg(newbindmsg)
                 }
                 if(foundHostedPort != null){
-                    val bindmsg = PortUnbindMessage()
-                    bindmsg.setNodeName(nodeName)
-                    bindmsg.setComponentName((c.getPort()!!.eContainer() as ComponentInstance).getName())
-                    bindmsg.setPortName((foundHostedPort as KevoreePort).getName())
-                    return (channelCasted.getKInstance() as KevoreeChannelFragment).processAdminMsg(bindmsg)
+                    val cname = (c.getPort()!!.eContainer() as ComponentInstance).getName()
+                    val bindmsg = PortUnbindMessage(nodeName,cname,(foundHostedPort as KevoreePort).getName())
+                    return (channelCasted as KevoreeChannelFragment).processAdminMsg(bindmsg)
                 }
                 return false
             } else {
