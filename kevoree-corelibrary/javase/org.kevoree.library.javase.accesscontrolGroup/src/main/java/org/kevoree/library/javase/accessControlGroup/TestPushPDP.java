@@ -1,6 +1,6 @@
 package org.kevoree.library.javase.accessControlGroup;
 
-import org.kevoree.AccessControl.AccessControlRoot;
+import org.kevoree.accesscontrol.AccessControlRoot;
 import org.kevoree.tools.accesscontrol.framework.utils.AccessControlXmiHelper;
 import org.kevoree.tools.accesscontrol.framework.utils.HelperSignature;
 
