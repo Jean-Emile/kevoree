@@ -8,7 +8,6 @@ import org.kevoree.api.PrimitiveCommand;
 import org.kevoree.framework.AbstractNodeType;
 import org.kevoree.kompare.JavaSePrimitive;
 import org.kevoree.library.defaultNodeTypes.command.*;
-import org.slf4j.LoggerFactory;
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,7 +31,7 @@ public class CommandMapper {
         toClean.clear();
     }
 
-    public PrimitiveCommand buildPrimitiveCommand(org.kevoreeAdaptation.AdaptationPrimitive p, String nodeName) {
+    public PrimitiveCommand buildPrimitiveCommand(org.kevoreeadaptation.AdaptationPrimitive p, String nodeName) {
 
 
         String pTypeName = p.getPrimitiveType().getName();

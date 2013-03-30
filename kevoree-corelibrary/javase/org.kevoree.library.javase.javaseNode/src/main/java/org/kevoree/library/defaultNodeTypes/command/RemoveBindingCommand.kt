@@ -40,7 +40,7 @@ class RemoveBindingCommand(val c : MBinding,val nodeName:String) : PrimitiveComm
         if(c == null){
             return false
         }else{
-            val kevoreeChannelFound = KevoreeDeployManager.getRef(c.getHub().javaClass.getName(), c.getHub()!!.getName())
+            val kevoreeChannelFound = KevoreeDeployManager.getRef(c.getHub().javaClass.getName()+"_wrapper", c.getHub()!!.getName())
             val kevoreeComponentFound = KevoreeDeployManager.getRef((c.getPort()!!.eContainer()as ComponentInstance).javaClass.getName(), (c.getPort()!!.eContainer()as ComponentInstance).getName())
             if(kevoreeChannelFound != null && kevoreeComponentFound != null && kevoreeComponentFound is AbstractComponentType){
                 val casted = kevoreeComponentFound as AbstractComponentType

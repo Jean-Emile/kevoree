@@ -18,6 +18,8 @@ import org.kevoree.framework.KInstance
 import org.kevoree.framework.KevoreeComponent
 import org.kevoree.Group
 import org.kevoree.framework.KevoreeGroup
+import org.kevoree.Channel
+import org.kevoree.framework.ChannelTypeFragmentThread
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
@@ -56,17 +58,25 @@ class AddInstance(val c: Instance, val nodeName: String, val modelservice: Kevor
             var newBeanKInstanceWrapper :KInstance? = null
             if(c is ComponentInstance){
                 newBeanKInstanceWrapper = KevoreeComponent(newBeanInstance as AbstractComponentType,nodeName,c.getName(),modelservice)
+                (newBeanKInstanceWrapper as KevoreeComponent).initPorts(nodeTypeName,c)
             }
             if(c is Group){
                 newBeanKInstanceWrapper = KevoreeGroup(newBeanInstance as AbstractGroupType,nodeName,c.getName(),modelservice)
             }
+            if(c is Channel){
+                newBeanKInstanceWrapper = ChannelTypeFragmentThread(newBeanInstance as AbstractChannelFragment,nodeName,c.getName(),modelservice)
+                (newBeanKInstanceWrapper as ChannelTypeFragmentThread).initChannel()
+            }
+
+
+            println("AddRef=>"+c.javaClass.getName()+"/"+c.getName())
+            println("AddRef=>"+c.javaClass.getName()+"_wrapper"+"/"+c.getName())
 
 
             KevoreeDeployManager.putRef(c.javaClass.getName(), c.getName(), newBeanInstance!!)
             KevoreeDeployManager.putRef(c.javaClass.getName()+"_wrapper", c.getName(), newBeanKInstanceWrapper!!)
 
 //            newInstance.setKevScriptEngineFactory(kscript)
- //           newInstance.setModelHandlerService(modelservice)
 
             /*
             if(newInstance is KevoreeGroupActivator){

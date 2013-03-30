@@ -27,7 +27,7 @@ class AddFragmentBindingCommand(val c: Channel, val remoteNodeName: String, val 
 
     override fun execute(): Boolean {
 
-        val kevoreeChannelFound = KevoreeDeployManager.getRef(c.javaClass.getName(), c.getName()) as KevoreeChannelFragment
+        val kevoreeChannelFound = KevoreeDeployManager.getRef(c.javaClass.getName()+"_wrapper", c.getName()) as KevoreeChannelFragment
         if(kevoreeChannelFound != null){
             val bindmsg = FragmentBindMessage(kevoreeChannelFound,c.getName(),remoteNodeName)
             return (kevoreeChannelFound.processAdminMsg(bindmsg))

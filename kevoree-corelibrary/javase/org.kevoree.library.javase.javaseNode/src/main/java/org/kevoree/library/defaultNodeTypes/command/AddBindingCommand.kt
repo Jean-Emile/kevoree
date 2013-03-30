@@ -37,19 +37,20 @@ class AddBindingCommand(val c: MBinding, val nodeName: String): PrimitiveCommand
         RemoveBindingCommand(c, nodeName).execute()
     }
     override fun execute(): Boolean {
+
+        println("AddBinding=>");
+
         if(c == null){
             return false
         }else{
-            val kevoreeChannelFound = KevoreeDeployManager.getRef(c.getHub().javaClass.getName(), c.getHub()!!.getName())
-            val kevoreeComponentFound = KevoreeDeployManager.getRef((c.getPort()!!.eContainer()as ComponentInstance).javaClass.getName(), (c.getPort()!!.eContainer()as ComponentInstance).getName())
+            val kevoreeChannelFound = KevoreeDeployManager.getRef(c.getHub().javaClass.getName()+"_wrapper", c.getHub()!!.getName())
+            val kevoreeComponentFound = KevoreeDeployManager.getRef((c.getPort()!!.eContainer() as ComponentInstance).javaClass.getName(), (c.getPort()!!.eContainer()as ComponentInstance).getName())
             if(kevoreeChannelFound != null && kevoreeComponentFound != null && kevoreeComponentFound is AbstractComponentType){
                 val casted = kevoreeComponentFound as AbstractComponentType
                 val channelCasted = kevoreeChannelFound as KevoreeChannelFragment
                 val portName = c.getPort()!!.getPortTypeRef()!!.getName()
-
                 val foundNeedPort = casted.getNeededPorts()!!.get(portName)
                 val foundHostedPort = casted.getHostedPorts()!!.get(portName)
-
                 if(foundNeedPort == null && foundHostedPort == null){
                     logger.info("Port instance not found in component")
                     logger.info("Look for " + portName);
@@ -64,9 +65,12 @@ class AddBindingCommand(val c: MBinding, val nodeName: String): PrimitiveCommand
                     return (foundNeedPort as KevoreePort).processAdminMsg(newbindmsg)
                 }
                 if(foundHostedPort != null){
+
+                    println("WillPrint")
+
                     val compoName = (c.getPort()!!.eContainer() as ComponentInstance).getName()
                     val bindmsg = PortBindMessage(foundHostedPort as KevoreePort,nodeName,compoName,(foundHostedPort as KevoreePort).getName())
-                    return (channelCasted).processAdminMsg(bindmsg)
+                    return channelCasted.processAdminMsg(bindmsg)
                 }
                 return false
             } else {

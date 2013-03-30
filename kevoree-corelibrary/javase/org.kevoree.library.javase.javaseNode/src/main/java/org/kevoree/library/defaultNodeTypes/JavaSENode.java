@@ -13,8 +13,8 @@ import org.kevoree.framework.AbstractNodeType;
 import org.kevoree.framework.KevoreeXmiHelper;
 import org.kevoree.kompare.KevoreeKompareBean;
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager;
-import org.kevoreeAdaptation.AdaptationModel;
-import org.kevoreeAdaptation.AdaptationPrimitive;
+import org.kevoreeadaptation.AdaptationModel;
+import org.kevoreeadaptation.AdaptationPrimitive;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;

@@ -13,10 +13,6 @@ package org.kevoree.library.defaultNodeTypes.command
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
 import org.kevoree.framework.message.FragmentUnbindMessage
 import org.slf4j.LoggerFactory
@@ -32,7 +28,7 @@ class RemoveFragmentBindingCommand(val c: Channel, val remoteNodeName: String, v
 
     override fun execute(): Boolean {
 
-        val kevoreeChannelFound = KevoreeDeployManager.getRef(c.javaClass.getName(), c.getName()) as KevoreeChannelFragment
+        val kevoreeChannelFound = KevoreeDeployManager.getRef(c.javaClass.getName()+"_wrapper", c.getName()) as KevoreeChannelFragment
         if(kevoreeChannelFound != null){
             val bindmsg = FragmentUnbindMessage(c.getName(),remoteNodeName)
             return (kevoreeChannelFound.processAdminMsg(bindmsg))

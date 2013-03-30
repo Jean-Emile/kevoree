@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * @author ffouquet
  */
 @Library(name = "JavaSE")
-@ChannelTypeFragment(theadStrategy = ThreadStrategy.SCALA_ACTOR)
+@ChannelTypeFragment
 public class defMSG extends AbstractChannelFragment {
 
 	private Logger logger = LoggerFactory.getLogger(defMSG.class);
