@@ -82,7 +82,7 @@ public class FakeSimpleLight extends AbstractFakeStuffComponent {
             @Override
             public void run() {
                 frame.setColor(Color.green);
-                frame.revalidate();
+                //frame.revalidate();
                 state = true;
             }
         });
@@ -96,7 +96,7 @@ public class FakeSimpleLight extends AbstractFakeStuffComponent {
             @Override
             public void run() {
                 frame.setColor(Color.red);
-                frame.revalidate();
+                //frame.revalidate();
                 state = false;
             }
         });
