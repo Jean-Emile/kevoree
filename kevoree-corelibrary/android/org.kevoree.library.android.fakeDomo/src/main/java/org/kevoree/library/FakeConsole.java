@@ -102,7 +102,7 @@ public class FakeConsole extends AbstractComponentType {
                         KevoreeMessage kmsg = (KevoreeMessage) text;
                         textview.append("->");
                         for(String key : kmsg.getKeys()){
-                            textview.append(key+"="+kmsg.getValue(key).get());
+                            textview.append(key+"="+kmsg.getValue(key));
                         }
                     } else {
                         textview.append("->"+text.toString());
