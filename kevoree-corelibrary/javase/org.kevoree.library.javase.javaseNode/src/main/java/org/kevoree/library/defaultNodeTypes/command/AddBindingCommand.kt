@@ -37,9 +37,6 @@ class AddBindingCommand(val c: MBinding, val nodeName: String): PrimitiveCommand
         RemoveBindingCommand(c, nodeName).execute()
     }
     override fun execute(): Boolean {
-
-        println("AddBinding=>");
-
         if(c == null){
             return false
         }else{
@@ -65,9 +62,6 @@ class AddBindingCommand(val c: MBinding, val nodeName: String): PrimitiveCommand
                     return (foundNeedPort as KevoreePort).processAdminMsg(newbindmsg)
                 }
                 if(foundHostedPort != null){
-
-                    println("WillPrint")
-
                     val compoName = (c.getPort()!!.eContainer() as ComponentInstance).getName()
                     val bindmsg = PortBindMessage(foundHostedPort as KevoreePort,nodeName,compoName,(foundHostedPort as KevoreePort).getName())
                     return channelCasted.processAdminMsg(bindmsg)
