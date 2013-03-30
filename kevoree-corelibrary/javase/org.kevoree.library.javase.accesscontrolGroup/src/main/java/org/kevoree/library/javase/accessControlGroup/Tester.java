@@ -1,8 +1,6 @@
 package org.kevoree.library.javase.accessControlGroup;
 
-import org.kevoree.accesscontrol.AccessControlRoot;
 import org.kevoree.ContainerRoot;
-import org.kevoree.tools.accesscontrol.framework.utils.AccessControlXmiHelper;
 import org.kevoree.tools.accesscontrol.framework.utils.HelperSignature;
 
 import java.security.interfaces.RSAPrivateKey;
