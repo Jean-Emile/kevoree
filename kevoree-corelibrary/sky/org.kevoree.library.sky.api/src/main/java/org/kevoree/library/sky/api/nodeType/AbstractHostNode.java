@@ -7,8 +7,8 @@ import org.kevoree.library.sky.api.KevoreeNodeManager;
 import org.kevoree.library.sky.api.KevoreeNodeRunner;
 import org.kevoree.library.sky.api.PlanningManager;
 //import org.kevoree.library.sky.api.http.IaaSHTTPServer;
-import org.kevoreeAdaptation.AdaptationModel;
-import org.kevoreeAdaptation.AdaptationPrimitive;
+import org.kevoreeadaptation.AdaptationModel;
+import org.kevoreeadaptation.AdaptationPrimitive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
