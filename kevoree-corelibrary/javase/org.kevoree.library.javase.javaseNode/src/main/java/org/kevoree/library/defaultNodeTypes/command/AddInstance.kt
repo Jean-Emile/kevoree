@@ -68,11 +68,6 @@ class AddInstance(val c: Instance, val nodeName: String, val modelservice: Kevor
                 (newBeanKInstanceWrapper as ChannelTypeFragmentThread).initChannel()
             }
 
-
-            println("AddRef=>"+c.javaClass.getName()+"/"+c.getName())
-            println("AddRef=>"+c.javaClass.getName()+"_wrapper"+"/"+c.getName())
-
-
             KevoreeDeployManager.putRef(c.javaClass.getName(), c.getName(), newBeanInstance!!)
             KevoreeDeployManager.putRef(c.javaClass.getName()+"_wrapper", c.getName(), newBeanKInstanceWrapper!!)
 

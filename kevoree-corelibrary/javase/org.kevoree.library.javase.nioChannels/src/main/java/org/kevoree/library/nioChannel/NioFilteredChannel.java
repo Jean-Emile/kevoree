@@ -27,22 +27,22 @@ public class NioFilteredChannel extends NioChannel {
 	public Object dispatch (Message message) {
 		if (message.getDestNodeName().equals(this.getNodeName())) {
 			if (message.getContent() instanceof StdKevoreeMessage
-					&& ((StdKevoreeMessage) message.getContent()).getValue("destComponentName").isDefined()
-					&& ((StdKevoreeMessage) message.getContent()).getValue("destNodeName").isDefined()) {
+					&& ((StdKevoreeMessage) message.getContent()).getValue("destComponentName")!=null
+					&& ((StdKevoreeMessage) message.getContent()).getValue("destNodeName")!=null) {
 				localFilteredForward(message);
 			} else {
 				localForward(message);
 			}
 		} else {
 			if (message.getContent() instanceof StdKevoreeMessage
-					&& ((StdKevoreeMessage) message.getContent()).getValue("destComponentName").isDefined()
-					&& ((StdKevoreeMessage) message.getContent()).getValue("destNodeName").isDefined()) {
-				logger.debug("message to {}@{}", ((StdKevoreeMessage) message.getContent()).getValue("destComponentName").get(),
-						((StdKevoreeMessage) message.getContent()).getValue("destNodeName").get());
-				if (!((StdKevoreeMessage) message.getContent()).getValue("destNodeName").get().equals(this.getNodeName())) {
+					&& ((StdKevoreeMessage) message.getContent()).getValue("destComponentName")!=null
+					&& ((StdKevoreeMessage) message.getContent()).getValue("destNodeName")!=null) {
+				logger.debug("message to {}@{}", ((StdKevoreeMessage) message.getContent()).getValue("destComponentName"),
+						((StdKevoreeMessage) message.getContent()).getValue("destNodeName"));
+				if (!((StdKevoreeMessage) message.getContent()).getValue("destNodeName").equals(this.getNodeName())) {
 					logger.debug("send message to remote node");
 					remoteFilteredForward(message);
-				} else if (((StdKevoreeMessage) message.getContent()).getValue("destNodeName").get().equals(this.getNodeName())) {
+				} else if (((StdKevoreeMessage) message.getContent()).getValue("destNodeName").equals(this.getNodeName())) {
 					logger.debug("send message to local component");
 					localFilteredForward(message);
 				} else {
@@ -66,7 +66,7 @@ public class NioFilteredChannel extends NioChannel {
 	}
 
 	private void localFilteredForward (Message message) {
-		String destComponentName = ((StdKevoreeMessage) message.getContent()).getValue("destComponentName").get().toString();
+		String destComponentName = ((StdKevoreeMessage) message.getContent()).getValue("destComponentName").toString();
 		for (KevoreePort port : getBindedPorts()) {
 			if (destComponentName.equals(port.getComponentName())) {
 				forward(port, message);
@@ -82,7 +82,7 @@ public class NioFilteredChannel extends NioChannel {
 	}
 
 	private void remoteFilteredForward (Message message) {
-		String destNodeName = ((StdKevoreeMessage) message.getContent()).getValue("destNodeName").get().toString();
+		String destNodeName = ((StdKevoreeMessage) message.getContent()).getValue("destNodeName").toString();
 		for (KevoreeChannelFragment fragment : getOtherFragments()) {
 			if (destNodeName.equals(fragment.getNodeName())) {
 				forward(fragment, message);

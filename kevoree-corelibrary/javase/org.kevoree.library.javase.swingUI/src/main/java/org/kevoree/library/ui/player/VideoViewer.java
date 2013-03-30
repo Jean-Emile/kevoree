@@ -75,9 +75,9 @@ public class VideoViewer extends AbstractComponentType {
 		if (!isAlreadyInitialized) {
 			init();
 		}
-		if (message instanceof StdKevoreeMessage && !((StdKevoreeMessage) message).getValue("image").isEmpty()
-				&& ((StdKevoreeMessage) message).getValue("image").get() instanceof BufferedImage) {
-			image = (BufferedImage) ((StdKevoreeMessage) message).getValue("image").get();
+		if (message instanceof StdKevoreeMessage && ((StdKevoreeMessage) message).getValue("image")!=null
+				&& ((StdKevoreeMessage) message).getValue("image") instanceof BufferedImage) {
+			image = (BufferedImage) ((StdKevoreeMessage) message).getValue("image");
 			/*if (message instanceof BufferedImage) {
 						image = (BufferedImage) message;*/
 			if (!isAlreadyInitialized) {
@@ -115,9 +115,9 @@ public class VideoViewer extends AbstractComponentType {
 			}
 			if (message instanceof StdKevoreeMessage) {
 				StdKevoreeMessage msg = (StdKevoreeMessage) message;
-				height = (Integer) msg.getValue("height").get();
-				width = (Integer) msg.getValue("width").get();
-				bytes = ((byte[]) msg.getValue("bytes").get());
+				height = (Integer) msg.getValue("height");
+				width = (Integer) msg.getValue("width");
+				bytes = ((byte[]) msg.getValue("bytes"));
 
 				if (image == null || width != image.getWidth(null) || height != image.getHeight(null)) {
 					frame.setSize(width, height);
