@@ -9,11 +9,12 @@ import org.kevoree.{NodeType, ContainerRoot, TypeDefinition}
 import scala.collection.JavaConversions._
 import org.slf4j.{LoggerFactory, Logger}
 import org.kevoree.annotation.{Generate => KGenerate}
-import org.kevoree.framework.aspects.KevoreeAspects._
 import org.kevoree.framework.{AbstractNodeType, KevoreeGeneratorHelper}
+import org.kevoree.framework.kaspects.TypeDefinitionAspect
 
 trait KevoreeReflectiveHelper {
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  private val typeDefinitionAspect = new TypeDefinitionAspect()
 
   def recCallAnnotedMethod(instance : Object,genVal : String, tclazz: Class[_],context : GeneratorContext, alreadyCall : List[String] = List(), headers : Boolean = false){
     var alreadyCallLocal : List[String] = alreadyCall
@@ -57,10 +58,10 @@ trait KevoreeReflectiveHelper {
       clazzFactory = this.getClass.getClassLoader.loadClass(activatorClassName)
     }*/
     
-    val  du = ct.foundRelevantDeployUnit(nodeHost)
+    val  du = typeDefinitionAspect.foundRelevantDeployUnit(ct, nodeHost)
 
-    val resolvedNodeType = ct.foundRelevantHostNodeType(nodeTypeName.asInstanceOf[NodeType],ct)
-    val genPackage = new KevoreeGeneratorHelper().getTypeDefinitionGeneratedPackage(ct, resolvedNodeType.get.getName)
+    val resolvedNodeType = typeDefinitionAspect.foundRelevantHostNodeType(nodeTypeName.asInstanceOf[NodeType],ct)
+    val genPackage = new KevoreeGeneratorHelper().getTypeDefinitionGeneratedPackage(ct, resolvedNodeType.getName)
     val activatorName = ct.getName + "Activator"
     val activatorClassName = genPackage + "." + activatorName
 
