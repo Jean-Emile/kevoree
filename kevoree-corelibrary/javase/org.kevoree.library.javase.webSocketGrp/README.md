@@ -1,19 +1,19 @@
 # WebSocketGroup documentation
 
-This Kevoree Group aim to provide a WebSocket implementation of fragment communications
+This Kevoree Group provides a WebSocket implementation of fragment communications
 
-## What could I use ?
+## What could I use it for?
 In this module you have 4 different kinds of group.  
 Each one has its own purpose and works with WebSocket API such as [Webbit] [1] & [Java_WebSocket] [2]
 
 ## The 4 different groups
 * **WebSocketGroup**: starts a server on each fragment meaning that if a node is behind a router you probably won't be able to push/pull anything from it. Plus, for each request (pull, push) a dedicated client will be created.
 
-* **WebSocketGroupMasterServer**: requires that you specify **one** (and only one) master server within your group nodes making this group a fully centralized network. Each other nodes will connect themselves to this master server. This group disallows push/pull requests on every nodes but the **master server** one; throwing exceptions back at you if you dare to try anyway :D
+* **WebSocketGroupMasterServer**: requires that you specify **one** (and only one) master server within your group nodes making this group a fully centralized network. Other nodes will connect themselves to this master server. This group disallows push/pull requests on all nodes except the **master server**; throwing exceptions back at you if you dare to try anyway :D
 								  
 * **WebSocketGroupEchoer**: same as **WebSocketGroupMasterServer** but this one allows you to push/pull on each node
 
-* **WebSocketGroupQueuer**: same as **WebSocketGroupEchoer** but this one is able to acknowledge that some nodes from its group are not yet connected to him so it will keep a **waitingQueue** up-to-date with the different push requests in order to dispatch pushed models to client when they will initiate a connection to the master server
+* **WebSocketGroupQueuer**: same as **WebSocketGroupEchoer** but this one puts not-yet-connected nodes into a **waitingQueue**, and dispatched pushed models (in the order they have been pushed) to clients when they initiate a connection to the master server
 
 ## What about the first one : *WebSocketGroup*
 ### Node start
