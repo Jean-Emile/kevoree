@@ -6,7 +6,6 @@ import org.kevoree.library.defaultNodeTypes.jcl.deploy.context.{KevoreeMapping, 
 import org.kevoree.{MBinding, ComponentInstance}
 import org.kevoree.framework.osgi.KevoreeChannelFragmentActivator
 import org.objectweb.fractal.api.Component
-import org.kevoree.framework.aspects.KevoreeAspects._
 import org.kevoree.library.frascatiNodeTypes.KevoreeReflexiveProvidedPort
 import org.kevoree.framework.message.PortBindMessage
 import org.kevoree.framework.KevoreeChannelFragment
