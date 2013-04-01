@@ -9,11 +9,11 @@ Each one has its own purpose and works with WebSocket API such as [Webbit] [1] &
 ## The 4 different groups
 * **WebSocketGroup**: starts a server on each fragment meaning that if a node is behind a router you probably won't be able to push/pull anything from it. Plus, for each request (pull, push) a dedicated client will be created.
 
-* **WebSocketGroupMasterServer**: requires that you specify **one** (and only one) master server within your group nodes making this group a fully centralized network. Other nodes will connect themselves to this master server. This group disallows push/pull requests on all nodes except the **master server**; throwing exceptions back at you if you dare to try anyway :D
+* **WebSocketGroupMasterServer**: requires that you specify **one** (and only one) master server within your group nodes making this group a fully centralized network. Other nodes will connect themselves to this master server. This group disallows push/pull requests on all nodes but the **master server**; throwing exceptions back at you if you dare to try anyway :D
 								  
 * **WebSocketGroupEchoer**: same as **WebSocketGroupMasterServer** but this one allows you to push/pull on each node
 
-* **WebSocketGroupQueuer**: same as **WebSocketGroupEchoer** but this one puts not-yet-connected nodes into a **waitingQueue**, and dispatched pushed models (in the order they have been pushed) to clients when they initiate a connection to the master server
+* **WebSocketGroupQueuer**: same as **WebSocketGroupEchoer** but this one puts not-yet-connected nodes into a **waitingQueue**, and dispatches pushed models (in the order they have been pushed) to clients when they initiate a connection to the master server
 
 ## What about the first one : *WebSocketGroup*
 ### Node start
