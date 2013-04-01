@@ -59,32 +59,20 @@ class AddInstance(val c: Instance, val nodeName: String, val modelservice: Kevor
             val newBeanInstance = beanClazz!!.newInstance()
             var newBeanKInstanceWrapper :KInstance? = null
             if(c is ComponentInstance){
-                newBeanKInstanceWrapper = KevoreeComponent(newBeanInstance as AbstractComponentType,nodeName,c.getName(),modelservice)
+                newBeanKInstanceWrapper = KevoreeComponent(newBeanInstance as AbstractComponentType,nodeName,c.getName(),modelservice,bs,kscript)
                 (newBeanKInstanceWrapper as KevoreeComponent).initPorts(nodeTypeName,c)
             }
             if(c is Group){
-                newBeanKInstanceWrapper = KevoreeGroup(newBeanInstance as AbstractGroupType,nodeName,c.getName(),modelservice)
+                newBeanKInstanceWrapper = KevoreeGroup(newBeanInstance as AbstractGroupType,nodeName,c.getName(),modelservice,bs,kscript)
             }
             if(c is Channel){
-                newBeanKInstanceWrapper = ChannelTypeFragmentThread(newBeanInstance as AbstractChannelFragment,nodeName,c.getName(),modelservice)
+                newBeanKInstanceWrapper = ChannelTypeFragmentThread(newBeanInstance as AbstractChannelFragment,nodeName,c.getName(),modelservice,bs,kscript)
                 (newBeanKInstanceWrapper as ChannelTypeFragmentThread).initChannel()
             }
 
             KevoreeDeployManager.putRef(c.javaClass.getName(), c.getName(), newBeanInstance!!)
             KevoreeDeployManager.putRef(c.javaClass.getName()+"_wrapper", c.getName(), newBeanKInstanceWrapper!!)
 
-//            newInstance.setKevScriptEngineFactory(kscript)
-
-            /*
-            if(newInstance is KevoreeGroupActivator){
-                ((newInstance as KevoreeGroupActivator).groupActor() as AbstractGroupType).setBootStrapperService(bs)
-            }
-            if(newInstance is KevoreeChannelFragmentActivator){
-                ((newInstance as KevoreeChannelFragmentActivator).channelActor() as AbstractChannelFragment).setBootStrapperService(bs)
-            }
-            if(newInstance is KevoreeComponentActivator){
-                ((newInstance as KevoreeComponentActivator).componentActor()!!.getKevoreeComponentType() as AbstractComponentType).setBootStrapperService(bs)
-            } */
             return true
         } catch(e: Exception) {
             val message = "Could not start the instance " + c.getName() + ":" + c.getTypeDefinition()!!.getName() + "\n"/*+ " maybe because one of its dependencies is missing.\n"
