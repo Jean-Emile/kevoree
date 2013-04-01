@@ -100,15 +100,15 @@ public class FakeConsoleWithStdMessage extends AbstractFakeStuffComponent {
 				KevoreeMessage kmsg = (KevoreeMessage) text;
 				frame.appendIncomming("$");
 				if (kmsg.getKeys().size() == 3
-						&& kmsg.getValue("content").isDefined()
-						&& kmsg.getValue("destNodeName").isDefined()
-						&& kmsg.getValue("destComponentName").isDefined()) {
+						&& kmsg.getValue("content")!=null
+						&& kmsg.getValue("destNodeName")!=null
+						&& kmsg.getValue("destComponentName")!=null) {
 					frame.appendIncomming(
-							kmsg.getValue("content").get().toString() + "->" + kmsg.getValue("destComponentName").get().toString() + "@" + kmsg.getValue("destNodeName").get().toString());
+							kmsg.getValue("content").toString() + "->" + kmsg.getValue("destComponentName").toString() + "@" + kmsg.getValue("destNodeName").toString());
 
 				} else {
 					for (String key : kmsg.getKeys()) {
-						frame.appendIncomming(key + "=" + kmsg.getValue(key).get());
+						frame.appendIncomming(key + "=" + kmsg.getValue(key));
 					}
 				}
 			} else {

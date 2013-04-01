@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory
 import org.kevoree.Channel
 import org.kevoree.api.PrimitiveCommand
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
-import org.kevoree.framework.osgi.KevoreeChannelFragmentActivator
 import org.kevoree.framework.message.FragmentBindMessage
+import org.kevoree.framework.KevoreeChannelFragment
 
 class AddFragmentBindingCommand(val c: Channel, val remoteNodeName: String, val nodeName: String): PrimitiveCommand {
 
@@ -27,12 +27,10 @@ class AddFragmentBindingCommand(val c: Channel, val remoteNodeName: String, val 
 
     override fun execute(): Boolean {
 
-        val kevoreeChannelFound = KevoreeDeployManager.getRef(c.javaClass.getName(), c.getName()) as KevoreeChannelFragmentActivator
+        val kevoreeChannelFound = KevoreeDeployManager.getRef(c.javaClass.getName()+"_wrapper", c.getName()) as KevoreeChannelFragment
         if(kevoreeChannelFound != null){
-            val bindmsg = FragmentBindMessage()
-            bindmsg.setChannelName(c.getName())
-            bindmsg.setFragmentNodeName(remoteNodeName)
-            return (kevoreeChannelFound.channelActor()!!.processAdminMsg(bindmsg))
+            val bindmsg = FragmentBindMessage(kevoreeChannelFound,c.getName(),remoteNodeName)
+            return (kevoreeChannelFound.processAdminMsg(bindmsg))
         } else {
             return false
         }

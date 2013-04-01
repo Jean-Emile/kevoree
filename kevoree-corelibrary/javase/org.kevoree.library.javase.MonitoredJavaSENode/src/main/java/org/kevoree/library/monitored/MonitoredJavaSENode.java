@@ -1,20 +1,15 @@
 package org.kevoree.library.monitored;
 
 import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.Gauge;
 import com.yammer.metrics.core.Meter;
-import com.yammer.metrics.core.VirtualMachineMetrics;
-import com.yammer.metrics.reporting.ConsoleReporter;
 import javolution.util.FastMap;
 import org.kevoree.Instance;
 import org.kevoree.annotation.Library;
 import org.kevoree.annotation.NodeType;
 import org.kevoree.api.PrimitiveCommand;
-import org.kevoree.framework.event.MonitorEvent;
-import org.kevoree.framework.event.MonitorEventHandler;
 import org.kevoree.kompare.JavaSePrimitive;
 import org.kevoree.library.defaultNodeTypes.JavaSENode;
-import org.kevoreeAdaptation.AdaptationPrimitive;
+import org.kevoreeadaptation.AdaptationPrimitive;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 @NodeType
 @Library(name = "JavaSE")
-public class MonitoredJavaSENode extends JavaSENode implements MonitorEventHandler {
+public class MonitoredJavaSENode extends JavaSENode {
 
     private Map<String,Meter> gauges = null;
 
@@ -56,22 +51,12 @@ public class MonitoredJavaSENode extends JavaSENode implements MonitorEventHandl
     public PrimitiveCommand getPrimitive(AdaptationPrimitive adaptationPrimitive) {
 
         if(adaptationPrimitive.getPrimitiveType().getName().equals(JavaSePrimitive.$instance.getAddInstance())){
-               return new MonitoredAddInstance(this, (Instance)adaptationPrimitive.getRef(), getNodeName(), getModelService(), getKevScriptEngineFactory(), getBootStrapperService());
+               return new MonitoredAddInstance( (Instance)adaptationPrimitive.getRef(), getNodeName(), getModelService(), getKevScriptEngineFactory(), getBootStrapperService());
         } else {
             return super.getPrimitive(adaptationPrimitive);
         }
     }
 
-    @Override
-    public void triggerEvent(MonitorEvent event) {
-        String key = event.getClass().getName()+event.getOriginID();
-        Meter m = gauges.get(key);
-        if(m == null){
-            m = Metrics.newMeter(event.getClass(), key, "requests", TimeUnit.SECONDS);
-            gauges.put(key,m);
-        }
-        m.mark();
-    }
 
 }
 

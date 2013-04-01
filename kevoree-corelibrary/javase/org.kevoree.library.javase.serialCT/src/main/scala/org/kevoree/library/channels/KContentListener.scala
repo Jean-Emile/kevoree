@@ -2,8 +2,7 @@ package org.kevoree.library.channels
 
 import util.matching.Regex
 import org.kevoree.framework.message.Message
-import org.kevoree.framework.ChannelFragment
-import scala.collection.JavaConversions._
+import org.kevoree.framework.{AbstractChannelFragment, ChannelFragment}
 import org.slf4j.{LoggerFactory, Logger}
 import org.kevoree.extra.kserial.ContentListener
 
@@ -13,7 +12,7 @@ import org.kevoree.extra.kserial.ContentListener
  * Time: 08:59
  */
 
-class KContentListener(cf: ChannelFragment) extends ContentListener {
+class KContentListener(cf: AbstractChannelFragment) extends ContentListener {
   private final val logger: Logger = LoggerFactory.getLogger(classOf[KContentListener])
   val KevSerialMessageRegex = new Regex("(.+):(.+)\\[(.*)\\]")
 
@@ -37,10 +36,11 @@ class KContentListener(cf: ChannelFragment) extends ContentListener {
                 buffer.append(v)
               }
           }
-          message.content = buffer.toString
-          message.inOut = false
-          message.passedNodes.add(nodeName);
-          if (cf.getOtherFragments.exists(ofrag => ofrag.getName == srcChannelName)) {
+          message.setContent(buffer.toString)
+          message.setInOut(false)
+          message.getPassedNodes.add(nodeName)
+          import scala.collection.JavaConversions._
+          if (cf.getOtherFragments().exists(ofrag => ofrag.getName == srcChannelName)) {
             cf.remoteDispatch(message);
           }
         }

@@ -1,12 +1,12 @@
 package org.kevoree.library.defaultNodeTypes.command
 
-import org.slf4j.LoggerFactory
+import java.util.HashMap
+import org.kevoree.ContainerRoot
 import org.kevoree.Instance
 import org.kevoree.api.PrimitiveCommand
-import java.util.HashMap
-import org.kevoree.framework.osgi.KevoreeInstanceActivator
+import org.kevoree.framework.KInstance
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
-import org.kevoree.ContainerRoot
+import org.slf4j.LoggerFactory
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
@@ -32,7 +32,7 @@ class UpdateDictionary(val c: Instance, val nodeName: String): PrimitiveCommand 
 
     var logger = LoggerFactory.getLogger(this.javaClass)!!
 
-    private var lastDictioanry: HashMap<String, Any>? = null
+    private var lastDictioanry: Map<String, Any>? = null
 
 
     override fun execute(): Boolean {
@@ -61,12 +61,12 @@ class UpdateDictionary(val c: Instance, val nodeName: String): PrimitiveCommand 
             }
         }
 
-        val reffound = KevoreeDeployManager.getRef(c.javaClass.getName(), c.getName())
-        if(reffound != null && reffound is KevoreeInstanceActivator){
-            val iact = reffound as KevoreeInstanceActivator
+        val reffound = KevoreeDeployManager.getRef(c.javaClass.getName() + "_wrapper", c.getName())
+        if(reffound != null && reffound is KInstance){
+            val iact = reffound as KInstance
             val previousCL = Thread.currentThread().getContextClassLoader()
-            Thread.currentThread().setContextClassLoader(iact.getKInstance().javaClass.getClassLoader())
-            lastDictioanry = iact.getKInstance()!!.kUpdateDictionary(dictionary, c.getTypeDefinition()!!.eContainer() as ContainerRoot)
+            Thread.currentThread().setContextClassLoader(iact.javaClass.getClassLoader())
+            lastDictioanry = iact.kUpdateDictionary(dictionary, c.getTypeDefinition()!!.eContainer() as ContainerRoot)
             Thread.currentThread().setContextClassLoader(previousCL)
             return lastDictioanry != null
         } else {
@@ -76,16 +76,16 @@ class UpdateDictionary(val c: Instance, val nodeName: String): PrimitiveCommand 
     }
 
     override fun undo() {
-        val mapFound = KevoreeDeployManager.getRef(c.javaClass.getName(), c.getName())
+        val mapFound = KevoreeDeployManager.getRef(c.javaClass.getName() + "_wrapper", c.getName())
         val tempHash = HashMap<String, Any>()
         if (lastDictioanry != null) {
             tempHash.putAll(lastDictioanry!!);
         }
-        if(mapFound != null && mapFound is KevoreeInstanceActivator){
-            val iact = mapFound as KevoreeInstanceActivator
+        if(mapFound != null && mapFound is KInstance){
+            val iact = mapFound as KInstance
             val previousCL = Thread.currentThread().getContextClassLoader()
-            Thread.currentThread().setContextClassLoader(iact.getKInstance().javaClass.getClassLoader())
-            lastDictioanry = iact.getKInstance()!!.kUpdateDictionary(tempHash, c.getTypeDefinition()!!.eContainer() as ContainerRoot)
+            Thread.currentThread().setContextClassLoader(iact.javaClass.getClassLoader())
+            lastDictioanry = iact.kUpdateDictionary(tempHash, c.getTypeDefinition()!!.eContainer() as ContainerRoot)
             Thread.currentThread().setContextClassLoader(previousCL)
         }
     }

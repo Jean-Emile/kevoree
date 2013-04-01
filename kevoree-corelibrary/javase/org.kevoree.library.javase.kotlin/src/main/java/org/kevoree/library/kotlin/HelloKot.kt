@@ -1,7 +1,6 @@
 package org.kevoree.library.kotlin
 
 import org.kevoree.framework.ChannelFragment
-import org.kevoree.framework.osgi.KevoreeInstanceActivator
 
 /**
  * Created with IntelliJ IDEA.

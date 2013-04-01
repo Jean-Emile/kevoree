@@ -19,28 +19,28 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 
 /**
- *
  * @author ffouquet
  */
 @Provides({
-    @ProvidedPort(name = "on", type = PortType.MESSAGE,theadStrategy = ThreadStrategy.SHARED_THREAD),
-    @ProvidedPort(name = "off", type = PortType.MESSAGE),
-    @ProvidedPort(name = "toggle", type = PortType.SERVICE, className = ToggleLightService.class)
+        @ProvidedPort(name = "on", type = PortType.MESSAGE, theadStrategy = ThreadStrategy.SHARED_THREAD),
+        @ProvidedPort(name = "off", type = PortType.MESSAGE),
+        @ProvidedPort(name = "toggle", type = PortType.SERVICE, className = ToggleLightService.class)
 })
 @ComponentType
 public class FakeSimpleLight extends AbstractFakeStuffComponent {
 
-	private static final Logger logger = LoggerFactory.getLogger(FakeSimpleLight.class);
+    private static final Logger logger = LoggerFactory.getLogger(FakeSimpleLight.class);
     private static final int FRAME_WIDTH = 300;
     private static final int FRAME_HEIGHT = 300;
     private MyFrame frame;
     private Boolean state = false;
 
-    @Port(name = "toggle",method = "toggle")
+    @Port(name = "toggle", method = "toggle")
     public String toogle() throws Exception {
-        if(state){
+        if (state) {
             this.lightOff("");
         } else {
             this.lightOn("");
@@ -75,19 +75,31 @@ public class FakeSimpleLight extends AbstractFakeStuffComponent {
     }
 
     @Ports({
-        @Port(name = "on")
+            @Port(name = "on")
     })
-    public void lightOn(Object o) {
-        frame.setColor(Color.green);
-        state = true;
+    public void lightOn(Object o) throws InvocationTargetException, InterruptedException {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                frame.setColor(Color.green);
+                //frame.revalidate();
+                state = true;
+            }
+        });
     }
 
     @Ports({
-        @Port(name = "off")
+            @Port(name = "off")
     })
-    public void lightOff(Object o) {
-        frame.setColor(Color.red);
-        state = false;
+    public void lightOff(Object o) throws InvocationTargetException, InterruptedException {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                frame.setColor(Color.red);
+                //frame.revalidate();
+                state = false;
+            }
+        });
     }
 
     private static class MyFrame extends JFrame {
@@ -98,7 +110,7 @@ public class FakeSimpleLight extends AbstractFakeStuffComponent {
             super("Couleur " + c.toString());
             this.c = c;
             setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
-            this.setDefaultCloseOperation (JFrame.DO_NOTHING_ON_CLOSE);
+            this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
             pack();
         }
 

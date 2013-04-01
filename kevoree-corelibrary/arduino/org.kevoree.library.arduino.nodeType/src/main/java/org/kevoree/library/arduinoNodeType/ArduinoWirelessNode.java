@@ -1,20 +1,14 @@
 package org.kevoree.library.arduinoNodeType;
 
-import org.kevoree.ContainerRoot;
 import org.kevoree.annotation.Update;
-import org.kevoree.api.service.core.classloading.KevoreeClassLoaderHandler;
 import org.kevoree.extra.kserial.KevoreeSharedCom;
 import org.kevoree.fota.Fota;
-import org.kevoree.fota.Nativelib;
 import org.kevoree.fota.api.FotaEventListener;
 import org.kevoree.fota.events.FotaEvent;
 import org.kevoree.fota.utils.Board;
-import org.kevoree.kcl.KevoreeJarClassLoader;
-import org.kevoreeAdaptation.AdaptationModel;
+import org.kevoreeadaptation.AdaptationModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 /**
  * Created with IntelliJ IDEA.

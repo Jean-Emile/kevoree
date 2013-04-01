@@ -83,9 +83,9 @@ public class VideoViewerImageRecorder extends AbstractComponentType {
 		if (!isAlreadyInitialized) {
 			init();
 		}
-		if (message instanceof StdKevoreeMessage && !((StdKevoreeMessage) message).getValue("image").isEmpty()
-				&& ((StdKevoreeMessage) message).getValue("image").get() instanceof BufferedImage) {
-			image = (BufferedImage) ((StdKevoreeMessage) message).getValue("image").get();
+		if (message instanceof StdKevoreeMessage && ((StdKevoreeMessage) message).getValue("image")!=null
+				&& ((StdKevoreeMessage) message).getValue("image") instanceof BufferedImage) {
+			image = (BufferedImage) ((StdKevoreeMessage) message).getValue("image");
 			/*if (message instanceof BufferedImage) {
 						image = (BufferedImage) message;*/
 			if (!isAlreadyInitialized) {

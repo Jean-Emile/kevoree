@@ -123,7 +123,7 @@ public class FakeConsole extends AbstractFakeStuffComponent {
                 KevoreeMessage kmsg = (KevoreeMessage) text;
                 frame.appendIncomming("->");
                 for (String key : kmsg.getKeys()) {
-                    frame.appendIncomming(key + "=" + kmsg.getValue(key).get());
+                    frame.appendIncomming(key + "=" + kmsg.getValue(key));
                 }
             } else {
                 frame.appendIncomming("->" + text.toString());

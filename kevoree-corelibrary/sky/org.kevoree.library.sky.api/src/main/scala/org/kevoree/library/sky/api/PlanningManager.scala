@@ -2,11 +2,11 @@ package org.kevoree.library.sky.api
 
 import command.{AddNodeCommand, RemoveNodeCommand}
 import nodeType.{HostNode, AbstractHostNode}
-import org.kevoreeAdaptation.{AdaptationPrimitive, ParallelStep, AdaptationModel}
+import org.kevoreeadaptation.{AdaptationPrimitive, ParallelStep, AdaptationModel}
 import org.slf4j.{LoggerFactory, Logger}
 import org.kevoree._
 import api.PrimitiveCommand
-import org.kevoreeAdaptation.impl.DefaultKevoreeAdaptationFactory
+import org.kevoreeadaptation.impl.DefaultKevoreeAdaptationFactory
 import scala.collection.JavaConversions._
 
 

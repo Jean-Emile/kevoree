@@ -5,7 +5,7 @@
 
 package org.kevoree.library.arduinoNodeType.generator
 
-import org.kevoreeAdaptation.AdaptationModel
+import org.kevoreeadaptation.AdaptationModel
 import org.kevoree.library.arduinoNodeType.{PMemory, ArduinoBoardType}
 import org.kevoree._
 import framework.AbstractNodeType
