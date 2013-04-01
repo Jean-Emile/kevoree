@@ -6,7 +6,7 @@ import org.kevoree.api.service.core.script.KevScriptEngineFactory
 import org.kevoree.api.PrimitiveCommand
 import org.slf4j.LoggerFactory
 import org.kevoree.ContainerRoot
-import org.kevoree.framework.aspects.TypeDefinitionAspect
+import org.kevoree.framework.kaspects.TypeDefinitionAspect
 import org.kevoree.NodeType
 import org.kevoree.framework.KevoreeGeneratorHelper
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
@@ -45,12 +45,14 @@ import org.kevoree.framework.ChannelTypeFragmentThread
 
 class AddInstance(val c: Instance, val nodeName: String, val modelservice: KevoreeModelHandlerService, val kscript: KevScriptEngineFactory, val bs: org.kevoree.api.Bootstraper): PrimitiveCommand {
 
+    private val typeDefinitionAspect = TypeDefinitionAspect()
+
     override fun execute(): Boolean {
         val model = c.getTypeDefinition()!!.eContainer() as ContainerRoot
         val node = model.findNodesByID(nodeName)
-        val deployUnit = org.kevoree.framework.aspects.TypeDefinitionAspect(c.getTypeDefinition()).foundRelevantDeployUnit(node)
+        val deployUnit = typeDefinitionAspect.foundRelevantDeployUnit(c.getTypeDefinition(), node!!)
         val nodeType = node!!.getTypeDefinition()
-        val nodeTypeName = org.kevoree.framework.aspects.TypeDefinitionAspect(c.getTypeDefinition()).foundRelevantHostNodeType(nodeType as NodeType, c.getTypeDefinition())!!.get()!!.getName()
+        val nodeTypeName = typeDefinitionAspect.foundRelevantHostNodeType(nodeType as NodeType, c.getTypeDefinition())!!.getName()
         try {
 
             val beanClazz = bs.getKevoreeClassLoaderHandler().getKevoreeClassLoader(deployUnit)!!.loadClass(c.getTypeDefinition()!!.getBean())
