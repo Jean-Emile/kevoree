@@ -1,15 +1,12 @@
 package org.kevoree.library.javase.basicGossiper.group
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 import org.kevoree.ContainerRoot
-import org.kevoree.framework.aspects.KevoreeAspects._
 import scala.collection.JavaConversions._
+import org.kevoree.framework.kaspects.TypeDefinitionAspect
 
 object GroupUtils {
+
+  private val typeDefinitionAspect = new TypeDefinitionAspect()
 
   def detectHaraKiri(newModel:ContainerRoot,oldModel:ContainerRoot,instanceGroupName:String,nodeName:String) : Boolean={
     //SEARCH FOR NEW GROUP INSTANCE IN NEW MODEL
@@ -22,7 +19,7 @@ object GroupUtils {
                 val node = newModel.getNodes.find(node=>node.getName==nodeName).get
                 
                 
-                newGroup.getTypeDefinition.foundRelevantDeployUnit(node).getHashcode != currentGroup.getTypeDefinition.foundRelevantDeployUnit(node).getHashcode
+                typeDefinitionAspect.foundRelevantDeployUnit(newGroup.getTypeDefinition, node).getHashcode != typeDefinitionAspect.foundRelevantDeployUnit(currentGroup.getTypeDefinition, node).getHashcode
             }
             case None => true//STRANGE ERROR wTf  - HaraKiri best effort
           }

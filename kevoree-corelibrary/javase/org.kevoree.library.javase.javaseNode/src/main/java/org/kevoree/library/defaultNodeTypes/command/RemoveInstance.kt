@@ -22,10 +22,12 @@ import org.kevoree.api.service.core.handler.KevoreeModelHandlerService
 import org.kevoree.api.service.core.script.KevScriptEngineFactory
 import org.kevoree.api.PrimitiveCommand
 import org.kevoree.framework.KevoreeGeneratorHelper
+import org.kevoree.framework.kaspects.TypeDefinitionAspect
 
 class RemoveInstance(val c: Instance, val nodeName: String, val modelservice: KevoreeModelHandlerService, val kscript: KevScriptEngineFactory, val bs: org.kevoree.api.Bootstraper): PrimitiveCommand {
 
     var logger = LoggerFactory.getLogger(this.javaClass)!!
+    private val typeDefinitionAspect = TypeDefinitionAspect()
 
     override fun undo() {
         try {
@@ -41,9 +43,9 @@ class RemoveInstance(val c: Instance, val nodeName: String, val modelservice: Ke
             val instanceRef = KevoreeDeployManager.getRef(c.javaClass.getName(), c.getName())
             val model = c.getTypeDefinition()!!.eContainer() as ContainerRoot
             val node = model.findNodesByID(nodeName)
-            val deployUnit = org.kevoree.framework.aspects.TypeDefinitionAspect(c.getTypeDefinition()).foundRelevantDeployUnit(node)
+            val deployUnit = typeDefinitionAspect.foundRelevantDeployUnit(c.getTypeDefinition(), node!!)
             val nodeType = node!!.getTypeDefinition()
-            val nodeTypeName = org.kevoree.framework.aspects.TypeDefinitionAspect(c.getTypeDefinition()).foundRelevantHostNodeType(nodeType as NodeType, c.getTypeDefinition())!!.get()!!.getName()
+            val nodeTypeName = typeDefinitionAspect.foundRelevantHostNodeType(nodeType as NodeType, c.getTypeDefinition())!!.getName()
             val activatorPackage = KevoreeGeneratorHelper().getTypeDefinitionGeneratedPackage(c.getTypeDefinition(), nodeTypeName)
             val factoryName = activatorPackage + "." + c.getTypeDefinition()!!.getName() + "Factory"
             val clazz = bs.getKevoreeClassLoaderHandler().getKevoreeClassLoader(deployUnit)!!.loadClass(factoryName)
