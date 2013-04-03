@@ -1,4 +1,4 @@
-package org.daum.library.p2pSock;
+package org.kevoree.library.p2pSock;
 
 import org.kevoree.framework.message.Message;
 import org.slf4j.Logger;
@@ -15,7 +15,6 @@ import java.util.concurrent.Semaphore;
  * User: jed
  * Date: 13/08/12
  * Time: 10:34
- * To change this template use File | Settings | File Templates.
  */
 public class QueueMsg  extends Thread {
 

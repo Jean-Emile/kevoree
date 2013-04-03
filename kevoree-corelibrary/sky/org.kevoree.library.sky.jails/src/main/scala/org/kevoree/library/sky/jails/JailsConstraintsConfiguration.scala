@@ -25,7 +25,10 @@ object JailsConstraintsConfiguration {
       case None => logger.debug("Unable to find information about the node to start"); false
       case Some(node) => {*/
     var modeId = "log"
-    var property = KevoreePropertyHelper.getProperty(node, "MODE").getOrElse("RELAX")
+    var property = KevoreePropertyHelper.$instance.getProperty(node, "MODE", false, "")
+    if (property == null) {
+      property = "RELAX"
+    }
     if (property == "STRICT") {
       modeId = "sigkill"
     } else if (property == "AVOID") {
@@ -34,7 +37,10 @@ object JailsConstraintsConfiguration {
     var execResult = true
     var exec = Array[String]()
     logger.debug("asking to node property {}...", "RAM")
-    property = KevoreePropertyHelper.getProperty(node, "RAM").getOrElse("N/A")
+    property = KevoreePropertyHelper.$instance.getProperty(node, "RAM", false, "")
+    if (property == null) {
+      property = "N/A"
+    }
     logger.debug("RAM = {}", property)
     if (property != "N/A") {
       try {
@@ -120,7 +126,10 @@ object JailsConstraintsConfiguration {
                  property, nodeName)
       }
     }*/
-    property = KevoreePropertyHelper.getProperty(node, "WALLCLOCKTIME").getOrElse("N/A")
+    property = KevoreePropertyHelper.$instance.getProperty(node, "WALLCLOCKTIME", false, "")
+    if (property == null) {
+      property = "N/A"
+    }
     if (execResult && property != "N/A") {
       try {
         val limit = Integer.parseInt(property)
@@ -141,7 +150,10 @@ object JailsConstraintsConfiguration {
         case e: NumberFormatException => logger.warn("Unable to take into account WALLCLOCKTIME limitation because the value {} is not well defined for {}", Array[String](property, node.getName))
       }
     }
-    property = KevoreePropertyHelper.getProperty(node, "DISK_SIZE").getOrElse("N/A")
+    property = KevoreePropertyHelper.$instance.getProperty(node, "DISK_SIZE", false, "")
+    if (property == null) {
+      property = "N/A"
+    }
     if (execResult && property != "N/A") {
       //          var limit = 5 * 1024 * 1024
       /*if (property.toLowerCase.endsWith("gb") || property.toLowerCase.endsWith("g")) {

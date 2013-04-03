@@ -237,8 +237,11 @@ object HTMLPageBuilder {
                       {streamName match {
                       case "out" => {
                         var subresult: List[scala.xml.Elem] = List()
-                        val logFolderOption = KevoreePropertyHelper.getProperty(node, "log_folder")
-                        val file = new File(logFolderOption.getOrElse(System.getProperty("java.io.tmpdir")) + File.separator + nodeName + ".log.out")
+                        var logFolderOption = KevoreePropertyHelper.$instance.getProperty(node, "log_folder", false, "")
+                        if (logFolderOption == null) {
+                          logFolderOption = System.getProperty("java.io.tmpdir")
+                        }
+                        val file = new File(logFolderOption + File.separator + nodeName + ".log.out")
                         if (file.exists()) {
                           Source.fromFile(file).getLines().toList /*.reverse*/ .foreach {
                             line =>
@@ -254,8 +257,11 @@ object HTMLPageBuilder {
                       }
                       case "err" => {
                         var subresult: List[scala.xml.Elem] = List()
-                        val logFolderOption = KevoreePropertyHelper.getProperty(node, "log_folder")
-                        val file = new File(logFolderOption.getOrElse(System.getProperty("java.io.tmpdir")) + File.separator + nodeName + ".log.err")
+                        var logFolderOption = KevoreePropertyHelper.$instance.getProperty(node, "log_folder", false, "")
+                        if (logFolderOption == null) {
+                          logFolderOption = System.getProperty("java.io.tmpdir")
+                        }
+                        val file = new File(logFolderOption + File.separator + nodeName + ".log.err")
                         if (file.exists()) {
                           Source.fromFile(file).getLines().toList /*.reverse*/ .foreach {
                             line =>
@@ -349,7 +355,7 @@ object HTMLPageBuilder {
         {var result: List[scala.xml.Elem] = List()
       nodeList.foreach {
         child => {
-          val ips = KevoreePropertyHelper.getNetworkProperties(model, child.getName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP)
+          val ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, child.getName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP)
           val ipString = ips.mkString(", ")
           result = result ++ List(
             <tr>

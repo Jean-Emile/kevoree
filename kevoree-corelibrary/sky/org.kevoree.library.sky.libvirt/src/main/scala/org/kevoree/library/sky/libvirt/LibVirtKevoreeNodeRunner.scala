@@ -125,7 +125,7 @@ abstract class LibVirtKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHost
       val net: Network = conn.networkLookupByName("default")
       val doc: Document = parser.build(net.getXMLDesc(0), null)
 
-      val ipList = KevoreePropertyHelper.getNetworkProperties(model, domain.getName, Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP)
+      val ipList = KevoreePropertyHelper.$instance.getNetworkProperties(model, domain.getName, Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP)
 
       for (i <- 0 until ipList.size()) {
         val ip = ipList.get(i)

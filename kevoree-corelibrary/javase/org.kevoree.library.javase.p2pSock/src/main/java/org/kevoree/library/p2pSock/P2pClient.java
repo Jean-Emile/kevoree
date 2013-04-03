@@ -1,11 +1,10 @@
-package org.daum.library.p2pSock;
+package org.kevoree.library.p2pSock;
 
 /**
  * Created with IntelliJ IDEA.
  * User: jed
  * Date: 08/08/12
  * Time: 14:42
- * To change this template use File | Settings | File Templates.
  */
 import org.kevoree.framework.message.Message;
 import org.slf4j.Logger;

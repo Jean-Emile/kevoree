@@ -1,14 +1,14 @@
-package org.daum.library.p2pSock;
+package org.kevoree.library.p2pSock;
 
 import org.kevoree.Channel;
 import org.kevoree.ContainerRoot;
 import org.kevoree.annotation.*;
 import org.kevoree.api.service.core.handler.ModelListener;
 import org.kevoree.framework.*;
-import org.kevoree.framework.KevoreePlatformHelper;
 import org.kevoree.framework.message.Message;
 import org.slf4j.LoggerFactory;
-import java.io.*;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 
@@ -17,7 +17,6 @@ import java.util.concurrent.Semaphore;
  * User: jed
  * Date: 08/08/12
  * Time: 11:42
- * To change this template use File | Settings | File Templates.
  */
 
 @Library(name = "JavaSE", names = {"Android"})
@@ -93,7 +92,7 @@ public class P2pSock extends AbstractChannelFragment implements ModelListener{
                 startp(); // TODO CHECK MSG IN QUEUE
             }
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
@@ -193,12 +192,7 @@ public class P2pSock extends AbstractChannelFragment implements ModelListener{
 
     public String getAddress(String remoteNodeName)
     {
-        String ip = KevoreePlatformHelper.getProperty(model, remoteNodeName,
-                org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
-        if (ip == null || ip.equals("")) {
-            ip = "";
-        }
-        return ip;
+        return KevoreePropertyHelper.$instance.getNetworkProperties(model, remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP()).get(0);
     }
 
 
@@ -207,10 +201,10 @@ public class P2pSock extends AbstractChannelFragment implements ModelListener{
         Channel channelOption = getModelService().getLastModel().findByPath("hubs[" + getName() + "]", Channel.class);
         int port = 8000;
         if (channelOption!=null) {
-            scala.Option<String> portOption = KevoreePropertyHelper.getProperty(channelOption, "port", true, nodeName);
-            if (portOption.isDefined()) {
+            String portOption = KevoreePropertyHelper.$instance.getProperty(channelOption, "port", true, nodeName);
+            if (portOption != null) {
                 try {
-                    port = Integer.parseInt(portOption.get());
+                    port = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} is not an Integer, default value ({}) is used.", getName(), port);
                 }

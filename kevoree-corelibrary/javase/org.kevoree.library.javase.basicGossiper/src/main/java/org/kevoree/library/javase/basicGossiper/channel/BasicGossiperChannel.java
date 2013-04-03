@@ -19,7 +19,6 @@ import org.kevoree.library.javase.basicGossiper.GossiperProcess;
 import org.kevoree.library.javase.basicGossiper.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Option;
 import scala.Tuple2;
 
 import java.net.InetSocketAddress;
@@ -150,7 +149,7 @@ public class BasicGossiperChannel extends AbstractChannelFragment implements Mod
 
     @Override
     public List<String> getAddresses(String remoteNodeName) {
-        return org.kevoree.framework.KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        return org.kevoree.framework.KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
     }
 
     @Override
@@ -158,10 +157,10 @@ public class BasicGossiperChannel extends AbstractChannelFragment implements Mod
         Channel channelOption = currentCacheModel.get().findByPath("hubs[" + getName() + "]", Channel.class);
         int port = 8000;
         if (channelOption != null) {
-            Option<String> portOption = org.kevoree.framework.KevoreePropertyHelper.getProperty(channelOption, "port", true, nodeName);
-            if (portOption.isDefined()) {
+            String portOption = org.kevoree.framework.KevoreePropertyHelper.$instance.getProperty(channelOption, "port", true, nodeName);
+            if (portOption != null) {
                 try {
-                    port = Integer.parseInt(portOption.get());
+                    port = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} is not an Integer, default value ({}) is used.", getName(), port);
                 }

@@ -16,7 +16,6 @@ import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.KevoreeXmiHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Option;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -144,16 +143,16 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
         int PORT = 8000;
         Group groupOption = model.findGroupsByID(getName());
         if (groupOption != null) {
-            Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
-            if (portOption.isDefined()) {
+            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, targetNodeName);
+            if (portOption != null) {
                 try {
-                    PORT = Integer.parseInt(portOption.get());
+                    PORT = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
         }
-        List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         if (ips.size() > 0) {
             logger.debug("Try to send the model using one of the {} defined ips for {}", ips.size(), targetNodeName);
             for (String ip : ips) {
@@ -210,16 +209,16 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
         int PORT = 8000;
         Group groupOption = model.findGroupsByID(getName());
         if (groupOption != null) {
-            Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
-            if (portOption.isDefined()) {
+            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, targetNodeName);
+            if (portOption != null) {
                 try {
-                    PORT = Integer.parseInt(portOption.get());
+                    PORT = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
         }
-        List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         if (ips.size() > 0) {
             for (String ip : ips) {
                 try {

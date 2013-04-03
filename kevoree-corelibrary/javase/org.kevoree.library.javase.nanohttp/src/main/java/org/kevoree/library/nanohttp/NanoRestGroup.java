@@ -221,16 +221,16 @@ public class NanoRestGroup extends AbstractGroupType {
         boolean sendModel = false;
         Group groupOption = model.findGroupsByID(getName());
         if (groupOption != null) {
-            Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
+            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, targetNodeName);
             int PORT = 8000;
-            if (portOption.isDefined()) {
+            if (portOption != null) {
                 try {
-                    PORT = Integer.parseInt(portOption.get());
+                    PORT = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} is not an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
-            List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+            List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
             if (ips.size() > 0) {
             for (String ip : ips) {
                 try {
@@ -263,16 +263,16 @@ public class NanoRestGroup extends AbstractGroupType {
         boolean sendModel = false;
         Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
         if (groupOption != null) {
-            Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
+            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, targetNodeName);
             int PORT = 8000;
-            if (portOption.isDefined()) {
+            if (portOption != null) {
                 try {
-                    PORT = Integer.parseInt(portOption.get());
+                    PORT = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} is not an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
-            List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+            List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
             for (String ip : ips) {
                 try {
                     logger.debug("try to send model on url=>" + "http://" + ip + ":" + PORT + "/model/current?nodesrc=" + sender);
@@ -335,16 +335,16 @@ public class NanoRestGroup extends AbstractGroupType {
 
     @Override
     public ContainerRoot pull(String targetNodeName) throws Exception {
-        Option<String> portOption = KevoreePropertyHelper.getProperty(getModelElement(), "port", true, targetNodeName);
+        String portOption = KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, targetNodeName);
         int PORT = 8000;
-        if (portOption.isDefined()) {
+        if (portOption != null) {
             try {
-                PORT = Integer.parseInt(portOption.get());
+                PORT = Integer.parseInt(portOption);
             } catch (NumberFormatException e) {
                 logger.warn("Attribute \"port\" of {} is not an Integer. Default value ({}) is used", getName(), PORT);
             }
         }
-        List<String> ips = KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         ContainerRoot model = null;
         for (String ip : ips) {
             try {

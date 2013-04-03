@@ -7,7 +7,7 @@ import process.ProcessExecutor
 import org.kevoree.library.sky.api.KevoreeNodeRunner
 import java.io._
 import org.kevoree.{ContainerNode, ContainerRoot}
-import org.kevoree.framework.{KevoreePlatformHelper, KevoreeXmiHelper, Constants, KevoreePropertyHelper}
+import org.kevoree.framework.{KevoreeXmiHelper, Constants, KevoreePropertyHelper}
 import scala.collection.JavaConversions._
 
 
@@ -35,22 +35,22 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout : L
         // looking for currently launched jail
         val result = processExecutor.listIpJails(nodeName)
         if (result._1) {
-          var newIp = "127.0.0.1"
+          var newIps = List("127.0.0.1")
           // check if the node have a inet address
-          val ipOption = KevoreePlatformHelper.getProperty(iaasModel, nodeName, Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP)
-          if (ipOption != "") {
-            newIp = ipOption
+          val ips = KevoreePropertyHelper.$instance.getNetworkProperties(iaasModel, nodeName, Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP)
+          if (ips.size() > 0) {
+            newIps = ips.toList
           } else {
             logger.warn("Unable to get the IP for the new jail, the creation may fail")
           }
-          if (processExecutor.addNetworkAlias(iaasNode.getNetworkInterface, newIp, iaasNode.getAliasMask)) {
+          if (processExecutor.addNetworkAlias(iaasNode.getNetworkInterface, newIps, iaasNode.getAliasMask)) {
             // looking for the flavors
             var flavor = lookingForFlavors(iaasModel, node)
             if (flavor == null) {
               flavor = iaasNode.getDefaultFlavor
             }
             // create the new jail
-            if (processExecutor.createJail(flavor, nodeName, newIp, findArchive(nodeName), addTimeout - (System.currentTimeMillis() - beginTimestamp))) {
+            if (processExecutor.createJail(flavor, nodeName, newIps, findArchive(nodeName), addTimeout - (System.currentTimeMillis() - beginTimestamp))) {
               var jailPath = processExecutor.findPathForJail(nodeName)
               // find the needed version of Kevoree for the child node
               val version = findVersionForChildNode(nodeName, childBootstrapModel, iaasModel.getNodes.find(n => n.getName == iaasNode.getNodeName).get)
@@ -61,7 +61,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout : L
                 // specify limitation on jail such as CPU, RAM
                 if (JailsConstraintsConfiguration.applyJailConstraints(iaasModel, node)) {
                   // configure ssh access
-                  configureSSHServer(jailPath, newIp)
+                  configureSSHServer(jailPath, newIps)
                   // launch the jail
                   if (processExecutor.startJail(nodeName, addTimeout - (System.currentTimeMillis() - beginTimestamp))) {
                     logger.debug("{} started", nodeName)
@@ -73,7 +73,11 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout : L
                       val logFile = System.getProperty("java.io.tmpdir") + File.separator + nodeName + ".log"
                       outFile = new File(logFile + ".out")
                       errFile = new File(logFile + ".err")
-                      processExecutor.startKevoreeOnJail(jailId, KevoreePropertyHelper.getProperty(node, "RAM").getOrElse("N/A"), nodeName /*, outFile, errFile*/ , this, iaasNode, managedChildKevoreePlatform)
+                      var property = KevoreePropertyHelper.$instance.getProperty(node, "RAM", false, "")
+                      if (property == null) {
+                        property = "N/A"
+                      }
+                      processExecutor.startKevoreeOnJail(jailId, property, nodeName /*, outFile, errFile*/ , this, iaasNode, managedChildKevoreePlatform)
                     } else {
                       logger.error("Unable to find the jail {}", nodeName)
                       false
@@ -95,7 +99,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout : L
               false
             }
           } else {
-            logger.error("Unable to define a new alias {} with {}", Array[String](nodeName, newIp))
+            logger.error("Unable to define a new alias {} with {}", Array[String](nodeName, newIps.mkString(", ")))
             false
           }
         } else {
@@ -146,11 +150,11 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout : L
 
   private def lookingForFlavors(iaasModel: ContainerRoot, node: ContainerNode): String = {
     logger.debug("looking for specific flavor")
-    val flavorsOption = KevoreePropertyHelper.getProperty(node, "flavor")
-    if (flavorsOption.isDefined && iaasNode.getAvailableFlavors.contains(flavorsOption.get)) {
-      flavorsOption.get
-    } else if (flavorsOption.isDefined && !iaasNode.getAvailableFlavors.contains(flavorsOption.get)) {
-      logger.warn("Unknown flavor ({}) or unavailable flavor on {}", Array[String] (flavorsOption.get, iaasNode.getName))
+    val flavorsOption = KevoreePropertyHelper.$instance.getProperty(node, "flavor", false, "")
+    if (flavorsOption != null && iaasNode.getAvailableFlavors.contains(flavorsOption)) {
+      flavorsOption
+    } else if (flavorsOption != null && !iaasNode.getAvailableFlavors.contains(flavorsOption)) {
+      logger.warn("Unknown flavor ({}) or unavailable flavor on {}", Array[String] (flavorsOption, iaasNode.getName))
       null
     } else {
       null

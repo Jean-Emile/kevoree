@@ -1,4 +1,4 @@
-package org.daum.library.p2pSock;
+package org.kevoree.library.p2pSock;
 
 import org.kevoree.framework.AbstractChannelFragment;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,6 @@ import java.io.ObjectStreamClass;
  * User: jed
  * Date: 09/08/12
  * Time: 09:32
- * To change this template use File | Settings | File Templates.
  */
 public class ObjectInputStreamImpl extends ObjectInputStream {
     private Logger logger = LoggerFactory.getLogger(ObjectInputStreamImpl.class);

@@ -10,7 +10,6 @@ import org.kevoree.framework.message.Message;
 import org.kevoree.library.camel.framework.AbstractKevoreeCamelChannelType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Option;
 
 import java.util.List;
 
@@ -130,15 +129,15 @@ public class CamelJettyChannelMessage extends AbstractKevoreeCamelChannelType {
     }
 
     public List<String> getAddresses(String remoteNodeName) {
-        return KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        return KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
     }
 
     public int parsePortNumber(String nodeName) {
-        Option<String> portOption = KevoreePropertyHelper.getProperty(getModelElement(), "port", true, nodeName);
+        String portOption = KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, nodeName);
         int port = 9000;
-        if (portOption.isDefined()) {
+        if (portOption != null) {
             try {
-                port = Integer.parseInt(portOption.get());
+                port = Integer.parseInt(portOption);
             } catch (NumberFormatException e) {
                 logger.warn("Attribute \"port\" of {} is not an Integer, Default value ({}) is returned", getName(), port);
             }

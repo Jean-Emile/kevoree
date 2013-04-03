@@ -23,7 +23,6 @@ import org.webbitserver.WebServer;
 import org.webbitserver.WebServers;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.handler.StaticFileHandler;
-import scala.Option;
 
 import javax.swing.*;
 import java.io.ByteArrayInputStream;
@@ -272,9 +271,9 @@ public class AWebSocketGroup extends AbstractGroupType implements DeployUnitReso
         int portDefined = 0;
         for (ContainerNode subNode : group.getSubNodes()) {
             if (group != null) {
-                Option<String> portOption = KevoreePropertyHelper.getProperty(
+                String portOption = KevoreePropertyHelper.$instance.getProperty(
                         group, "port", true, subNode.getName());
-                if (portOption.isDefined() && !portOption.get().trim().isEmpty()) {
+                if (portOption != null && !portOption.trim().isEmpty()) {
                     portDefined++;
                     if (portDefined > 1) {
                         // we have more than 1 port defined in this group nodes
@@ -307,10 +306,10 @@ public class AWebSocketGroup extends AbstractGroupType implements DeployUnitReso
             Group groupOption = model.findByPath("groups[" + getName() + "]",
                     Group.class);
             if (groupOption != null) {
-                Option<String> portOption = KevoreePropertyHelper.getProperty(
+                String portOption = KevoreePropertyHelper.$instance.getProperty(
                         groupOption, "port", true, subNode.getName());
-                if (portOption.isDefined()) {
-                    if (!portOption.get().trim().isEmpty()) {
+                if (portOption != null) {
+                    if (!portOption.trim().isEmpty()) {
                         portDefined++;
                         masterServerNodeName = subNode.getName();
                     }
@@ -474,7 +473,7 @@ public class AWebSocketGroup extends AbstractGroupType implements DeployUnitReso
         if (mvnRepo) {
             // process to do when we are a client & mvn repo is running
             List<String> urls = new ArrayList<String>();
-            Object mvnPort = KevoreePropertyHelper.getProperty(getModelElement(), "repo_puerto", false, null);
+            Object mvnPort = KevoreePropertyHelper.$instance.getProperty(getModelElement(), "repo_puerto", false, null);
             for (Map.Entry<String, Integer> entry: getMasterServerAddresses().entrySet()) {
                 String url = "http://" + entry.getKey() + ":" + mvnPort;
                 logger.info("Add URL " + url);
@@ -515,14 +514,14 @@ public class AWebSocketGroup extends AbstractGroupType implements DeployUnitReso
         for (ContainerNode subNode : group.getSubNodes()) {
             logger.debug("is it group null ?? {}", group);
             if (group != null) {
-                Option<String> portOption = KevoreePropertyHelper.getProperty(
+                String portOption = KevoreePropertyHelper.$instance.getProperty(
                         group, "port", true, subNode.getName());
                 // if a port is defined then it is a master server
-                if (portOption.isDefined()) {
-                    logger.debug("{} port is : {}", subNode.getName(), portOption.get());
-                    int port = Integer.parseInt(portOption.get());
-                    List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, subNode.getName(),
-                            org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+                if (portOption != null) {
+                    logger.debug("{} port is : {}", subNode.getName(), portOption);
+                    int port = Integer.parseInt(portOption);
+                    List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, subNode.getName(),
+                            org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
                     if (ips.isEmpty()) {
                         // no IP defined for master server, let's give it a try locally
                         map.put("127.0.0.1", port);

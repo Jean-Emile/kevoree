@@ -27,7 +27,7 @@ object IaaSKloudReasoner extends KloudReasoner {
       node =>
         val parentNodeOption = node.getHost
         if (parentNodeOption != null) {
-          val ips: util.List[String] = KevoreePropertyHelper.getNetworkProperties(iaasModel, node.getName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP)
+          val ips: util.List[String] = KevoreePropertyHelper.$instance.getNetworkProperties(iaasModel, node.getName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP)
           if (ips.size() > 0) {
             val portNumber = configureIsolatedNode(node, parentNodeOption.getName, ips, iaasModel, kengine, usedPorts)
             if (portNumber != 0) {
@@ -224,7 +224,7 @@ object IaaSKloudReasoner extends KloudReasoner {
     // define IP using selecting node to know what is the network used in this machine
     val ipOption = KloudNetworkHelper.selectIP(parentName, model, usedIps)
     if (ipOption.isDefined) {
-      kengine.addVariable("ipKey", Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP)
+      kengine.addVariable("ipKey", Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP)
       kengine.addVariable("ip", ipOption.get)
       kengine append "network {nodeName} {'{ipKey}' = '{ip}' }\n"
     } else {

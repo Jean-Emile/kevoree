@@ -1,14 +1,12 @@
 package org.kevoree.library.arduinoNodeType
 
 import org.kevoree.tools.marShell.ast.Script
-import org.kevoree.{KevoreeFactory, ContainerRoot}
+import org.kevoree.ContainerRoot
 import org.kevoree.tools.marShell.interpreter.KevsInterpreterContext
 import org.kevoree.tools.marShellTransform.KevScriptWrapper
 import org.kevoree.extra.kserial.{KevoreeSharedCom, ContentListener}
-import org.kevoree.framework.KevoreePropertyHelper
 import org.slf4j.LoggerFactory
 import org.kevoree.cloner.ModelCloner
-import org.kevoree.extra.kserial.Utils.KHelpers
 import org.kevoree.extra.kserial.SerialPort._
 import scala.collection.JavaConversions._
 

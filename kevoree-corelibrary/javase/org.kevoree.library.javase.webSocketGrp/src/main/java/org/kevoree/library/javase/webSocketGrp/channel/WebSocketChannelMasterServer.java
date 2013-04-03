@@ -2,10 +2,8 @@ package org.kevoree.library.javase.webSocketGrp.channel;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import org.kevoree.annotation.ChannelTypeFragment;
 import org.kevoree.annotation.*;
 import org.kevoree.framework.*;
-import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.message.Message;
 import org.kevoree.library.javase.webSocketGrp.client.ConnectionTask;
 import org.kevoree.library.javase.webSocketGrp.client.WebSocketClient;
@@ -17,7 +15,6 @@ import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebServers;
 import org.webbitserver.WebSocketConnection;
-import scala.Option;
 
 import java.io.*;
 import java.net.URI;
@@ -293,9 +290,9 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
         List<URI> uris = new ArrayList<URI>();
 
         for (KevoreeChannelFragment kfc : getOtherFragments()) {
-            Option<String> portOption = KevoreePropertyHelper.getProperty(getModelElement(), "port", true, kfc.getNodeName());
-            if (portOption.isDefined()) {
-                int port = Integer.parseInt(portOption.get().trim());
+            String portOption = KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, kfc.getNodeName());
+            if (portOption != null) {
+                int port = Integer.parseInt(portOption.trim());
                 List<String> ips = getAddresses(kfc.getNodeName());
 
                 for (String ip : ips) {
@@ -307,7 +304,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
     }
 
     protected List<String> getAddresses(String remoteNodeName) {
-        List<String> ips = org.kevoree.framework.KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = org.kevoree.framework.KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         // if there is no IP defined in node network properties
         // then give it a try locally
         if (ips.isEmpty()) ips.add("127.0.0.1");
@@ -332,15 +329,15 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
 
         // check other fragment port property
         for (KevoreeChannelFragment kfc : getOtherFragments()) {
-            Option<String> portOption = KevoreePropertyHelper.getProperty(getModelElement(), "port", true, kfc.getNodeName());
-            if (portOption.isDefined()) {
+            String portOption = KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, kfc.getNodeName());
+            if (portOption != null) {
                 portPropertyCounter++;
             }
         }
 
         // check my port property
-        Option<String> portOption = KevoreePropertyHelper.getProperty(getModelElement(), "port", true, getNodeName());
-        if (portOption.isDefined()) portPropertyCounter++;
+        String portOption = KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, getNodeName());
+        if (portOption != null) portPropertyCounter++;
 
         if (portPropertyCounter == 0) {
             throw new MultipleMasterServerException("You are supposed to give one master server! None found.");
