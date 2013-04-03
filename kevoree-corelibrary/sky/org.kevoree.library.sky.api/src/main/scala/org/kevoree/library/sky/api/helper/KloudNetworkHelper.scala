@@ -24,10 +24,10 @@ object KloudNetworkHelper {
     kloudModel.findByPath("nodes[" + parentNodeName + "]", classOf[ContainerNode]) match {
       case null => None
       case node: ContainerNode => {
-        val subnetOption = KevoreePropertyHelper.getProperty(node, "subnet")
-        val maskOption = KevoreePropertyHelper.getProperty(node, "mask")
-        if (subnetOption.isDefined && maskOption.isDefined) {
-          Some(lookingForNewIp(alreadyUsedIps, subnetOption.get, maskOption.get))
+        val subnetOption = KevoreePropertyHelper.$instance.getProperty(node, "subnet", false, "")
+        val maskOption = KevoreePropertyHelper.$instance.getProperty(node, "mask", false, "")
+        if (subnetOption != null && maskOption != null) {
+          Some(lookingForNewIp(alreadyUsedIps, subnetOption, maskOption))
         } else {
           Some("127.0.0.1")
         }
@@ -128,7 +128,7 @@ object KloudNetworkHelper {
     var ips = ListBuffer[String]()
     model.getNodes.foreach {
       node =>
-        val nodeIps = KevoreePropertyHelper.getNetworkProperties(model, node.getName, Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP)
+        val nodeIps = KevoreePropertyHelper.$instance.getNetworkProperties(model, node.getName, Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP)
         ips = ips ++ nodeIps.toArray(new Array[String](nodeIps.size()))
     }
     ips

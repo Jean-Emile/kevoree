@@ -52,13 +52,13 @@ abstract class KevoreeNodeRunner(var nodeName: String) {
   /**
    * configure the ssh server
    * @param path
-   * @param ip
+   * @param ips
    */
-  def configureSSHServer(path: String, ip: String) {
-    if (ip != null && ip != "") {
+  def configureSSHServer(path: String, ips: List[String]) {
+    if (ips.size > 0) {
       logger.debug("configure ssh server ip")
       try {
-        replaceStringIntoFile("<ip_address>", ip, path + File.separator + "etc" + File.separator + "ssh" + File.separator + "sshd_config")
+        replaceStringIntoFile("ListenAddress <ip_address>", ips.mkString("\nListenAddress "), path + File.separator + "etc" + File.separator + "ssh" + File.separator + "sshd_config")
       } catch {
         case _@e =>
           logger.debug("Unable to configure ssh server", e)

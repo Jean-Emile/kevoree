@@ -62,31 +62,34 @@ class ProcessExecutor() {
     (result._1 && notFound, ips)
   }
 
-  def addNetworkAlias(networkInterface: String, newIp: String, mask: String = "24"): Boolean = {
-
-    val netmask = new SubnetUtils(newIp + "/" + mask).getInfo.getNetmask
-    logger.debug("running {} {} alias {} netmask {}", Array[String](ifconfig, networkInterface, newIp, netmask))
-    val resultActor = new ResultManagementActor()
-    resultActor.starting()
-    val p = Runtime.getRuntime.exec(Array[String](ifconfig, networkInterface, "alias", newIp, "netmask", netmask))
-    new Thread(new ProcessStreamManager(resultActor, p.getInputStream, Array(), Array(new Regex("ifconfig: ioctl \\(SIOCDIFADDR\\): .*")), p)).start()
-    val result = resultActor.waitingFor(1000)
-    if (!result._1) {
-      logger.debug("Unable to configure alias: {}", result._2)
+  def addNetworkAlias(networkInterface: String, newIps: List[String], mask: String = "24"): Boolean = {
+    newIps.forall {
+      newIp =>
+        val netmask = new SubnetUtils(newIp + "/" + mask).getInfo.getNetmask
+        logger.debug("running {} {} alias {} netmask {}", Array[String](ifconfig, networkInterface, newIp, netmask))
+        val resultActor = new ResultManagementActor()
+        resultActor.starting()
+        val p = Runtime.getRuntime.exec(Array[String](ifconfig, networkInterface, "alias", newIp, "netmask", netmask))
+        new Thread(new ProcessStreamManager(resultActor, p.getInputStream, Array(), Array(new Regex("ifconfig: ioctl \\(SIOCDIFADDR\\): .*")), p)).start()
+        val result = resultActor.waitingFor(1000)
+        if (!result._1) {
+          logger.debug("Unable to configure alias: {}", result._2)
+        }
+        result._1
     }
-    result._1
+
   }
 
-  def createJail(flavor: String, nodeName: String, newIp: String, archive: Option[String], timeout: Long): Boolean = {
+  def createJail(flavor: String, nodeName: String, newIps: List[String], archive: Option[String], timeout: Long): Boolean = {
     var exec = Array[String]()
     if (flavor == null) {
       // TODO add archive attribute and use it to save the jail => the archive must be available from all nodes of the network
-      logger.debug("running {} create {} {}", Array[String](ezjailAdmin, nodeName, newIp))
-      exec = Array[String](ezjailAdmin, "create") ++ Array[String](nodeName, newIp)
+      logger.debug("running {} create {} {}", Array[String](ezjailAdmin, nodeName, newIps.mkString(",")))
+      exec = Array[String](ezjailAdmin, "create") ++ Array[String](nodeName, newIps.mkString(","))
     } else {
       // TODO add archive attribute and use it to save the jail => the archive must be available from all nodes of the network
-      logger.debug("running {} create -f {} {} {}", Array[String](ezjailAdmin, flavor, nodeName, newIp))
-      exec = Array[String](ezjailAdmin, "create", "-f") ++ Array[String](flavor) ++ Array[String](nodeName, newIp)
+      logger.debug("running {} create -f {} {} {}", Array[String](ezjailAdmin, flavor, nodeName, newIps.mkString(",")))
+      exec = Array[String](ezjailAdmin, "create", "-f") ++ Array[String](flavor) ++ Array[String](nodeName, newIps.mkString(","))
     }
 
     val resultActor = new ResultManagementActor()
