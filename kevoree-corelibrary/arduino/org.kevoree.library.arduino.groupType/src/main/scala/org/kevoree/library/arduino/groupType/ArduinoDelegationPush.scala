@@ -75,20 +75,19 @@ class ArduinoDelegationPush (handler: KevoreeModelHandlerService, groupName: Str
 
               val dictionary = group.getDictionary
 
-              val serialPortOption = org.kevoree.framework.KevoreePropertyHelper.getProperty(group, "serialport", isFragment = true, nodeNameForFragment = targetNodeName)
+              val serialPortOption = org.kevoree.framework.KevoreePropertyHelper.$instance.getProperty(group, "serialport", true, targetNodeName)
               var serialPort = "*"
-              if ((serialPortOption.isDefined && serialPortOption.get == "*") || serialPortOption.isEmpty) {
+              if ((serialPortOption != null && serialPortOption == "*") || serialPortOption == null) {
                 val ports = KHelpers.getPortIdentifiers
                 if (ports.size() > 0) {
                   serialPort = ports.get(0)
                 }
               } else {
                 // update model
-                serialPort = serialPortOption.get
+                serialPort = serialPortOption
                 model.getHubs.foreach(channel => {
                   setProperty(model, channel, channel.getName, "serialport", true, targetNodeName, serialPort.replace("/", ";"))
-                }
-                                     )
+                })
 
               }
 
