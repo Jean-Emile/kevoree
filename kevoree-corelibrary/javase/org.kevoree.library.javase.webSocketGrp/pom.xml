@@ -98,7 +98,7 @@
                 <version>${kevoree.version}</version>
                 <configuration>
                     <targetNode>node0</targetNode>
-                    <model>./src/main/kevs/channel_masterserver.kevs</model>
+                    <model>./src/main/kevs/simple.kevs</model>
                 </configuration>
             </plugin>
         </plugins>

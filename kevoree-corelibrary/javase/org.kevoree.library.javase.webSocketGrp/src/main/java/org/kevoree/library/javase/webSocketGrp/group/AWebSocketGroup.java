@@ -82,7 +82,7 @@ import java.util.concurrent.atomic.AtomicReference;
         @DictionaryAttribute(name = "reconnectDelay", defaultValue = "5000", optional = false, fragmentDependant = true)
 })
 @GroupType
-public abstract class AWebSocketGroup extends AbstractGroupType implements DeployUnitResolver {
+public class AWebSocketGroup extends AbstractGroupType implements DeployUnitResolver {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -599,10 +599,10 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
         return true;
     }
     protected void onClientUpdateLocalModelDone() {}
-    protected abstract void onClientPush(ContainerRoot model, String targetNodeName)
-            throws MultipleMasterServerException, NoMasterServerFoundException, NotAMasterServerException;
-    protected abstract ContainerRoot onClientPull(String targetNodeName) throws Exception;
-    protected abstract void onClientTriggerModelUpdate();
+    protected void onClientPush(ContainerRoot model, String targetNodeName)
+            throws MultipleMasterServerException, NoMasterServerFoundException, NotAMasterServerException {}
+    protected ContainerRoot onClientPull(String targetNodeName) throws Exception {return null;}
+    protected void onClientTriggerModelUpdate() {}
 
     //========================================
     // Server's context group-related methods
@@ -620,11 +620,11 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
     protected void onMasterServerUpdatedEvent(WebSocketConnection conn) {}
     protected void onMasterServerOpenEvent(WebSocketConnection conn) {}
     protected void onMasterServerCloseEvent(WebSocketConnection conn) {}
-    protected abstract void onServerPush(ContainerRoot model, String masterServerNodeName, List<URI> addresses)
-            throws MultipleMasterServerException, NoMasterServerFoundException;
-    protected abstract ContainerRoot onServerPull(String masterServerNodeName, List<URI> addresses)
-            throws Exception;
-    protected abstract void onServerTriggerModelUpdate();
+    protected void onServerPush(ContainerRoot model, String masterServerNodeName, List<URI> addresses)
+            throws MultipleMasterServerException, NoMasterServerFoundException {}
+    protected ContainerRoot onServerPull(String masterServerNodeName, List<URI> addresses)
+            throws Exception {return null;}
+    protected void onServerTriggerModelUpdate() {}
 
     //========================================
     // Handlers

@@ -402,7 +402,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                 case REGISTER:
                     String nodeName = new String(msg, 1, msg.length-1);
                     if (clients.containsValue(nodeName)) {
-                        logger.debug("Already got {} in my active connection," +
+                        logger.debug("Already got {} in my active connections," +
                                 " gonna close the old one, and keep the fresh new", nodeName);
                         clients.inverse().get(nodeName).close();
                         clients.inverse().remove(nodeName);
