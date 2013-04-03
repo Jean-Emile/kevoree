@@ -2,7 +2,7 @@ merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.javaseNode/
 merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.fakeDomo/{kevoree.version}'
 merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.webSocketGrp/{kevoree.version}'
 
-addNode node0:JavaSENode {logLevel="DEBUG"}
+addNode node0:JavaSENode {logLevel="DEBUG",coreLogLevel="DEBUG"}
 addNode node1:JavaSENode {logLevel="DEBUG"}
 //addNode node2:JavaSENode {logLevel="DEBUG"}
 

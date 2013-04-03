@@ -26,6 +26,7 @@ class StartStopInstance(c: Instance, nodeName: String, val start: Boolean): Life
     }
 
     override fun execute(): Boolean {
+
         val root = c.getTypeDefinition()!!.eContainer() as ContainerRoot
         val ref = KevoreeDeployManager.getRef(c.javaClass.getName()+"_wrapper", c.getName())
         if(ref != null && ref is KInstance){
