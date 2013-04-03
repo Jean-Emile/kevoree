@@ -9,7 +9,6 @@ import org.kevoree.framework.KevoreeChannelFragment;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.message.Message;
 import org.slf4j.LoggerFactory;
-import scala.Option;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -180,22 +179,17 @@ public class P2pSock extends AbstractChannelFragment implements ModelListener {
     }
 
     public String getAddress(String remoteNodeName) {
-        String ip = org.kevoree.framework.KevoreePlatformHelper.getProperty(model, remoteNodeName,
-                org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
-        if (ip == null || ip.equals("")) {
-            ip = "";
-        }
-        return ip;
+        return org.kevoree.framework.KevoreePropertyHelper.$instance.getNetworkProperties(model, remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP()).get(0);
     }
 
 
     public int parsePortNumber(String nodeName) {
         //logger.debug("look for port on " + nodeName);
-        Option<String> portOption = KevoreePropertyHelper.getProperty(getModelElement(), "port", true, nodeName);
+        String portOption = KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, nodeName);
         int port = 9000;
-        if (portOption.isDefined()) {
+        if (portOption != null) {
             try {
-                port = Integer.parseInt(portOption.get());
+                port = Integer.parseInt(portOption);
             } catch (NumberFormatException e) {
                 logger.warn("Attribute \"port\" of {} is not an Integer, default value ({}) is used.", getName(), port);
             }
