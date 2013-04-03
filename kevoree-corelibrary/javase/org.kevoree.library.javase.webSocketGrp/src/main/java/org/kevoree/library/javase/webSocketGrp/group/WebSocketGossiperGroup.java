@@ -25,7 +25,6 @@ import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebServers;
 import org.webbitserver.WebSocketConnection;
-import scala.Option;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -258,10 +257,10 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
         // finding node port
         Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
         if (groupOption != null) {
-            Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, nodeName);
-            if (portOption.isDefined()) {
+            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, nodeName);
+            if (portOption != null) {
                 try {
-                    port = Integer.parseInt(portOption.get());
+                    port = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), port);
                 }
@@ -269,7 +268,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
         }
 
         // find node IPs
-        List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, nodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, nodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
 
         if (ips.size() == 0) {
             String defaultIP = "127.0.0.1";

@@ -19,7 +19,6 @@ import org.kevoree.framework.KevoreeChannelFragment;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.message.Message;
 import org.slf4j.LoggerFactory;
-import scala.Option;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -174,16 +173,16 @@ public class NioChannel extends AbstractChannelFragment {
 	}
 
 	public List<String> getAddresses (String remoteNodeName) {
-        return KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        return KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
 	}
 
 	public int parsePortNumber (String nodeName) throws IOException {
 		try {
 			//logger.debug("look for port on " + nodeName);
-			Option<String> portOption = org.kevoree.framework.KevoreePropertyHelper.getProperty(getModelElement(), "port", true, nodeName);
-			if (portOption.isDefined()) {
+			String portOption = org.kevoree.framework.KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, nodeName);
+			if (portOption != null) {
                 try {
-				return Integer.parseInt(portOption.get());
+				return Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} is not an Integer", getName());
                     return 0;

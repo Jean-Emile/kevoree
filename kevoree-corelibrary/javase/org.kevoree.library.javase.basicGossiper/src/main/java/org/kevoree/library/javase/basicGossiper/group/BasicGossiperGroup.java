@@ -18,7 +18,6 @@ import org.kevoree.library.javase.basicGossiper.Serializer;
 import org.kevoree.library.javase.conflictSolver.AlreadyPassedPrioritySolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Option;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -116,7 +115,7 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
 
     @Override
     public List<String> getAddresses(String remoteNodeName) {
-        return KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        return KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
     }
 
     @Override
@@ -124,10 +123,10 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
         Group groupOption = currentCacheModel.get().findByPath("groups[" + getName() + "]", Group.class);
         int port = 8000;
         if (groupOption != null) {
-            Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, nodeName);
-            if (portOption.isDefined()) {
+            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, nodeName);
+            if (portOption != null) {
                 try {
-                    port = Integer.parseInt(portOption.get());
+                    port = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} is not an Integer, default value ({}) is used.", getName(), port);
                 }

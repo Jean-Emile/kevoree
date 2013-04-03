@@ -78,11 +78,11 @@ public class BasicMavenGroup extends BasicGroup implements Runnable, DeployUnitR
             for (Group group : model.getGroups()) {
                 if (group.getTypeDefinition().getName().equals(BasicMavenGroup.class.getSimpleName())) {
                     for (ContainerNode child : group.getSubNodes()) {
-                        Object server = KevoreePropertyHelper.getProperty(group, "server", true, child.getName());
+                        Object server = KevoreePropertyHelper.$instance.getProperty(group, "server", true, child.getName());
                         if (server != null) {
                             logger.info("Cache Found on node " + child.getName());
-                            List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, child.getName(), org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
-                            Object port = KevoreePropertyHelper.getProperty(child, "repo_port", false, null);
+                            List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, child.getName(), org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
+                            Object port = KevoreePropertyHelper.$instance.getProperty(child, "repo_port", false, null);
                             for (String remoteIP : ips) {
                                 String url = "http://" + remoteIP + ":" + port;
                                 logger.info("Add URL " + url);

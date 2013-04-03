@@ -116,7 +116,7 @@ class JmDnsComponent(nodeName: String, groupName: String, modelPort: Int, modelH
             nodeAlreadydiscovery.get(groupName).add(p1.getName.trim())
 
             if (p1.getName != nodeName) {
-              KevoreePlatformHelper.updateNodeLinkProp(model, nodeName, p1.getName.trim(), org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP, p1.getInet4Addresses()(0).getHostAddress,
+              KevoreePlatformHelper.$instance.updateNodeLinkProp(model, nodeName, p1.getName.trim(), org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP, p1.getInet4Addresses()(0).getHostAddress,
                 "LAN-" + p1.getInet4Addresses()(0).getHostAddress, 100)
             }
             modelHandler.compareAndSwapModel(uuidModel, model)

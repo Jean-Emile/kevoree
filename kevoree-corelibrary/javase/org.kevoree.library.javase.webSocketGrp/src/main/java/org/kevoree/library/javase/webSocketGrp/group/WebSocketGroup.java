@@ -15,7 +15,6 @@ import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebServers;
 import org.webbitserver.WebSocketConnection;
-import scala.Option;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -87,11 +86,11 @@ public class WebSocketGroup extends AbstractGroupType {
 		Group groupOption = model.findByPath("groups[" + getName() + "]",
 				Group.class);
 		if (groupOption != null) {
-			Option<String> portOption = KevoreePropertyHelper.getProperty(
+			String portOption = KevoreePropertyHelper.$instance.getProperty(
 					groupOption, "port", true, targetNodeName);
-			if (portOption.isDefined()) {
+			if (portOption != null) {
 				try {
-					PORT = Integer.parseInt(portOption.get());
+					PORT = Integer.parseInt(portOption);
 				} catch (NumberFormatException e) {
 					logger.warn(
 							"Attribute \"port\" of {} must be an Integer. Default value ({}) is used",
@@ -100,9 +99,9 @@ public class WebSocketGroup extends AbstractGroupType {
 			}
 		}
 
-		List<String> ips = KevoreePropertyHelper.getNetworkProperties(model,
-				targetNodeName, org.kevoree.framework.Constants
-						.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+		List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model,
+				targetNodeName, org.kevoree.framework.Constants.$instance
+						.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
 		if (ips.size() > 0) {
 			for (String ip : ips) {
 				try {
@@ -213,11 +212,11 @@ public class WebSocketGroup extends AbstractGroupType {
 		Group groupOption = model.findByPath("groups[" + getName() + "]",
 				Group.class);
 		if (groupOption != null) {
-			Option<String> portOption = KevoreePropertyHelper.getProperty(
+			String portOption = KevoreePropertyHelper.$instance.getProperty(
 					groupOption, "port", true, targetNodeName);
-			if (portOption.isDefined()) {
+			if (portOption != null) {
 				try {
-					PORT = Integer.parseInt(portOption.get());
+					PORT = Integer.parseInt(portOption);
 				} catch (NumberFormatException e) {
 					logger.warn(
 							"Attribute \"port\" of {} must be an Integer. Default value ({}) is used",
@@ -230,9 +229,9 @@ public class WebSocketGroup extends AbstractGroupType {
 		KevoreeXmiHelper.$instance.saveCompressedStream(output, model);
 		byte[] data = output.toByteArray();
 
-		List<String> ips = KevoreePropertyHelper.getNetworkProperties(model,
-				targetNodeName, org.kevoree.framework.Constants
-						.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+		List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model,
+				targetNodeName, org.kevoree.framework.Constants.$instance
+						.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
 		if (ips.size() > 0) {
 			for (String ip : ips) {
 				try {

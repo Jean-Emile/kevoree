@@ -1,11 +1,9 @@
 package org.kevoree.library.javase.webSocketGrp.channel;
 
 import org.kevoree.ContainerRoot;
-import org.kevoree.annotation.ChannelTypeFragment;
 import org.kevoree.annotation.*;
 import org.kevoree.api.service.core.handler.ModelListener;
 import org.kevoree.framework.*;
-import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.message.Message;
 import org.kevoree.library.javase.webSocketGrp.client.WebSocketClient;
 import org.slf4j.Logger;
@@ -14,7 +12,6 @@ import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebServers;
 import org.webbitserver.WebSocketConnection;
-import scala.Option;
 
 import java.io.*;
 import java.net.PortUnreachableException;
@@ -258,7 +255,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
     }
 
     protected List<String> getAddresses(String remoteNodeName) {
-        List<String> ips = KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         // if there is no IP defined in node network properties
         // then give it a try locally
         if (ips.isEmpty()) ips.add("127.0.0.1");
@@ -266,10 +263,10 @@ public class WebSocketChannel extends AbstractChannelFragment {
     }
 
     protected int parsePortNumber(String nodeName) {
-        Option<String> portOption = org.kevoree.framework.KevoreePropertyHelper.getProperty(getModelElement(), "port", true, nodeName);
-        if (portOption.isDefined()) {
+        String portOption = org.kevoree.framework.KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, nodeName);
+        if (portOption != null) {
             try {
-                return Integer.parseInt(portOption.get());
+                return Integer.parseInt(portOption);
             } catch (NumberFormatException e) {
                 logger.warn("Attribute \"port\" of {} is not an Integer", getName());
                 return 0;

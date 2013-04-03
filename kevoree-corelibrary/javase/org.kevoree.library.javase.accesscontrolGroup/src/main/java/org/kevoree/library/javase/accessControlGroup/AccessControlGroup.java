@@ -8,11 +8,11 @@ import jexxus.common.ConnectionListener;
 import jexxus.common.Delivery;
 import jexxus.server.Server;
 import jexxus.server.ServerConnection;
-import org.kevoree.accesscontrol.AccessControlRoot;
 import org.kevoree.ContainerNode;
 import org.kevoree.ContainerRoot;
 import org.kevoree.Group;
 import org.kevoree.Instance;
+import org.kevoree.accesscontrol.AccessControlRoot;
 import org.kevoree.adaptation.accesscontrol.api.ControlException;
 import org.kevoree.adaptation.accesscontrol.api.SignedModel;
 import org.kevoree.adaptation.accesscontrol.api.SignedPDP;
@@ -30,7 +30,6 @@ import org.kevoree.tools.accesscontrol.framework.utils.HelperSignature;
 import org.kevoreeadaptation.AdaptationPrimitive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Option;
 
 import javax.swing.*;
 import java.io.*;
@@ -235,16 +234,16 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
         int PORT = 8000;
         Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
         if (groupOption != null) {
-            Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
-            if (portOption.isDefined()) {
+            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, targetNodeName);
+            if (portOption != null) {
                 try {
-                    PORT = Integer.parseInt(portOption.get());
+                    PORT = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
         }
-        List<String> ips = KevoreePropertyHelper.getNetworkProperties(getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         if (ips.size() > 0) {
             for (String ip : ips) {
                 try {
@@ -428,17 +427,17 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
         int PORT = 8000;
         Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
         if (groupOption != null) {
-            Option<String> portOption = KevoreePropertyHelper.getProperty(groupOption, "port", true, targetNodeName);
-            if (portOption.isDefined()) {
+            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, targetNodeName);
+            if (portOption != null) {
                 try {
-                    PORT = Integer.parseInt(portOption.get());
+                    PORT = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
                     logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
         }
 
-        List<String> ips = KevoreePropertyHelper.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
 
         for (String ip : ips) {
             final UniClientConnection[] conns = new UniClientConnection[1];

@@ -267,7 +267,7 @@ public class JmDNSComponent {
     private void updateNetworkProperties(ContainerRoot model, String remoteNodeName, InetAddress[] addresses) {
         for (InetAddress address : addresses) {
             if (!ipV4Only || address instanceof Inet4Address) {
-                KevoreePlatformHelper.updateNodeLinkProp(model, group.getNodeName(), remoteNodeName, org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP(), address.getHostAddress(), "LAN-" + address.getHostAddress(), 100);
+                KevoreePlatformHelper.$instance.updateNodeLinkProp(model, group.getNodeName(), remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), address.getHostAddress(), "LAN-" + address.getHostAddress(), 100);
             }
         }
     }

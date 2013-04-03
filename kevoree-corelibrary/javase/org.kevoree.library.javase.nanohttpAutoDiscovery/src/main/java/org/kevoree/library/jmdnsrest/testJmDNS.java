@@ -15,9 +15,6 @@ import org.kevoree.NodeNetwork;
 import org.kevoree.framework.KevoreePlatformHelper;
 import org.kevoree.impl.ContainerRootImpl;
 
-import javax.jmdns.JmDNS;
-import javax.jmdns.ServiceInfo;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
@@ -71,8 +68,8 @@ public class testJmDNS {
         }
         ContainerRoot model = new ContainerRootImpl();
 
-        KevoreePlatformHelper.updateNodeLinkProp(model, "node0", "node0", org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP(), "192.168.1.1", "LAN", 100);
-        KevoreePlatformHelper.updateNodeLinkProp(model, "node0", "node0", org.kevoree.framework.Constants.KEVOREE_PLATFORM_REMOTE_NODE_IP(), "192.168.1.2", "LAN2", 100);
+        KevoreePlatformHelper.$instance.updateNodeLinkProp(model, "node0", "node0", org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), "192.168.1.1", "LAN", 100);
+        KevoreePlatformHelper.$instance.updateNodeLinkProp(model, "node0", "node0", org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), "192.168.1.2", "LAN2", 100);
 
         for( NodeNetwork node : model.getNodeNetworks())
         {
