@@ -55,7 +55,6 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
 
     @Start
     public void startChannel() throws Exception {
-        logger.debug("START DAT CHAN");
 
         // first of all check if the model is alright
         checkNoMultipleMasterServer();

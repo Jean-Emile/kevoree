@@ -33,7 +33,6 @@ public class CommandMapper {
 
     public PrimitiveCommand buildPrimitiveCommand(org.kevoreeadaptation.AdaptationPrimitive p, String nodeName) {
 
-
         String pTypeName = p.getPrimitiveType().getName();
         if (pTypeName.equals(JavaSePrimitive.$instance.getUpdateDictionaryInstance())) {
             if (((Instance) p.getRef()).getName().equals(nodeName)) {
