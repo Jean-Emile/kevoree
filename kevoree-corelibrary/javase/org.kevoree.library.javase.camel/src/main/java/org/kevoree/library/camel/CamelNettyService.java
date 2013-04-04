@@ -9,9 +9,9 @@ import org.kevoree.framework.KevoreeChannelFragment;
 import org.kevoree.framework.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.util.Random;
 
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created with IntelliJ IDEA.
