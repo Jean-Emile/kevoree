@@ -27,7 +27,6 @@ public class ConnectionTask implements Runnable {
 
     @Override
     public void run() {
-        logger.debug("[START] ConnectionTask: trying to connect to {} ...", uri);
         try {
             WebSocketClient client = new WebSocketClient(uri) {
                 @Override

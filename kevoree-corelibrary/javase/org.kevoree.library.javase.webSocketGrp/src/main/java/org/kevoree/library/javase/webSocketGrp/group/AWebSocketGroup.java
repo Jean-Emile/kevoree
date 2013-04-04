@@ -512,13 +512,11 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
         Group group = getModelElement();
         ContainerRoot model = getModelService().getLastModel();
         for (ContainerNode subNode : group.getSubNodes()) {
-            logger.debug("is it group null ?? {}", group);
             if (group != null) {
                 String portOption = KevoreePropertyHelper.$instance.getProperty(
                         group, "port", true, subNode.getName());
                 // if a port is defined then it is a master server
                 if (portOption != null) {
-                    logger.debug("{} port is : {}", subNode.getName(), portOption);
                     int port = Integer.parseInt(portOption);
                     List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, subNode.getName(),
                             org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());

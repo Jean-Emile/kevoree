@@ -12,8 +12,7 @@ import org.webbitserver.WebSocketConnection;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,14 +33,12 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
 
     private static final int DEFAULT_MAX_QUEUED_MODEL = 150;
 
-    private Map<String, ContainerRoot> waitingQueue;
+    private Deque<Map.Entry<String, ContainerRoot>> waitingQueue;
     private int maxQueuedModel;
 
     @Override
     protected void onServerStart() {
         super.onServerStart();
-
-        waitingQueue = new HashMap<String, ContainerRoot>();
 
         try {
             maxQueuedModel = Integer.parseInt(getDictionary().get("max_queued_model").toString());
@@ -49,6 +46,8 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
             maxQueuedModel = DEFAULT_MAX_QUEUED_MODEL;
             logger.warn("\"max_queued_model\" attribute malformed! Using default value {}", DEFAULT_MAX_QUEUED_MODEL);
         }
+
+        waitingQueue = new ArrayDeque<Map.Entry<String, ContainerRoot>>(maxQueuedModel);
     }
 
     @Override
@@ -75,15 +74,18 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
                     // we do not have an active connection with this client
                     // meaning that we have to store the model and wait for
                     // him to connect in order to send the model back
-                    if (waitingQueue.size() < maxQueuedModel) {
-                        waitingQueue.put(subNodeName, model);
-                        logger.debug(subNodeName+" is not yet connected to master server. It has been added to waiting queue.");
-                    } else {
-                        // TODO get rid of the oldest one and keep that new push request instead
-                        logger.warn(
-                                "Max queued model number reached. Queueing aborted meaning that {} will not get the model once reconnected!",
-                                subNodeName);
+                    Map.Entry<String, ContainerRoot> entry = new AbstractMap.SimpleEntry<String, ContainerRoot>(subNodeName, model);
+                    try {
+                        waitingQueue.addLast(entry);
+                    } catch (IllegalStateException e) {
+                        // the queue is full, remove the first added element
+                        waitingQueue.pollFirst();
+
+                        // add the element at the end now that we have a free space
+                        waitingQueue.addLast(entry);
+
                     }
+                    logger.debug(subNodeName+" is not yet connected to master server. It has been added to waiting queue.");
                 }
             }
         }
@@ -93,15 +95,14 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
     protected void onMasterServerRegisterEvent(WebSocketConnection connection, String nodeName) {
         super.onMasterServerRegisterEvent(connection, nodeName);
 
-        if (waitingQueue.containsKey(nodeName)) {
+        if (waitingQueueContainsNode(nodeName)) {
             // if we ends up here, it means that this node wasn't connected
             // when a push request was initiated earlier and though it has
             // to get the new model back
             logger.debug(nodeName+" is in the waiting queue, meaning that we have to send the model back to him");
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            KevoreeXmiHelper.$instance.saveStream(baos, waitingQueue.get(nodeName));
+            KevoreeXmiHelper.$instance.saveStream(baos, getAndRemoveModelFromQueue(nodeName));
             connection.send(baos.toByteArray());
-            waitingQueue.remove(nodeName);
         }
     }
 
@@ -110,6 +111,23 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
             if (nodeName.equals(name)) return true;
         }
         return false;
+    }
+
+    private boolean waitingQueueContainsNode(String nodeName) {
+        for (Map.Entry<String, ContainerRoot> entry : waitingQueue) {
+            if (entry.getKey().equals(nodeName)) return true;
+        }
+        return false;
+    }
+
+    private ContainerRoot getAndRemoveModelFromQueue(String nodeName) {
+        for (Map.Entry<String, ContainerRoot> entry : waitingQueue) {
+            if (entry.getKey().equals(nodeName)) {
+                waitingQueue.remove(entry);
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     private WebSocketConnection getSocketFromNode(String nodeName) {

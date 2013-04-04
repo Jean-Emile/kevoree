@@ -6,7 +6,7 @@ addNode node0:JavaSENode {logLevel="DEBUG",coreLogLevel="DEBUG"}
 addNode node1:JavaSENode {logLevel="DEBUG"}
 //addNode node2:JavaSENode {logLevel="DEBUG"}
 
-addGroup sync:BasicGroup
+addGroup sync : BasicGroup
 
 addToGroup sync node0
 addToGroup sync node1
