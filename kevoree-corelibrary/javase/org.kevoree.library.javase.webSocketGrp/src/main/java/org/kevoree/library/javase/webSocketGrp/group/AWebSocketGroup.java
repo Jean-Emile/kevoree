@@ -81,7 +81,7 @@ import java.util.concurrent.atomic.AtomicReference;
         @DictionaryAttribute(name = "reconnectDelay", defaultValue = "5000", optional = false, fragmentDependant = true)
 })
 @GroupType
-public class AWebSocketGroup extends AbstractGroupType implements DeployUnitResolver {
+public abstract class AWebSocketGroup extends AbstractGroupType implements DeployUnitResolver {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -512,13 +512,11 @@ public class AWebSocketGroup extends AbstractGroupType implements DeployUnitReso
         Group group = getModelElement();
         ContainerRoot model = getModelService().getLastModel();
         for (ContainerNode subNode : group.getSubNodes()) {
-            logger.debug("is it group null ?? {}", group);
             if (group != null) {
                 String portOption = KevoreePropertyHelper.$instance.getProperty(
                         group, "port", true, subNode.getName());
                 // if a port is defined then it is a master server
                 if (portOption != null) {
-                    logger.debug("{} port is : {}", subNode.getName(), portOption);
                     int port = Integer.parseInt(portOption);
                     List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, subNode.getName(),
                             org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
@@ -598,10 +596,10 @@ public class AWebSocketGroup extends AbstractGroupType implements DeployUnitReso
         return true;
     }
     protected void onClientUpdateLocalModelDone() {}
-    protected void onClientPush(ContainerRoot model, String targetNodeName)
-            throws MultipleMasterServerException, NoMasterServerFoundException, NotAMasterServerException {}
-    protected ContainerRoot onClientPull(String targetNodeName) throws Exception {return null;}
-    protected void onClientTriggerModelUpdate() {}
+    protected abstract void onClientPush(ContainerRoot model, String targetNodeName)
+            throws MultipleMasterServerException, NoMasterServerFoundException, NotAMasterServerException;
+    protected abstract ContainerRoot onClientPull(String targetNodeName) throws Exception;
+    protected abstract void onClientTriggerModelUpdate();
 
     //========================================
     // Server's context group-related methods
@@ -619,11 +617,11 @@ public class AWebSocketGroup extends AbstractGroupType implements DeployUnitReso
     protected void onMasterServerUpdatedEvent(WebSocketConnection conn) {}
     protected void onMasterServerOpenEvent(WebSocketConnection conn) {}
     protected void onMasterServerCloseEvent(WebSocketConnection conn) {}
-    protected void onServerPush(ContainerRoot model, String masterServerNodeName, List<URI> addresses)
-            throws MultipleMasterServerException, NoMasterServerFoundException {}
-    protected ContainerRoot onServerPull(String masterServerNodeName, List<URI> addresses)
-            throws Exception {return null;}
-    protected void onServerTriggerModelUpdate() {}
+    protected abstract void onServerPush(ContainerRoot model, String masterServerNodeName, List<URI> addresses)
+            throws MultipleMasterServerException, NoMasterServerFoundException;
+    protected abstract ContainerRoot onServerPull(String masterServerNodeName, List<URI> addresses)
+            throws Exception;
+    protected abstract void onServerTriggerModelUpdate();
 
     //========================================
     // Handlers

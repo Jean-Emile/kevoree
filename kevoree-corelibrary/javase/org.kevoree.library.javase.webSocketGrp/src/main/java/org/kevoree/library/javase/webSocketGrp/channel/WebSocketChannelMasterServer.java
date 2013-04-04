@@ -20,6 +20,7 @@ import java.io.*;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created with IntelliJ IDEA.
@@ -163,6 +164,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                 public void onMessage(ByteBuffer bytes) {
                     // if we end up here, it means that master server just forward
                     // a Message for us, so process it
+                    logger.debug("[CLIENT] New message received");
                     remoteDispatchByte(bytes.array());
                 }
             });
@@ -174,9 +176,9 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
     }
 
     @Stop
-    public void stopChannel() {
+    public void stopChannel() throws Exception {
         if (server != null) {
-            server.stop();
+            server.stop().get(5, TimeUnit.SECONDS);
             server = null;
         }
 
@@ -410,7 +412,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                     if (useQueue && !pendingList.isEmpty()) {
                         logger.debug("Sending pending messages from waiting queue to {} ...", nodeName);
                         for (byte[] data : pendingList) {
-                            // we to process the data to be sure we were not a client before
+                            // we process the data to be sure we were not a client before
                             // because if we were a client, messages in waitingQueue are not
                             // exactly the same as in a waitingQueue of server
                             try {
@@ -418,7 +420,9 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                                 MessagePacket msgPkt = (MessagePacket) oi.readObject();
                                 connection.send(msgPkt.getByteContent());
 
-                            } catch (ClassNotFoundException e) {
+                            } catch (Exception e) {
+                                // we were not a client
+                                // behave like a server
                                 connection.send(data);
                             }
                         }
@@ -435,17 +439,19 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                         ois.close();
 
                         if (clients.containsValue(mess.recipient)) {
-
+                            logger.debug("[SERVER] I know the dude, forwarding message to him...");
                             // sending message to recipient
                             WebSocketConnection recipient = clients.inverse().get(mess.recipient);
                             recipient.send(mess.getByteContent());
 
                         } else if (mess.recipient.equals(getNodeName())) {
+                            logger.debug("[SERVER] oh this is a forward for me actually, dispatching to my face");
                             remoteDispatchByte(mess.getByteContent());
 
 
                         } else {
                             if (useQueue) {
+                                logger.debug("[SERVER] well, dude is not connected, forward request added to queue...");
                                 // recipient has not yet established a connection with master server
                                 // putting it in the queue
                                 addMessageToQueue(mess.recipient, mess.getByteContent());
