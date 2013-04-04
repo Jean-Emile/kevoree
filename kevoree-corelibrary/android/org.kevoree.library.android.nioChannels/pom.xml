@@ -14,12 +14,17 @@
     </parent>
 
     <dependencies>
-    	<!-- To Change -->
+        <!-- To Change -->
         <dependency>
             <groupId>org.kevoree.extra</groupId>
             <artifactId>org.kevoree.extra.netty</artifactId>
             <version>3.4.0</version>
-          </dependency>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
