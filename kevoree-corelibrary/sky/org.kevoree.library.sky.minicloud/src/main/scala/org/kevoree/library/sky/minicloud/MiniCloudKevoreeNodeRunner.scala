@@ -119,9 +119,9 @@ class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode) e
       KevoreeXmiHelper.instance$.save(tempFile.getAbsolutePath, childBootStrapModel)
 
 
-      if (System.getProperty("java.class.path").contains("plexus-classworlds")) {
+     /* if (System.getProperty("java.class.path").contains("plexus-classworlds")) {
         return false //maven use case
-      }
+      }*/
 
       //TRY THE CURRENT CLASSLOADER
       try {
