@@ -61,7 +61,7 @@ class RemoveBindingCommand(val c : MBinding,val nodeName:String) : PrimitiveComm
                 }
                 if(foundHostedPort != null){
                     val cname = (c.getPort()!!.eContainer() as ComponentInstance).getName()
-                    val bindmsg = PortUnbindMessage(nodeName,cname,(foundHostedPort as KevoreePort).getName())
+                    val bindmsg = PortUnbindMessage(nodeName,cname,(foundHostedPort as KevoreePort).getName()!!)
                     return (channelCasted as KevoreeChannelFragment).processAdminMsg(bindmsg)
                 }
                 return false
