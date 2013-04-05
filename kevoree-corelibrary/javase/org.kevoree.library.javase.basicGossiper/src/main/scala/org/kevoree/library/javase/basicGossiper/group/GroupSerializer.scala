@@ -35,12 +35,12 @@ class GroupSerializer (modelService: KevoreeModelHandlerService) extends Seriali
 
   private def modelFromString (model: Array[Byte]): ContainerRoot = {
     val stream = new ByteArrayInputStream (model)
-    KevoreeXmiHelper.$instance.loadCompressedStream(stream)
+    KevoreeXmiHelper.instance$.loadCompressedStream(stream)
   }
 
   private def stringFromModel (model: ContainerRoot) : Array[Byte] = {
     val out = new ByteArrayOutputStream
-    KevoreeXmiHelper.$instance.saveCompressedStream(out, model)
+    KevoreeXmiHelper.instance$.saveCompressedStream(out, model)
     out.flush ()
     val bytes  = out.toByteArray
     out.close ()

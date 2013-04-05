@@ -179,13 +179,13 @@ public class P2pSock extends AbstractChannelFragment implements ModelListener {
     }
 
     public String getAddress(String remoteNodeName) {
-        return org.kevoree.framework.KevoreePropertyHelper.$instance.getNetworkProperties(model, remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP()).get(0);
+        return org.kevoree.framework.KevoreePropertyHelper.instance$.getNetworkProperties(model, remoteNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP()).get(0);
     }
 
 
     public int parsePortNumber(String nodeName) {
         //logger.debug("look for port on " + nodeName);
-        String portOption = KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, nodeName);
+        String portOption = KevoreePropertyHelper.instance$.getProperty(getModelElement(), "port", true, nodeName);
         int port = 9000;
         if (portOption != null) {
             try {

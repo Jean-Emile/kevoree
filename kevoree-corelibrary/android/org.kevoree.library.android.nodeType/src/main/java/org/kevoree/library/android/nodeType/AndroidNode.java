@@ -54,7 +54,7 @@ public class AndroidNode extends AbstractNodeType {
 		mapper = null;
 		isRunning = false;
 		//Cleanup the local runtime
-		KevoreeDeployManager.$instance.clearAll(this);
+		KevoreeDeployManager.instance$.clearAll(this);
 	}
 
 	@Update

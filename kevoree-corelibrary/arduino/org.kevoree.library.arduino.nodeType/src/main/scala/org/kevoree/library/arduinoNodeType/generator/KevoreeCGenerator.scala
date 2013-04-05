@@ -30,8 +30,8 @@ class KevoreeCGenerator
                 anodeType : AbstractNodeType
                 ) {
 
-    val componentTypes = adaptModel.getAdaptations.filter(adt => adt.getPrimitiveType.getName == JavaSePrimitive.$instance.getAddType && adt.getRef.isInstanceOf[ComponentType])
-    val channelTypes = adaptModel.getAdaptations.filter(adt => adt.getPrimitiveType.getName == JavaSePrimitive.$instance.getAddType && adt.getRef.isInstanceOf[ChannelType])
+    val componentTypes = adaptModel.getAdaptations.filter(adt => adt.getPrimitiveType.getName == JavaSePrimitive.instance$.getAddType && adt.getRef.isInstanceOf[ComponentType])
+    val channelTypes = adaptModel.getAdaptations.filter(adt => adt.getPrimitiveType.getName == JavaSePrimitive.instance$.getAddType && adt.getRef.isInstanceOf[ChannelType])
     var ktypes: List[TypeDefinition] = List()
     componentTypes.foreach {
       ctype => ktypes = ktypes ++ List(ctype.getRef.asInstanceOf[TypeDefinition])
@@ -68,7 +68,7 @@ class KevoreeCGenerator
     generateGlobalInstanceFactory(ktypes)
     generateRunInstanceMethod(ktypes)
 
-    val instancesAdaption = adaptModel.getAdaptations.filter(adt => adt.getPrimitiveType.getName == JavaSePrimitive.$instance.getAddInstance).filter(adt => !adt.getRef.asInstanceOf[Instance].getTypeDefinition.isInstanceOf[GroupType])
+    val instancesAdaption = adaptModel.getAdaptations.filter(adt => adt.getPrimitiveType.getName == JavaSePrimitive.instance$.getAddInstance).filter(adt => !adt.getRef.asInstanceOf[Instance].getTypeDefinition.isInstanceOf[GroupType])
     var instances: List[Instance] = List()
     instancesAdaption.foreach {
       instanceAdaption =>

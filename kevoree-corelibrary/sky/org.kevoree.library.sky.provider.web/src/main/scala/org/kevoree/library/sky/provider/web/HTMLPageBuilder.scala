@@ -237,7 +237,7 @@ object HTMLPageBuilder {
                       {streamName match {
                       case "out" => {
                         var subresult: List[scala.xml.Elem] = List()
-                        var logFolderOption = KevoreePropertyHelper.$instance.getProperty(node, "log_folder", false, "")
+                        var logFolderOption = KevoreePropertyHelper.instance$.getProperty(node, "log_folder", false, "")
                         if (logFolderOption == null) {
                           logFolderOption = System.getProperty("java.io.tmpdir")
                         }
@@ -257,7 +257,7 @@ object HTMLPageBuilder {
                       }
                       case "err" => {
                         var subresult: List[scala.xml.Elem] = List()
-                        var logFolderOption = KevoreePropertyHelper.$instance.getProperty(node, "log_folder", false, "")
+                        var logFolderOption = KevoreePropertyHelper.instance$.getProperty(node, "log_folder", false, "")
                         if (logFolderOption == null) {
                           logFolderOption = System.getProperty("java.io.tmpdir")
                         }
@@ -355,7 +355,7 @@ object HTMLPageBuilder {
         {var result: List[scala.xml.Elem] = List()
       nodeList.foreach {
         child => {
-          val ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, child.getName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP)
+          val ips = KevoreePropertyHelper.instance$.getNetworkProperties(model, child.getName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP)
           val ipString = ips.mkString(", ")
           result = result ++ List(
             <tr>

@@ -81,7 +81,7 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
             shutdownThread.stop();
         }
         //Cleanup the local runtime
-        KevoreeDeployManager.$instance.clearAll(this);
+        KevoreeDeployManager.instance$.clearAll(this);
     }
 
     @Update
@@ -199,8 +199,8 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
         try {
             File preModel = File.createTempFile("pre"+System.currentTimeMillis(),"pre");
             File afterModel = File.createTempFile("post"+System.currentTimeMillis(),"post");
-            KevoreeXmiHelper.$instance.save(preModel.getAbsolutePath(),containerRoot);
-            KevoreeXmiHelper.$instance.save(afterModel.getAbsolutePath(),containerRoot1);
+            KevoreeXmiHelper.instance$.save(preModel.getAbsolutePath(),containerRoot);
+            KevoreeXmiHelper.instance$.save(afterModel.getAbsolutePath(),containerRoot1);
             logger.error("PreModel->"+preModel.getAbsolutePath());
             logger.error("PostModel->"+afterModel.getAbsolutePath());
         } catch (Exception e){

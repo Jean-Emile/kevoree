@@ -129,11 +129,11 @@ public class CamelJettyChannelMessage extends AbstractKevoreeCamelChannelType {
     }
 
     public List<String> getAddresses(String remoteNodeName) {
-        return KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
+        return KevoreePropertyHelper.instance$.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
     }
 
     public int parsePortNumber(String nodeName) {
-        String portOption = KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, nodeName);
+        String portOption = KevoreePropertyHelper.instance$.getProperty(getModelElement(), "port", true, nodeName);
         int port = 9000;
         if (portOption != null) {
             try {

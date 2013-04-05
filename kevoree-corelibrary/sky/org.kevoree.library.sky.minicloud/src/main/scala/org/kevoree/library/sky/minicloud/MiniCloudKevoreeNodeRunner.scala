@@ -116,7 +116,7 @@ class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode) e
     try {
       val java: String = getJava
       val tempFile = File.createTempFile("bootModel" + nodeName, ".kev")
-      KevoreeXmiHelper.$instance.save(tempFile.getAbsolutePath, childBootStrapModel)
+      KevoreeXmiHelper.instance$.save(tempFile.getAbsolutePath, childBootStrapModel)
 
 
       if (System.getProperty("java.class.path").contains("plexus-classworlds")) {
@@ -162,7 +162,7 @@ class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode) e
       if (platformFile != null) {
 
         val tempFile = File.createTempFile("bootModel" + nodeName, ".kev")
-        KevoreeXmiHelper.$instance.save(tempFile.getAbsolutePath, childBootStrapModel)
+        KevoreeXmiHelper.instance$.save(tempFile.getAbsolutePath, childBootStrapModel)
 
         val vmargsObject = iaasNode.getDictionary.get("VMARGS")
         var exec = Array[String](java)

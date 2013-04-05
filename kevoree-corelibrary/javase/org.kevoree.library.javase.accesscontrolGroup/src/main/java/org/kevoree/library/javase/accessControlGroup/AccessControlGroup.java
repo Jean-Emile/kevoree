@@ -78,7 +78,7 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
         port = Integer.parseInt(this.getDictionary().get("port").toString());
         ssl = Boolean.parseBoolean(this.getDictionary().get("ssl").toString());
 
-        // root = AccessControlXmiHelper.$instance.loadStream(Tester.class.getClassLoader().getResourceAsStream("model.ac"));
+        // root = AccessControlXmiHelper.instance$.loadStream(Tester.class.getClassLoader().getResourceAsStream("model.ac"));
 
         if (Boolean.parseBoolean(getDictionary().get("gui").toString())) {
             JFileChooser dialogue = new JFileChooser(new File("."));
@@ -90,7 +90,7 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
                         (new FileWriter(fichier.getPath(), true));
 
                 sortie.close();
-                root = AccessControlXmiHelper.$instance.loadStream(new FileInputStream(fichier));
+                root = AccessControlXmiHelper.instance$.loadStream(new FileInputStream(fichier));
             }
 
         }
@@ -234,7 +234,7 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
         int PORT = 8000;
         Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
         if (groupOption != null) {
-            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, targetNodeName);
+            String portOption = KevoreePropertyHelper.instance$.getProperty(groupOption, "port", true, targetNodeName);
             if (portOption != null) {
                 try {
                     PORT = Integer.parseInt(portOption);
@@ -243,7 +243,7 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
                 }
             }
         }
-        List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         if (ips.size() > 0) {
             for (String ip : ips) {
                 try {
@@ -279,7 +279,7 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
             @Override
             public void receive(byte[] data, Connection from) {
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-                final ContainerRoot root = KevoreeXmiHelper.$instance.loadCompressedStream(inputStream);
+                final ContainerRoot root = KevoreeXmiHelper.instance$.loadCompressedStream(inputStream);
                 try {
                     exchanger.exchange(root);
                 } catch (InterruptedException e) {
@@ -314,7 +314,7 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
                 switch (data[0]) {
                     case getModel: {
                         ByteArrayOutputStream output = new ByteArrayOutputStream();
-                        KevoreeXmiHelper.$instance.saveCompressedStream(output, getModelService().getLastModel());
+                        KevoreeXmiHelper.instance$.saveCompressedStream(output, getModelService().getLastModel());
                         from.send(output.toByteArray(), Delivery.RELIABLE);
                     }
                     break;
@@ -344,7 +344,7 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
 
                                     if (result != null && result.size() == 0) {
                                         logger.info("model accepted according to access control");
-                                        ContainerRoot target_model = KevoreeXmiHelper.$instance.loadString(new String(signedModel.getSerialiedModel()));
+                                        ContainerRoot target_model = KevoreeXmiHelper.instance$.loadString(new String(signedModel.getSerialiedModel()));
                                         locaUpdateModel(target_model);
                                     } else {
                                         if (result != null) {
@@ -374,12 +374,12 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
                                 SignedPDPImpl pdp = (SignedPDPImpl) signed;
 
                                 if (root == null) {
-                                    root = AccessControlXmiHelper.$instance.loadString(new String(pdp.getSerialiedModel()));
+                                    root = AccessControlXmiHelper.instance$.loadString(new String(pdp.getSerialiedModel()));
                                 } else {
 
                                     ICompareAccessControl accessControl = new CompareAccessControlImpl(root);
                                     if (accessControl.accessPDP(pdp)) {
-                                        root = AccessControlXmiHelper.$instance.loadString(new String(pdp.getSerialiedModel()));
+                                        root = AccessControlXmiHelper.instance$.loadString(new String(pdp.getSerialiedModel()));
                                     } else {
                                         logger.error("There is no acess to PDP");
 
@@ -427,7 +427,7 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
         int PORT = 8000;
         Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
         if (groupOption != null) {
-            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, targetNodeName);
+            String portOption = KevoreePropertyHelper.instance$.getProperty(groupOption, "port", true, targetNodeName);
             if (portOption != null) {
                 try {
                     PORT = Integer.parseInt(portOption);
@@ -437,7 +437,7 @@ public class AccessControlGroup extends AbstractGroupType implements ConnectionL
             }
         }
 
-        List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
 
         for (String ip : ips) {
             final UniClientConnection[] conns = new UniClientConnection[1];

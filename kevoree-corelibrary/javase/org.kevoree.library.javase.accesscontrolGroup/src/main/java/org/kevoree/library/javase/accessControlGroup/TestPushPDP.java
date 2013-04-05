@@ -37,7 +37,7 @@ public class TestPushPDP {
         //  System.out.println(Tester2.class.getClassLoader().getResourceAsStream("benchmark/pdp/model3.ac"));
 
         // INSTALL PDP (MODEL ACCESS CONTROL)
-        AccessControlRoot root = AccessControlXmiHelper.$instance.loadStream(Tester.class.getClassLoader().getResourceAsStream("benchmark/pdp/model5.ac"));
+        AccessControlRoot root = AccessControlXmiHelper.instance$.loadStream(Tester.class.getClassLoader().getResourceAsStream("benchmark/pdp/model5.ac"));
         System.out.println("PUSH PDP "+root.getUsers().size());
 
         /*PUSH SIGNED MODEL      */

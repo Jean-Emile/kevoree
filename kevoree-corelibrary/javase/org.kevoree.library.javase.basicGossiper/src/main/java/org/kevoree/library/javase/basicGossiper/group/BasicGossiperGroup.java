@@ -115,7 +115,7 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
 
     @Override
     public List<String> getAddresses(String remoteNodeName) {
-        return KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
+        return KevoreePropertyHelper.instance$.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
     }
 
     @Override
@@ -123,7 +123,7 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
         Group groupOption = currentCacheModel.get().findByPath("groups[" + getName() + "]", Group.class);
         int port = 8000;
         if (groupOption != null) {
-            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, nodeName);
+            String portOption = KevoreePropertyHelper.instance$.getProperty(groupOption, "port", true, nodeName);
             if (portOption != null) {
                 try {
                     port = Integer.parseInt(portOption);

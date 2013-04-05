@@ -28,7 +28,7 @@ class LibVirtKvmKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode, 
     iaasModel.findByPath("nodes[" + iaasNode.getName + "]/hosts[" + nodeName + "]", classOf[ContainerNode]) match {
       case node: ContainerNode => {
         // look for the hard drive disk, check if it is already in use and clone it if needed
-        val diskOption = KevoreePropertyHelper.$instance.getProperty(node, "DISK", false, "")
+        val diskOption = KevoreePropertyHelper.instance$.getProperty(node, "DISK", false, "")
         val defaultDisk = iaasNode.getDictionary.get("default_DISK")
         var disk = ""
         if (defaultDisk != null) {
@@ -39,7 +39,7 @@ class LibVirtKvmKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode, 
         }
         val sourceElement: Element = doc.query("/domain/devices/disk/source").get(0).asInstanceOf[Element]
         // clone the disk if needed
-        val copyModeOption = KevoreePropertyHelper.$instance.getProperty(node, "COPY_MODE", false, "")
+        val copyModeOption = KevoreePropertyHelper.instance$.getProperty(node, "COPY_MODE", false, "")
         val defaultCopyMode = iaasNode.getDictionary.get("default_COPY_MODE")
         var copyMode = ""
         if (defaultCopyMode != null) {

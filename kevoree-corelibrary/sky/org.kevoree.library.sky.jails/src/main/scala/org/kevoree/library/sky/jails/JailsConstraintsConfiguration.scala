@@ -25,7 +25,7 @@ object JailsConstraintsConfiguration {
       case None => logger.debug("Unable to find information about the node to start"); false
       case Some(node) => {*/
     var modeId = "log"
-    var property = KevoreePropertyHelper.$instance.getProperty(node, "MODE", false, "")
+    var property = KevoreePropertyHelper.instance$.getProperty(node, "MODE", false, "")
     if (property == null) {
       property = "RELAX"
     }
@@ -37,7 +37,7 @@ object JailsConstraintsConfiguration {
     var execResult = true
     var exec = Array[String]()
     logger.debug("asking to node property {}...", "RAM")
-    property = KevoreePropertyHelper.$instance.getProperty(node, "RAM", false, "")
+    property = KevoreePropertyHelper.instance$.getProperty(node, "RAM", false, "")
     if (property == null) {
       property = "N/A"
     }
@@ -126,7 +126,7 @@ object JailsConstraintsConfiguration {
                  property, nodeName)
       }
     }*/
-    property = KevoreePropertyHelper.$instance.getProperty(node, "WALLCLOCKTIME", false, "")
+    property = KevoreePropertyHelper.instance$.getProperty(node, "WALLCLOCKTIME", false, "")
     if (property == null) {
       property = "N/A"
     }
@@ -150,7 +150,7 @@ object JailsConstraintsConfiguration {
         case e: NumberFormatException => logger.warn("Unable to take into account WALLCLOCKTIME limitation because the value {} is not well defined for {}", Array[String](property, node.getName))
       }
     }
-    property = KevoreePropertyHelper.$instance.getProperty(node, "DISK_SIZE", false, "")
+    property = KevoreePropertyHelper.instance$.getProperty(node, "DISK_SIZE", false, "")
     if (property == null) {
       property = "N/A"
     }

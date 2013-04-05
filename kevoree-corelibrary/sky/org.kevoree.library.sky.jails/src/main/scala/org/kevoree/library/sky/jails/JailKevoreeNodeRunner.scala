@@ -37,7 +37,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout : L
         if (result._1) {
           var newIps = List("127.0.0.1")
           // check if the node have a inet address
-          val ips = KevoreePropertyHelper.$instance.getNetworkProperties(iaasModel, nodeName, Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP)
+          val ips = KevoreePropertyHelper.instance$.getNetworkProperties(iaasModel, nodeName, Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP)
           if (ips.size() > 0) {
             newIps = ips.toList
           } else {
@@ -56,7 +56,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout : L
               val version = findVersionForChildNode(nodeName, childBootstrapModel, iaasModel.getNodes.find(n => n.getName == iaasNode.getNodeName).get)
               // install the model on the jail
               val platformFile = iaasNode.getBootStrapperService.resolveKevoreeArtifact("org.kevoree.platform.standalone", "org.kevoree.platform", version)
-              KevoreeXmiHelper.$instance.save(jailPath + File.separator + "root" + File.separator + "bootstrapmodel.kev", childBootstrapModel)
+              KevoreeXmiHelper.instance$.save(jailPath + File.separator + "root" + File.separator + "bootstrapmodel.kev", childBootstrapModel)
               if (copyFile(platformFile.getAbsolutePath, jailPath + File.separator + "root" + File.separator + "kevoree-runtime.jar")) {
                 // specify limitation on jail such as CPU, RAM
                 if (JailsConstraintsConfiguration.applyJailConstraints(iaasModel, node)) {
@@ -73,7 +73,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout : L
                       val logFile = System.getProperty("java.io.tmpdir") + File.separator + nodeName + ".log"
                       outFile = new File(logFile + ".out")
                       errFile = new File(logFile + ".err")
-                      var property = KevoreePropertyHelper.$instance.getProperty(node, "RAM", false, "")
+                      var property = KevoreePropertyHelper.instance$.getProperty(node, "RAM", false, "")
                       if (property == null) {
                         property = "N/A"
                       }
@@ -150,7 +150,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout : L
 
   private def lookingForFlavors(iaasModel: ContainerRoot, node: ContainerNode): String = {
     logger.debug("looking for specific flavor")
-    val flavorsOption = KevoreePropertyHelper.$instance.getProperty(node, "flavor", false, "")
+    val flavorsOption = KevoreePropertyHelper.instance$.getProperty(node, "flavor", false, "")
     if (flavorsOption != null && iaasNode.getAvailableFlavors.contains(flavorsOption)) {
       flavorsOption
     } else if (flavorsOption != null && !iaasNode.getAvailableFlavors.contains(flavorsOption)) {

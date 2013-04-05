@@ -26,7 +26,7 @@ object KloudProviderHelper {
       val conn: URLConnection = url.openConnection
       conn.setConnectTimeout(2000)
       val inputStream: InputStream = conn.getInputStream
-      KevoreeXmiHelper.$instance.loadStream(inputStream)
+      KevoreeXmiHelper.instance$.loadStream(inputStream)
     }
     catch {
       case e: IOException => {
@@ -39,7 +39,7 @@ object KloudProviderHelper {
     logger.debug("send model on {}", urlPath)
     try {
       val outStream: ByteArrayOutputStream = new ByteArrayOutputStream
-      KevoreeXmiHelper.$instance.saveStream(outStream, model)
+      KevoreeXmiHelper.instance$.saveStream(outStream, model)
       outStream.flush()
       val url: URL = new URL(urlPath)
       val conn: URLConnection = url.openConnection

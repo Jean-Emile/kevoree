@@ -255,7 +255,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
     }
 
     protected List<String> getAddresses(String remoteNodeName) {
-        List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         // if there is no IP defined in node network properties
         // then give it a try locally
         if (ips.isEmpty()) ips.add("127.0.0.1");
@@ -263,7 +263,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
     }
 
     protected int parsePortNumber(String nodeName) {
-        String portOption = org.kevoree.framework.KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, nodeName);
+        String portOption = org.kevoree.framework.KevoreePropertyHelper.instance$.getProperty(getModelElement(), "port", true, nodeName);
         if (portOption != null) {
             try {
                 return Integer.parseInt(portOption);

@@ -22,11 +22,11 @@ public class ManyPushTester {
 		FileInputStream fis = new FileInputStream(fModel);
 		
 		// serialize model into an OutputStream
-		ContainerRoot model = KevoreeXmiHelper.$instance.loadStream(fis);
+		ContainerRoot model = KevoreeXmiHelper.instance$.loadStream(fis);
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		
-		KevoreeXmiHelper.$instance.saveCompressedStream(baos, model);
+		KevoreeXmiHelper.instance$.saveCompressedStream(baos, model);
 		
 		final byte[] data = new byte[baos.size() + 1];
 		byte[] serializedModel = baos.toByteArray();

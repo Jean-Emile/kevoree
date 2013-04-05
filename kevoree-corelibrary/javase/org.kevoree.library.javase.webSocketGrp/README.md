@@ -39,7 +39,7 @@ The targeted node will then process the model
 case PUSH:
     logger.debug("Compressed model received from "+ connection.httpRequest().header("Host") + ": loading...");
     ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length-1);
-    ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
+    ContainerRoot model = KevoreeXmiHelper.instance$.loadCompressedStream(bais);
     updateLocalModel(model);
     logger.debug("Model loaded from XMI String");
     break;
@@ -55,7 +55,7 @@ The targeted node will then process the model
 case PULL:
     logger.debug("Pull request received from "+ connection.httpRequest().header("Host") + ": loading...");
     ByteArrayOutputStream output = new ByteArrayOutputStream();
-    KevoreeXmiHelper.$instance.saveCompressedStream(output, getModelService().getLastModel());
+    KevoreeXmiHelper.instance$.saveCompressedStream(output, getModelService().getLastModel());
     connection.send(output.toByteArray());
     logger.debug("Compressed model pulled back to "+ connection.httpRequest().header("Host"));
     break;
@@ -104,7 +104,7 @@ Then it will forward the push request to each sub-nodes of the group.
 protected void onMasterServerPushEvent(WebSocketConnection connection, byte[] msg) {
 	logger.debug("PUSH: " + connection.httpRequest().remoteAddress() + " asked for a PUSH");
 	ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length - 1);
-	ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
+	ContainerRoot model = KevoreeXmiHelper.instance$.loadCompressedStream(bais);
 	updateLocalModel(model);
 
 	logger.debug("server knows: " + clients.toString());
@@ -149,7 +149,7 @@ When this group's master server receives a PUSH request, it will broadcast the m
 protected void onMasterServerPushEvent(WebSocketConnection connection, byte[] msg) {
 	// deserialize the model from msg
 	ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length - 1); // offset is for the control byte
-	ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
+	ContainerRoot model = KevoreeXmiHelper.instance$.loadCompressedStream(bais);
 	updateLocalModel(model);
 	
 	// for each node in this group
@@ -185,7 +185,7 @@ protected void onMasterServerRegisterEvent(WebSocketConnection connection, Strin
 		// to get the new model back
 		logger.debug(nodeName+" is in the waiting queue, meaning that we have to send the model back to him");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		KevoreeXmiHelper.$instance.saveStream(baos, waitingQueue.get(nodeName));
+		KevoreeXmiHelper.instance$.saveStream(baos, waitingQueue.get(nodeName));
 		connection.send(baos.toByteArray());
 		waitingQueue.remove(nodeName);
 	}

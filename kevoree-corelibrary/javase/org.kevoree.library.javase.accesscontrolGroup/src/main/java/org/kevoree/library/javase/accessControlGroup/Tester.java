@@ -72,7 +72,7 @@ public class Tester {
 
         /*PUSH SIGNED MODEL
                 // INSTALL PDP (MODEL ACCESS CONTROL)
-        AccessControlRoot root = AccessControlXmiHelper.$instance.loadStream(Tester.class.getClassLoader().getResourceAsStream("benchmark/pdp/model4.ac"));
+        AccessControlRoot root = AccessControlXmiHelper.instance$.loadStream(Tester.class.getClassLoader().getResourceAsStream("benchmark/pdp/model4.ac"));
         System.out.println("PUSH PDP "+root.getUsers().size());
 
       group.pushPDP(root,rsaPrivateKey,KevScriptLoader.getModel(Tester.class.getClassLoader().getResource("benchmark/models2/emptynode.kevs").getPath()),"node0");

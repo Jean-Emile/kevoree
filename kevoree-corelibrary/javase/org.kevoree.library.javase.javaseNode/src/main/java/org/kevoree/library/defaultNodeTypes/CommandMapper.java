@@ -34,7 +34,7 @@ public class CommandMapper {
     public PrimitiveCommand buildPrimitiveCommand(org.kevoreeadaptation.AdaptationPrimitive p, String nodeName) {
 
         String pTypeName = p.getPrimitiveType().getName();
-        if (pTypeName.equals(JavaSePrimitive.$instance.getUpdateDictionaryInstance())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getUpdateDictionaryInstance())) {
             if (((Instance) p.getRef()).getName().equals(nodeName)) {
                 return new SelfDictionaryUpdate((Instance) p.getRef(), nodeType);
             } else {
@@ -43,52 +43,52 @@ public class CommandMapper {
 
         }
 
-        if (pTypeName.equals(JavaSePrimitive.$instance.getAddFragmentBinding())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getAddFragmentBinding())) {
             return new AddFragmentBindingCommand((Channel) p.getRef(), p.getTargetNodeName(), nodeName);
         }
-        if (pTypeName.equals(JavaSePrimitive.$instance.getRemoveFragmentBinding())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getRemoveFragmentBinding())) {
             return new RemoveFragmentBindingCommand((Channel) p.getRef(), p.getTargetNodeName(), nodeName);
         }
 
-        if (pTypeName.equals(JavaSePrimitive.$instance.getStartInstance())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getStartInstance())) {
             return new StartStopInstance((Instance) p.getRef(), nodeName, true);
         }
-        if (pTypeName.equals(JavaSePrimitive.$instance.getStopInstance())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getStopInstance())) {
             return new StartStopInstance((Instance) p.getRef(), nodeName, false);
         }
 
-        if (pTypeName.equals(JavaSePrimitive.$instance.getAddBinding())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getAddBinding())) {
             return new AddBindingCommand((MBinding) p.getRef(), nodeName);
         }
-        if (pTypeName.equals(JavaSePrimitive.$instance.getRemoveBinding())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getRemoveBinding())) {
             return new RemoveBindingCommand((MBinding) p.getRef(), nodeName);
         }
 
-        if (pTypeName.equals(JavaSePrimitive.$instance.getAddDeployUnit())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getAddDeployUnit())) {
             return new AddDeployUnit((DeployUnit) p.getRef(), nodeType.getBootStrapperService());
         }
-        if (pTypeName.equals(JavaSePrimitive.$instance.getRemoveDeployUnit())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getRemoveDeployUnit())) {
             RemoveDeployUnit res = new RemoveDeployUnit((DeployUnit) p.getRef(), nodeType.getBootStrapperService());
             toClean.add(res);
             return res;
         }
-        if (pTypeName.equals(JavaSePrimitive.$instance.getUpdateDeployUnit())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getUpdateDeployUnit())) {
             UpdateDeployUnit res = new UpdateDeployUnit((DeployUnit) p.getRef(), nodeType.getBootStrapperService());
             toClean.add(res);
             return res;
         }
 
-        if (pTypeName.equals(JavaSePrimitive.$instance.getAddInstance())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getAddInstance())) {
             return new AddInstance((Instance) p.getRef(), nodeName, nodeType.getModelService(), nodeType.getKevScriptEngineFactory(), nodeType.getBootStrapperService());
         }
-        if (pTypeName.equals(JavaSePrimitive.$instance.getRemoveInstance())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getRemoveInstance())) {
             return new RemoveInstance((Instance) p.getRef(), nodeName, nodeType.getModelService(), nodeType.getKevScriptEngineFactory(), nodeType.getBootStrapperService());
         }
 
-        if (pTypeName.equals(JavaSePrimitive.$instance.getAddThirdParty())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getAddThirdParty())) {
             return new AddDeployUnit((DeployUnit) p.getRef(), nodeType.getBootStrapperService());
         }
-        if (pTypeName.equals(JavaSePrimitive.$instance.getRemoveThirdParty())) {
+        if (pTypeName.equals(JavaSePrimitive.instance$.getRemoveThirdParty())) {
             return new RemoveDeployUnit((DeployUnit) p.getRef(), nodeType.getBootStrapperService());
         }
 

@@ -271,7 +271,7 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
         int portDefined = 0;
         for (ContainerNode subNode : group.getSubNodes()) {
             if (group != null) {
-                String portOption = KevoreePropertyHelper.$instance.getProperty(
+                String portOption = KevoreePropertyHelper.instance$.getProperty(
                         group, "port", true, subNode.getName());
                 if (portOption != null && !portOption.trim().isEmpty()) {
                     portDefined++;
@@ -306,7 +306,7 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
             Group groupOption = model.findByPath("groups[" + getName() + "]",
                     Group.class);
             if (groupOption != null) {
-                String portOption = KevoreePropertyHelper.$instance.getProperty(
+                String portOption = KevoreePropertyHelper.instance$.getProperty(
                         groupOption, "port", true, subNode.getName());
                 if (portOption != null) {
                     if (!portOption.trim().isEmpty()) {
@@ -370,7 +370,7 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
                 public void onMessage(ByteBuffer bytes) {
                     logger.debug("Compressed model given by master server: loading...");
                     ByteArrayInputStream bais = new ByteArrayInputStream(bytes.array());
-                    ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
+                    ContainerRoot model = KevoreeXmiHelper.instance$.loadCompressedStream(bais);
                     updateLocalModel(model);
                     logger.debug("Model loaded from XMI compressed bytes");
                 }
@@ -473,7 +473,7 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
         if (mvnRepo) {
             // process to do when we are a client & mvn repo is running
             List<String> urls = new ArrayList<String>();
-            Object mvnPort = KevoreePropertyHelper.$instance.getProperty(getModelElement(), "repo_puerto", false, null);
+            Object mvnPort = KevoreePropertyHelper.instance$.getProperty(getModelElement(), "repo_puerto", false, null);
             for (Map.Entry<String, Integer> entry: getMasterServerAddresses().entrySet()) {
                 String url = "http://" + entry.getKey() + ":" + mvnPort;
                 logger.info("Add URL " + url);
@@ -513,13 +513,13 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
         ContainerRoot model = getModelService().getLastModel();
         for (ContainerNode subNode : group.getSubNodes()) {
             if (group != null) {
-                String portOption = KevoreePropertyHelper.$instance.getProperty(
+                String portOption = KevoreePropertyHelper.instance$.getProperty(
                         group, "port", true, subNode.getName());
                 // if a port is defined then it is a master server
                 if (portOption != null) {
                     int port = Integer.parseInt(portOption);
-                    List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, subNode.getName(),
-                            org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
+                    List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model, subNode.getName(),
+                            org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
                     if (ips.isEmpty()) {
                         // no IP defined for master server, let's give it a try locally
                         map.put("127.0.0.1", port);

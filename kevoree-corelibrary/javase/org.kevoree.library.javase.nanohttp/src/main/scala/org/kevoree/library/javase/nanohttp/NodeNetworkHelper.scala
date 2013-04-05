@@ -83,7 +83,7 @@ object NodeNetworkHelper {
   def addNetworkProperty (model: ContainerRoot, nodeName: String, ips: Array[(String, String)], kevScriptEngineFactory: KevScriptEngineFactory): Option[ContainerRoot] = {
     ips.foreach {
       ip =>
-        KevoreePlatformHelper.$instance.updateNodeLinkProp(model, nodeName, nodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP, ip._1, ip._2, 100)
+        KevoreePlatformHelper.instance$.updateNodeLinkProp(model, nodeName, nodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP, ip._1, ip._2, 100)
         logger.info("add "+ip._1+" as IP of "+nodeName)
     }
     Some(model)

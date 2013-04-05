@@ -173,13 +173,13 @@ public class NioChannel extends AbstractChannelFragment {
 	}
 
 	public List<String> getAddresses (String remoteNodeName) {
-        return KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
+        return KevoreePropertyHelper.instance$.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
 	}
 
 	public int parsePortNumber (String nodeName) throws IOException {
 		try {
 			//logger.debug("look for port on " + nodeName);
-			String portOption = org.kevoree.framework.KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, nodeName);
+			String portOption = org.kevoree.framework.KevoreePropertyHelper.instance$.getProperty(getModelElement(), "port", true, nodeName);
 			if (portOption != null) {
                 try {
 				return Integer.parseInt(portOption);

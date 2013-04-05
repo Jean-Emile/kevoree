@@ -52,7 +52,7 @@ public class WebSocketGroupMasterServer extends AWebSocketGroup {
             // serialize model into an OutputStream
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             baos.write(PUSH);
-            KevoreeXmiHelper.$instance.saveCompressedStream(baos, model);
+            KevoreeXmiHelper.instance$.saveCompressedStream(baos, model);
             // send push request
             byte[] data = baos.toByteArray();
             for (URI uri : addresses) {
@@ -85,7 +85,7 @@ public class WebSocketGroupMasterServer extends AWebSocketGroup {
                 public void onMessage(ByteBuffer bytes) {
                     logger.debug("Receiving compressed model...");
                     ByteArrayInputStream bais = new ByteArrayInputStream(bytes.array());
-                    final ContainerRoot root = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
+                    final ContainerRoot root = KevoreeXmiHelper.instance$.loadCompressedStream(bais);
                     try {
                         exchanger.exchange(root);
                     } catch (InterruptedException e) {
@@ -126,7 +126,7 @@ public class WebSocketGroupMasterServer extends AWebSocketGroup {
     protected void onMasterServerPushEvent(WebSocketConnection conn, byte[] msg) {
         logger.debug("PUSH: " + conn.httpRequest().remoteAddress() + " asked for a PUSH");
         ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length - 1);
-        ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
+        ContainerRoot model = KevoreeXmiHelper.instance$.loadCompressedStream(bais);
         updateLocalModel(model);
 
         logger.debug("Master websocket server is going to broadcast model over {} clients", clients.size());
@@ -170,7 +170,7 @@ public class WebSocketGroupMasterServer extends AWebSocketGroup {
         logger.debug("PULL: Client " + conn.httpRequest().remoteAddress()
                 + " ask for a pull");
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        KevoreeXmiHelper.$instance.saveCompressedStream(output,
+        KevoreeXmiHelper.instance$.saveCompressedStream(output,
                 getModelService().getLastModel());
         conn.send(output.toByteArray());
     }

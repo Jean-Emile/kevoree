@@ -55,7 +55,7 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
                                            byte[] msg) {
         // deserialize the model from msg
         ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length - 1); // offset is for the control byte
-        ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
+        ContainerRoot model = KevoreeXmiHelper.instance$.loadCompressedStream(bais);
         updateLocalModel(model);
 
         // for each node in this group
@@ -101,7 +101,7 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
             // to get the new model back
             logger.debug(nodeName+" is in the waiting queue, meaning that we have to send the model back to him");
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            KevoreeXmiHelper.$instance.saveStream(baos, getAndRemoveModelFromQueue(nodeName));
+            KevoreeXmiHelper.instance$.saveStream(baos, getAndRemoveModelFromQueue(nodeName));
             connection.send(baos.toByteArray());
         }
     }

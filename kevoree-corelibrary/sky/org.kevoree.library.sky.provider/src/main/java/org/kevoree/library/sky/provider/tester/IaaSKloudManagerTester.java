@@ -103,7 +103,7 @@ public class IaaSKloudManagerTester extends AbstractComponentType implements Iaa
         kengine.append("merge 'mvn:org.kevoree.corelibrary.sky/org.kevoree.library.sky.api/1.9.0-SNAPSHOT'");
 
         ContainerNode currentNode = getModelService().getLastModel().findByPath("nodes[" + getNodeName() + "]", ContainerNode.class);
-        kengine.addVariable("logLevel", prefix + KevoreePropertyHelper.$instance.getProperty(currentNode, "logLevel", false, null));
+        kengine.addVariable("logLevel", prefix + KevoreePropertyHelper.instance$.getProperty(currentNode, "logLevel", false, null));
 
         int nbNode = Integer.parseInt(getDictionary().get("nbNodes").toString());
         for (int i = 0; i < nbNode; i++) {

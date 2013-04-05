@@ -96,7 +96,7 @@ public class JmDNSNanoRestGroup extends NanoRestGroup implements Runnable {
 		ContainerRoot model = getModelService().getLastModel();
 		// update local address interfaces
 		for (InetAddress ip : ips) {
-			KevoreePlatformHelper.$instance.updateNodeLinkProp(model, this.getNodeName(), this.getNodeName(), org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), ip.getHostAddress(), "LAN" + ip.getHostName(),
+			KevoreePlatformHelper.instance$.updateNodeLinkProp(model, this.getNodeName(), this.getNodeName(), org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), ip.getHostAddress(), "LAN" + ip.getHostName(),
 							100);
 //            KevoreePlatformHelper.updateNodeLinkProp(model,this.getNodeName(),this.getNodeName(), org.kevoree.framework.Constants.KEVOREE_MODEL_PORT(),this.getDictionary().get("port").toString(), "LAN", 100);
 		}

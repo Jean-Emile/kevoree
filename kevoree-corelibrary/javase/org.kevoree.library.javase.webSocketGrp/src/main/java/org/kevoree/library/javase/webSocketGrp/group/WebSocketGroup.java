@@ -86,7 +86,7 @@ public class WebSocketGroup extends AbstractGroupType {
 		Group groupOption = model.findByPath("groups[" + getName() + "]",
 				Group.class);
 		if (groupOption != null) {
-			String portOption = KevoreePropertyHelper.$instance.getProperty(
+			String portOption = KevoreePropertyHelper.instance$.getProperty(
 					groupOption, "port", true, targetNodeName);
 			if (portOption != null) {
 				try {
@@ -99,8 +99,8 @@ public class WebSocketGroup extends AbstractGroupType {
 			}
 		}
 
-		List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model,
-				targetNodeName, org.kevoree.framework.Constants.$instance
+		List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model,
+				targetNodeName, org.kevoree.framework.Constants.instance$
 						.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
 		if (ips.size() > 0) {
 			for (String ip : ips) {
@@ -132,7 +132,7 @@ public class WebSocketGroup extends AbstractGroupType {
 				logger.debug("Receiving compressed model...");
 				ByteArrayInputStream bais = new ByteArrayInputStream(
 						bytes.array());
-				final ContainerRoot root = KevoreeXmiHelper.$instance
+				final ContainerRoot root = KevoreeXmiHelper.instance$
 						.loadCompressedStream(bais);
 				try {
 					exchanger.exchange(root);
@@ -147,7 +147,7 @@ public class WebSocketGroup extends AbstractGroupType {
 			@Override
 			public void onMessage(String msg) {
 				logger.debug("Receiving model...");
-				final ContainerRoot root = KevoreeXmiHelper.$instance
+				final ContainerRoot root = KevoreeXmiHelper.instance$
 						.loadString(msg);
 				try {
 					exchanger.exchange(root);
@@ -212,7 +212,7 @@ public class WebSocketGroup extends AbstractGroupType {
 		Group groupOption = model.findByPath("groups[" + getName() + "]",
 				Group.class);
 		if (groupOption != null) {
-			String portOption = KevoreePropertyHelper.$instance.getProperty(
+			String portOption = KevoreePropertyHelper.instance$.getProperty(
 					groupOption, "port", true, targetNodeName);
 			if (portOption != null) {
 				try {
@@ -226,11 +226,11 @@ public class WebSocketGroup extends AbstractGroupType {
 		}
 
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		KevoreeXmiHelper.$instance.saveCompressedStream(output, model);
+		KevoreeXmiHelper.instance$.saveCompressedStream(output, model);
 		byte[] data = output.toByteArray();
 
-		List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model,
-				targetNodeName, org.kevoree.framework.Constants.$instance
+		List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model,
+				targetNodeName, org.kevoree.framework.Constants.instance$
 						.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
 		if (ips.size() > 0) {
 			for (String ip : ips) {
@@ -290,7 +290,7 @@ public class WebSocketGroup extends AbstractGroupType {
                     logger.debug("Compressed model received from "
                             + connection.httpRequest().header("Host") + ": loading...");
                     ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length-1);
-                    ContainerRoot model = KevoreeXmiHelper.$instance
+                    ContainerRoot model = KevoreeXmiHelper.instance$
                             .loadCompressedStream(bais);
                     updateLocalModel(model);
                     logger.debug("Model loaded from XMI String");
@@ -300,7 +300,7 @@ public class WebSocketGroup extends AbstractGroupType {
                     logger.debug("Pull request received from "
                             + connection.httpRequest().header("Host") + ": loading...");
                     ByteArrayOutputStream output = new ByteArrayOutputStream();
-                    KevoreeXmiHelper.$instance.saveCompressedStream(output, getModelService().getLastModel());
+                    KevoreeXmiHelper.instance$.saveCompressedStream(output, getModelService().getLastModel());
                     connection.send(output.toByteArray());
                     logger.debug("Compressed model pulled back to "
                             + connection.httpRequest().header("Host"));

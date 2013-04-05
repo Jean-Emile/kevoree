@@ -68,8 +68,8 @@ public class testJmDNS {
         }
         ContainerRoot model = new ContainerRootImpl();
 
-        KevoreePlatformHelper.$instance.updateNodeLinkProp(model, "node0", "node0", org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), "192.168.1.1", "LAN", 100);
-        KevoreePlatformHelper.$instance.updateNodeLinkProp(model, "node0", "node0", org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), "192.168.1.2", "LAN2", 100);
+        KevoreePlatformHelper.instance$.updateNodeLinkProp(model, "node0", "node0", org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), "192.168.1.1", "LAN", 100);
+        KevoreePlatformHelper.instance$.updateNodeLinkProp(model, "node0", "node0", org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), "192.168.1.2", "LAN2", 100);
 
         for( NodeNetwork node : model.getNodeNetworks())
         {

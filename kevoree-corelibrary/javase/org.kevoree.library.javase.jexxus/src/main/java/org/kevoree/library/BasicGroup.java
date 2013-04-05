@@ -138,12 +138,12 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
     public void pushInternal(ContainerRoot model, String targetNodeName, byte code) throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         output.write(code);
-        KevoreeXmiHelper.$instance.saveCompressedStream(output, model);
+        KevoreeXmiHelper.instance$.saveCompressedStream(output, model);
 
         int PORT = 8000;
         Group groupOption = model.findGroupsByID(getName());
         if (groupOption != null) {
-            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, targetNodeName);
+            String portOption = KevoreePropertyHelper.instance$.getProperty(groupOption, "port", true, targetNodeName);
             if (portOption != null) {
                 try {
                     PORT = Integer.parseInt(portOption);
@@ -152,7 +152,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                 }
             }
         }
-        List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         if (ips.size() > 0) {
             logger.debug("Try to send the model using one of the {} defined ips for {}", ips.size(), targetNodeName);
             for (String ip : ips) {
@@ -209,7 +209,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
         int PORT = 8000;
         Group groupOption = model.findGroupsByID(getName());
         if (groupOption != null) {
-            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, targetNodeName);
+            String portOption = KevoreePropertyHelper.instance$.getProperty(groupOption, "port", true, targetNodeName);
             if (portOption != null) {
                 try {
                     PORT = Integer.parseInt(portOption);
@@ -218,7 +218,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                 }
             }
         }
-        List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         if (ips.size() > 0) {
             for (String ip : ips) {
                 try {
@@ -254,7 +254,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
             @Override
             public void receive(byte[] data, Connection from) {
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-                final ContainerRoot root = KevoreeXmiHelper.$instance.loadCompressedStream(inputStream);
+                final ContainerRoot root = KevoreeXmiHelper.instance$.loadCompressedStream(inputStream);
                 try {
                     exchanger.exchange(root);
                 } catch (InterruptedException e) {
@@ -290,16 +290,16 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                     case getModel: {
                         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-                        //System.err.println(KevoreeXmiHelper.$instance.saveToString(getModelService().getLastModel(),true));
+                        //System.err.println(KevoreeXmiHelper.instance$.saveToString(getModelService().getLastModel(),true));
 
-                        KevoreeXmiHelper.$instance.saveCompressedStream(output, getModelService().getLastModel());
+                        KevoreeXmiHelper.instance$.saveCompressedStream(output, getModelService().getLastModel());
                         from.send(output.toByteArray(), Delivery.RELIABLE);
                     }
                     break;
                     case pushModel: {
                         ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
                         inputStream.read();
-                        final ContainerRoot root = KevoreeXmiHelper.$instance.loadCompressedStream(inputStream);
+                        final ContainerRoot root = KevoreeXmiHelper.instance$.loadCompressedStream(inputStream);
                         localUpdateModel(root);
                         //from.close();
                         broadcast(root);
@@ -308,7 +308,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                     case pushModelInternal: {
                         ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
                         inputStream.read();
-                        final ContainerRoot root = KevoreeXmiHelper.$instance.loadCompressedStream(inputStream);
+                        final ContainerRoot root = KevoreeXmiHelper.instance$.loadCompressedStream(inputStream);
                         localUpdateModel(root);
                         //from.close();
                     }

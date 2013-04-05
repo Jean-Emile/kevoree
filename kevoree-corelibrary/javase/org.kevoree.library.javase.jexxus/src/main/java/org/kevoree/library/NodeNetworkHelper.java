@@ -52,7 +52,7 @@ public class NodeNetworkHelper {
 
     public static ContainerRoot addNetworkProperty (ContainerRoot model, String nodeName ,java.util.HashMap<String,String> ips , KevScriptEngineFactory kevScriptEngineFactory) {
         for(String key : ips.keySet()){
-            KevoreePlatformHelper.$instance.updateNodeLinkProp(model, nodeName, nodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), key, ips.get(key), 100);
+            KevoreePlatformHelper.instance$.updateNodeLinkProp(model, nodeName, nodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), key, ips.get(key), 100);
             logger.info("add {} as IP of {}", key, nodeName);
 
         }

@@ -186,7 +186,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
     private void pushTo(ContainerRoot model, URI uri) {
         // serialize model into an OutputStream
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        KevoreeXmiHelper.$instance.saveCompressedStream(baos, model);
+        KevoreeXmiHelper.instance$.saveCompressedStream(baos, model);
         byte[] data = new byte[baos.size() + 1];
         byte[] serializedModel = baos.toByteArray();
         data[0] = PUSH;
@@ -223,7 +223,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
                 // throws a model back at us in answer from the pull request
                 logger.debug("Receiving compressed model...");
                 ByteArrayInputStream bais = new ByteArrayInputStream(bytes.array());
-                ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
+                ContainerRoot model = KevoreeXmiHelper.instance$.loadCompressedStream(bais);
                 try {
                     exchanger.exchange(model);
                 } catch (InterruptedException e) {
@@ -257,7 +257,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
         // finding node port
         Group groupOption = model.findByPath("groups[" + getName() + "]", Group.class);
         if (groupOption != null) {
-            String portOption = KevoreePropertyHelper.$instance.getProperty(groupOption, "port", true, nodeName);
+            String portOption = KevoreePropertyHelper.instance$.getProperty(groupOption, "port", true, nodeName);
             if (portOption != null) {
                 try {
                     port = Integer.parseInt(portOption);
@@ -268,7 +268,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
         }
 
         // find node IPs
-        List<String> ips = KevoreePropertyHelper.$instance.getNetworkProperties(model, nodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model, nodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
 
         if (ips.size() == 0) {
             String defaultIP = "127.0.0.1";
@@ -317,7 +317,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
 
                     // deserialize model from byte array
                     ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length-1);
-                    ContainerRoot model = KevoreeXmiHelper.$instance.loadCompressedStream(bais);
+                    ContainerRoot model = KevoreeXmiHelper.instance$.loadCompressedStream(bais);
 
                     // update local node model
                     localUpdateModel(model);
@@ -330,7 +330,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
                     logger.debug("Client {} ask for a pull", conn.httpRequest().remoteAddress());
 
                     ByteArrayOutputStream output = new ByteArrayOutputStream();
-                    KevoreeXmiHelper.$instance.saveCompressedStream(output, getModelService().getLastModel());
+                    KevoreeXmiHelper.instance$.saveCompressedStream(output, getModelService().getLastModel());
                     conn.send(output.toByteArray());
                     break;
 

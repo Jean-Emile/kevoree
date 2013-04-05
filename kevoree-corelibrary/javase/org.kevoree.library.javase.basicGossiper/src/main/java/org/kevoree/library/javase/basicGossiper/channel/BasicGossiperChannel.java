@@ -149,7 +149,7 @@ public class BasicGossiperChannel extends AbstractChannelFragment implements Mod
 
     @Override
     public List<String> getAddresses(String remoteNodeName) {
-        return org.kevoree.framework.KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
+        return org.kevoree.framework.KevoreePropertyHelper.instance$.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
     }
 
     @Override
@@ -157,7 +157,7 @@ public class BasicGossiperChannel extends AbstractChannelFragment implements Mod
         Channel channelOption = currentCacheModel.get().findByPath("hubs[" + getName() + "]", Channel.class);
         int port = 8000;
         if (channelOption != null) {
-            String portOption = org.kevoree.framework.KevoreePropertyHelper.$instance.getProperty(channelOption, "port", true, nodeName);
+            String portOption = org.kevoree.framework.KevoreePropertyHelper.instance$.getProperty(channelOption, "port", true, nodeName);
             if (portOption != null) {
                 try {
                     port = Integer.parseInt(portOption);

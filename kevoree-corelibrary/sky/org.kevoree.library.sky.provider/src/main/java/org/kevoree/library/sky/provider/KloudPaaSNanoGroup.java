@@ -87,11 +87,11 @@ public class KloudPaaSNanoGroup extends NanoRestGroup {
     public NanoHTTPD.Response processOnModelRequested(String uri) {
         if (!KloudModelHelper.isIaaSNode(getModelService().getLastModel(), getNodeName())) {
             if (uri.endsWith("/model/current")) {
-                String msg = KevoreeXmiHelper.$instance.saveToString(getModelService().getLastModel(), false);
+                String msg = KevoreeXmiHelper.instance$.saveToString(getModelService().getLastModel(), false);
                 return server.new Response(NanoHTTPD.HTTP_OK, NanoHTTPD.MIME_HTML, msg);
             } else if (uri.endsWith("/model/current/zip")) {
                 ByteArrayOutputStream st = new ByteArrayOutputStream();
-                KevoreeXmiHelper.$instance.saveCompressedStream(st, getModelService().getLastModel());
+                KevoreeXmiHelper.instance$.saveCompressedStream(st, getModelService().getLastModel());
                 ByteArrayInputStream resultStream = new ByteArrayInputStream(st.toByteArray());
                 return server.new Response(NanoHTTPD.HTTP_OK, NanoHTTPD.MIME_HTML, resultStream);
             } else {

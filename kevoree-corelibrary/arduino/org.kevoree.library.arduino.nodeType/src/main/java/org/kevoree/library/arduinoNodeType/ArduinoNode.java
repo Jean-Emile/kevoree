@@ -168,7 +168,7 @@ public class ArduinoNode extends AbstractNodeType {
                     logger.error("Error appears when we compute the firmware update", e);
                 }
 
-                KevoreeXmiHelper.$instance.save(newdir.getAbsolutePath() + File.separator + targetNodeName + "_" + (lastVersion + 1) + ".kev", root);
+                KevoreeXmiHelper.instance$.save(newdir.getAbsolutePath() + File.separator + targetNodeName + "_" + (lastVersion + 1) + ".kev", root);
             }
 
         }catch (Exception e)
@@ -296,9 +296,9 @@ public class ArduinoNode extends AbstractNodeType {
     public  boolean needAdaptation(AdaptationModel modelIn){
         boolean typeAdaptationFound = false;
         for (AdaptationPrimitive p : modelIn.getAdaptations()) {
-            Boolean addType = p.getPrimitiveType().getName().equals(JavaSePrimitive.$instance.getAddType());
-            Boolean removeType = p.getPrimitiveType().getName().equals(JavaSePrimitive.$instance.getRemoveType());
-            Boolean updateType = p.getPrimitiveType().getName().equals(JavaSePrimitive.$instance.getUpdateType());
+            Boolean addType = p.getPrimitiveType().getName().equals(JavaSePrimitive.instance$.getAddType());
+            Boolean removeType = p.getPrimitiveType().getName().equals(JavaSePrimitive.instance$.getRemoveType());
+            Boolean updateType = p.getPrimitiveType().getName().equals(JavaSePrimitive.instance$.getUpdateType());
             if (addType || removeType || updateType) {
                 typeAdaptationFound = true;
             }

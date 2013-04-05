@@ -72,7 +72,7 @@ public class KevoreeFrascatiMojo extends AbstractMojo {
   	    File resdir = new File(targetresources.getAbsolutePath() + File.separatorChar + "KEV-INF");
   	    resdir.mkdir();
   	    File resFile = new File(targetresources.getAbsolutePath() + File.separatorChar + "KEV-INF" + File.separatorChar + "lib.kev" );
-    	KevoreeXmiHelper.$instance.save(resFile.getAbsolutePath(), root);
+    	KevoreeXmiHelper.instance$.save(resFile.getAbsolutePath(), root);
     	System.err.println(resFile.getAbsolutePath());
     	
     	

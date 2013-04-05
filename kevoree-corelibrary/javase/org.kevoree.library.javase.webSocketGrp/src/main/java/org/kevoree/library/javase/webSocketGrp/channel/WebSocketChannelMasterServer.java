@@ -291,7 +291,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
         List<URI> uris = new ArrayList<URI>();
 
         for (KevoreeChannelFragment kfc : getOtherFragments()) {
-            String portOption = KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, kfc.getNodeName());
+            String portOption = KevoreePropertyHelper.instance$.getProperty(getModelElement(), "port", true, kfc.getNodeName());
             if (portOption != null) {
                 int port = Integer.parseInt(portOption.trim());
                 List<String> ips = getAddresses(kfc.getNodeName());
@@ -305,7 +305,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
     }
 
     protected List<String> getAddresses(String remoteNodeName) {
-        List<String> ips = org.kevoree.framework.KevoreePropertyHelper.$instance.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.$instance.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
+        List<String> ips = org.kevoree.framework.KevoreePropertyHelper.instance$.getNetworkProperties(getModelService().getLastModel(), remoteNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         // if there is no IP defined in node network properties
         // then give it a try locally
         if (ips.isEmpty()) ips.add("127.0.0.1");
@@ -330,14 +330,14 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
 
         // check other fragment port property
         for (KevoreeChannelFragment kfc : getOtherFragments()) {
-            String portOption = KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, kfc.getNodeName());
+            String portOption = KevoreePropertyHelper.instance$.getProperty(getModelElement(), "port", true, kfc.getNodeName());
             if (portOption != null) {
                 portPropertyCounter++;
             }
         }
 
         // check my port property
-        String portOption = KevoreePropertyHelper.$instance.getProperty(getModelElement(), "port", true, getNodeName());
+        String portOption = KevoreePropertyHelper.instance$.getProperty(getModelElement(), "port", true, getNodeName());
         if (portOption != null) portPropertyCounter++;
 
         if (portPropertyCounter == 0) {
