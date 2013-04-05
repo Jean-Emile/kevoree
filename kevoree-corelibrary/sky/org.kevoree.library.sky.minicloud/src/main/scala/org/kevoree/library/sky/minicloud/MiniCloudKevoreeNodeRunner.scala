@@ -127,7 +127,7 @@ class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode) e
       try {
         Thread.currentThread().getContextClassLoader.loadClass("org.kevoree.platform.standalone.App")
       } catch {
-        case e: Throwable => {
+        case _@e => {
           logger.info("Can't find bootstrap class {}", "org.kevoree.platform.standalone.App")
           return false
         }
@@ -145,12 +145,17 @@ class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode) e
 
       configureLogFile(iaasNode, nodePlatformProcess)
 
-      nodePlatformProcess.exitValue
+      val exitValue = nodePlatformProcess.exitValue
+      logger.debug("Unable to start platform from current classloader. ExitValue={}", exitValue)
       false
     } catch {
       case e: IllegalThreadStateException => {
         logger.debug("platform " + nodeName + " is started")
         true
+      }
+      case _@e => {
+        logger.debug("Unable to start platform from current classloader", e)
+        false
       }
     }
   }
