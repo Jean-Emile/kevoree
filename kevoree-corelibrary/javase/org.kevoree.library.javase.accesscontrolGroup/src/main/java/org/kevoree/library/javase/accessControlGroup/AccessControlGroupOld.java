@@ -1,28 +1,37 @@
 package org.kevoree.library.javase.accessControlGroup;
 
-import jexxus.common.Connection;
-import jexxus.common.ConnectionListener;
-import jexxus.server.ServerConnection;
-import org.kevoree.ContainerRoot;
-import org.kevoree.adaptation.accesscontrol.api.SignedModel;
-import org.kevoree.tools.accesscontrol.framework.AbstractAccessControlGroupType;
-import org.kevoree.tools.accesscontrol.framework.AccessControlException;
 import controlbasicGossiper.HelperModelSigned;
 import jexxus.client.ClientConnection;
 import jexxus.client.UniClientConnection;
+import jexxus.common.Connection;
+import jexxus.common.ConnectionListener;
 import jexxus.common.Delivery;
 import jexxus.server.Server;
+import jexxus.server.ServerConnection;
 import org.kevoree.ContainerNode;
+import org.kevoree.ContainerRoot;
 import org.kevoree.Group;
+import org.kevoree.Instance;
 import org.kevoree.accesscontrol.AccessControlRoot;
 import org.kevoree.adaptation.accesscontrol.api.ControlException;
+import org.kevoree.adaptation.accesscontrol.api.SignedModel;
+import org.kevoree.adaptation.accesscontrol.api.SignedPDP;
 import org.kevoree.annotation.*;
+import org.kevoree.framework.AbstractGroupType;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.KevoreeXmiHelper;
 import org.kevoree.library.NodeNetworkHelper;
+import org.kevoree.tools.accesscontrol.framework.api.ICompareAccessControl;
+import org.kevoree.tools.accesscontrol.framework.impl.CompareAccessControlImpl;
+import org.kevoree.tools.accesscontrol.framework.impl.SignedModelImpl;
+import org.kevoree.tools.accesscontrol.framework.impl.SignedPDPImpl;
+import org.kevoree.tools.accesscontrol.framework.utils.AccessControlXmiHelper;
+import org.kevoree.tools.accesscontrol.framework.utils.HelperSignature;
+import org.kevoreeadaptation.AdaptationPrimitive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
 import java.io.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -34,23 +43,25 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 
-
 /**
- * Created with IntelliJ IDEA.
+ * Created with IntelliJ IDEA.  :
  * User: jed
- * Date: 09/04/13
- * Time: 16:22
+ * Date: 24/01/13
+ * Time: 15:27
  * To change this template use File | Settings | File Templates.
  */
 @DictionaryType({
         @DictionaryAttribute(name = "port", defaultValue = "8000", optional = true, fragmentDependant = true),
         @DictionaryAttribute(name = "ip", defaultValue = "0.0.0.0", optional = true, fragmentDependant = true),
-        @DictionaryAttribute(name = "ssl", defaultValue = "false", vals = {"true", "false"})
+        @DictionaryAttribute(name = "ssl", defaultValue = "false", vals = {"true", "false"}),
+        @DictionaryAttribute(name = "pdp", defaultValue = "false", vals = {"true", "false"}),
+        @DictionaryAttribute(name = "benchmark", defaultValue = "false", vals = {"true", "false"}),
+        @DictionaryAttribute(name = "gui", defaultValue = "false", vals = {"true", "false"})
 })
 @GroupType
 @Library(name = "JavaSE", names = "Android")
-public class AccessControlGroup extends AbstractAccessControlGroupType  implements ConnectionListener
-{
+public class AccessControlGroupOld extends AbstractGroupType implements ConnectionListener {
+
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
     private final byte getModel = 0;
     private final byte pushModel = 1;
@@ -59,6 +70,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
     protected boolean udp = false;
     boolean ssl = false;
     int port = -1;
+    private AccessControlRoot root = null;
 
 
     @Start
@@ -66,6 +78,22 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
         port = Integer.parseInt(this.getDictionary().get("port").toString());
         ssl = Boolean.parseBoolean(this.getDictionary().get("ssl").toString());
 
+        // root = AccessControlXmiHelper.instance$.loadStream(Tester.class.getClassLoader().getResourceAsStream("model.ac"));
+
+        if (Boolean.parseBoolean(getDictionary().get("gui").toString())) {
+            JFileChooser dialogue = new JFileChooser(new File("."));
+            PrintWriter sortie;
+            File fichier = null;
+            if (dialogue.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                fichier = dialogue.getSelectedFile();
+                sortie = new PrintWriter
+                        (new FileWriter(fichier.getPath(), true));
+
+                sortie.close();
+                root = AccessControlXmiHelper.instance$.loadStream(new FileInputStream(fichier));
+            }
+
+        }
         if (udp) {
             server = new Server(this, port, port, ssl);
         } else {
@@ -82,6 +110,37 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
     }
 
 
+    protected void locaUpdateModel(final ContainerRoot modelOption) {
+        new Thread() {
+            public void run() {
+                try {
+                    long duree, start;
+                    getModelService().unregisterModelListener(AccessControlGroupOld.this);
+                    start = System.currentTimeMillis();
+                    getModelService().atomicUpdateModel(modelOption);
+                    duree = (System.currentTimeMillis() - start);
+                    getModelService().registerModelListener(AccessControlGroupOld.this);
+                    /*
+                    try
+                    {
+                        String filename= System.getProperty("java.io.tmpdir")+ File.separator+ "accesscontrol2.benchmark";
+                        FileWriter fw = new FileWriter(filename,true); //the true will append the new data
+                        fw.write(""+duree+"\n");
+                        fw.close();
+                        logger.info("total="+filename);
+                    }
+                    catch(IOException ioe)
+                    {
+                        System.err.println("IOException: " + ioe.getMessage());
+                    }
+                    */
+                } catch (Exception e) {
+                    logger.error("", e);
+                }
+            }
+        }.start();
+    }
+
     @Override
     public void triggerModelUpdate() {
         if (starting) {
@@ -91,9 +150,9 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
                 new Thread() {
                     public void run() {
                         try {
-                            getModelService().unregisterModelListener(AccessControlGroup.this);
+                            getModelService().unregisterModelListener(AccessControlGroupOld.this);
                             getModelService().atomicUpdateModel(modelOption);
-                            getModelService().registerModelListener(AccessControlGroup.this);
+                            getModelService().registerModelListener(AccessControlGroupOld.this);
                         } catch (Exception e) {
                             logger.error("", e);
                         }
@@ -116,6 +175,58 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
         }
     }
 
+    public void pushPDP(AccessControlRoot root, PrivateKey key, ContainerRoot model, String targetNodeName) throws IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        SignedPDP pdp = new SignedPDPImpl(root, key);
+        write(model, targetNodeName, pdp);
+    }
+
+
+    public void pushSignedModel(PrivateKey key, ContainerRoot model, String targetNodeName) throws Exception {
+        SignedModel signedmodel = new SignedModelImpl(model, key);
+        write(model, targetNodeName, signedmodel);
+    }
+
+
+    @Override
+    public void push(ContainerRoot model, String targetNodeName) throws Exception {
+        String private_exponent = "";
+        String modulus = "";
+        if (Boolean.parseBoolean(getDictionary().get("gui").toString())) {
+            JFileChooser dialogue = new JFileChooser(new File("."));
+            PrintWriter sortie;
+            File fichier = null;
+            if (dialogue.showOpenDialog(null) ==
+                    JFileChooser.APPROVE_OPTION) {
+                fichier = dialogue.getSelectedFile();
+                sortie = new PrintWriter
+                        (new FileWriter(fichier.getPath(), true));
+
+                sortie.close();
+            }
+            FileReader fr = new FileReader(fichier);
+            BufferedReader br = new BufferedReader(fr);
+            StringBuilder stringkey = new StringBuilder();
+            try {
+                String line = br.readLine();
+
+                while (line != null) {
+                    stringkey.append(line);
+                    line = br.readLine();
+                }
+
+                br.close();
+                fr.close();
+                private_exponent = stringkey.toString().split(":")[0];
+                modulus = stringkey.toString().split(":")[1];
+            } catch (EOFException e) {
+
+            }
+        }
+
+        SignedModel signedmodel = new SignedModelImpl(model, HelperSignature.getPrivateKey(modulus, private_exponent));
+        write(model, targetNodeName, signedmodel);
+
+    }
 
     @Override
     public ContainerRoot pull(final String targetNodeName) throws Exception {
@@ -215,19 +326,68 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
                         ByteArrayInputStream bis = new ByteArrayInputStream(bytessignedModel);
                         ObjectInputStream ois = new ObjectInputStream(bis);
 
-                        try
-                        {
+                        try {
+
                             Object signed = ois.readObject();
 
-                            if(approvalPDP(signed)){
-                              logger.debug("accepted PDP");
-                            }
+                            if (signed instanceof SignedModelImpl) {
 
-                            if(approvalSignedModel(signed)) {
-                                logger.debug("accepted Model");
-                                locaUpdateModel(getModel((SignedModel) signed));
-                            }
+                                SignedModel signedModel = (SignedModelImpl) signed;
+                                if (root != null) {
+                                    CompareAccessControlImpl accessControl = new CompareAccessControlImpl(root);
+                                    if (Boolean.parseBoolean(getDictionary().get("benchmark").toString())) {
+                                        accessControl.setBenchmark(true);
+                                    } else {
+                                        accessControl.setBenchmark(false);
+                                    }
+                                    List<AdaptationPrimitive> result = accessControl.approval(getNodeName(), getModelService().getLastModel(), signedModel);
 
+                                    if (result != null && result.size() == 0) {
+                                        logger.info("model accepted according to access control");
+                                        ContainerRoot target_model = KevoreeXmiHelper.instance$.loadString(new String(signedModel.getSerialiedModel()));
+                                        locaUpdateModel(target_model);
+                                    } else {
+                                        if (result != null) {
+                                            for (AdaptationPrimitive p : result) {
+
+                                                String ref = "";
+
+                                                if (p.getRef() instanceof Instance) {
+                                                    ref = ((Instance) p.getRef()).getTypeDefinition().getName();
+                                                } else {
+                                                    ref = p.getRef().toString();
+                                                }
+                                                logger.error("Refused Adapation Primitive " + p.getPrimitiveType().getName() + " " + ref);
+
+
+                                            }
+                                        } else {
+                                            logger.error(" no result ");
+                                        }
+
+                                    }
+                                } else {
+                                    logger.error("There is no access control defined");
+                                }
+
+                            } else if (signed instanceof SignedPDPImpl) {
+                                SignedPDPImpl pdp = (SignedPDPImpl) signed;
+
+                                if (root == null) {
+                                    root = AccessControlXmiHelper.instance$.loadString(new String(pdp.getSerialiedModel()));
+                                } else {
+
+                                    ICompareAccessControl accessControl = new CompareAccessControlImpl(root);
+                                    if (accessControl.accessPDP(pdp)) {
+                                        root = AccessControlXmiHelper.instance$.loadString(new String(pdp.getSerialiedModel()));
+                                    } else {
+                                        logger.error("There is no acess to PDP");
+
+                                    }
+
+                                }
+
+                            }
                         } finally {
                             // on ferme les flux
                             try {
@@ -257,22 +417,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
     public void clientConnected(ServerConnection conn) {
 
     }
-    protected void locaUpdateModel(final ContainerRoot modelOption) {
-        new Thread() {
-            public void run() {
-                try {
-                    long duree, start;
-                    getModelService().unregisterModelListener(AccessControlGroup.this);
-                    start = System.currentTimeMillis();
-                    getModelService().atomicUpdateModel(modelOption);
-                    duree = (System.currentTimeMillis() - start);
-                    getModelService().registerModelListener(AccessControlGroup.this);
-                } catch (Exception e) {
-                    logger.error("", e);
-                }
-            }
-        }.start();
-    }
+
 
     public void write(ContainerRoot model, String targetNodeName, Object data) throws IOException {
 
@@ -332,35 +477,4 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
 
     }
 
-
-    @Override
-    public void pushPDP(ContainerRoot containerRoot, String node, AccessControlRoot accessControlRoot, PrivateKey privateKey) throws AccessControlException {
-        try {
-            write(containerRoot, node, createSignedPDP(accessControlRoot, privateKey));
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (SignatureException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-    }
-
-    @Override
-    public void pushSignedModel(ContainerRoot containerRoot, String node, PrivateKey privateKey) throws AccessControlException {
-        try
-        {
-            write(containerRoot, node, createSignedModel(containerRoot,privateKey));
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (SignatureException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-    }
 }
