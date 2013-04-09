@@ -77,7 +77,7 @@ public class defMSG extends AbstractChannelFragment {
 
     @LocalBindingUpdated
     public void updateLocalBinding(){
-         logger.info("New local binding");
+         logger.info("local binding updated");
     }
 
 }

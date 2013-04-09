@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kevoree.framework.internal;
+package org.kevoree.library.defaultNodeTypes.reflect;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;

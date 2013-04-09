@@ -18,11 +18,11 @@ import org.kevoree.ComponentInstance
 import org.kevoree.ContainerRoot
 import org.kevoree.annotation.KevoreeInject
 import org.kevoree.api.service.core.handler.KevoreeModelHandlerService
-import org.kevoree.framework.internal.FieldAnnotationResolver
-import org.kevoree.framework.internal.MethodAnnotationResolver
 import org.slf4j.LoggerFactory
 import org.kevoree.api.Bootstraper
 import org.kevoree.api.service.core.script.KevScriptEngineFactory
+import org.kevoree.library.defaultNodeTypes.reflect.MethodAnnotationResolver
+import org.kevoree.library.defaultNodeTypes.reflect.FieldAnnotationResolver
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;

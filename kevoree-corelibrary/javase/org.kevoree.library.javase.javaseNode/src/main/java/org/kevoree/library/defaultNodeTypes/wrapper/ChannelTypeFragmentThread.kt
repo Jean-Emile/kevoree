@@ -6,7 +6,6 @@ import org.kevoree.ContainerRoot
 import org.kevoree.annotation.LocalBindingUpdated
 import org.kevoree.annotation.RemoteBindingUpdated
 import org.kevoree.api.service.core.handler.KevoreeModelHandlerService
-import org.kevoree.framework.internal.MethodAnnotationResolver
 import org.kevoree.framework.message.FragmentBindMessage
 import org.kevoree.framework.message.FragmentUnbindMessage
 import org.kevoree.framework.message.Message
@@ -14,11 +13,12 @@ import org.kevoree.framework.message.PortBindMessage
 import org.kevoree.framework.message.PortUnbindMessage
 import org.kevoree.framework.port.PausablePortThreadPoolExecutor
 import org.slf4j.LoggerFactory
-import org.kevoree.framework.internal.FieldAnnotationResolver
 import org.kevoree.annotation.KevoreeInject
 import java.lang.reflect.Modifier
 import org.kevoree.api.Bootstraper
 import org.kevoree.api.service.core.script.KevScriptEngineFactory
+import org.kevoree.library.defaultNodeTypes.reflect.MethodAnnotationResolver
+import org.kevoree.library.defaultNodeTypes.reflect.FieldAnnotationResolver
 
 class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeName: String, val _name: String, val modelService: KevoreeModelHandlerService,val bootService:Bootstraper,val kevsEngine : KevScriptEngineFactory): KevoreeChannelFragment, KInstance, ChannelFragment {
 
@@ -189,7 +189,7 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
         }
     }
 
-    public fun forward(delegate: KevoreeChannelFragment?, inmsg: Message?): Any? {
+    public override fun forward(delegate: KevoreeChannelFragment?, inmsg: Message?): Any? {
         val msg = inmsg!!.clone()
         msg.setDestChannelName(delegate!!.getName())
         msg.setDestNodeName(delegate!!.getNodeName())
@@ -201,7 +201,7 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
         }
     }
 
-    public fun forward(delegate: KevoreePort?, inmsg: Message?): Any? {
+    public override fun forward(delegate: KevoreePort?, inmsg: Message?): Any? {
         try {
             val msg = inmsg!!.clone()
             msg.setDestChannelName(delegate!!.getName()!!)
@@ -294,13 +294,13 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
     }
 
 
-    fun getBindedPorts(): List<KevoreePort> {
-        return portsBinded.values().toList()
+    public override fun getBindedPorts(): MutableList<org.kevoree.framework.KevoreePort>? {
+        return portsBinded.values().toList() as MutableList<org.kevoree.framework.KevoreePort>?
     }
 
     //OVERRIDE BY FACTORY
-    fun getOtherFragments(): List<KevoreeChannelFragment> {
-        return fragementBinded.values().toList()
+    public override fun getOtherFragments(): MutableList<org.kevoree.framework.KevoreeChannelFragment>? {
+        return fragementBinded.values().toList() as MutableList<org.kevoree.framework.KevoreeChannelFragment>?
     }
 
 }

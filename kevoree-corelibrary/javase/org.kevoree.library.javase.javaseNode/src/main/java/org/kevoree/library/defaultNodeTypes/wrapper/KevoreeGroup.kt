@@ -15,14 +15,14 @@
 package org.kevoree.framework
 
 import org.kevoree.ContainerRoot
-import org.kevoree.framework.internal.MethodAnnotationResolver
 import org.slf4j.LoggerFactory
 import org.kevoree.api.service.core.handler.KevoreeModelHandlerService
 import org.kevoree.annotation.KevoreeInject
-import org.kevoree.framework.internal.FieldAnnotationResolver
 import java.lang.reflect.Modifier
 import org.kevoree.api.Bootstraper
 import org.kevoree.api.service.core.script.KevScriptEngineFactory
+import org.kevoree.library.defaultNodeTypes.reflect.FieldAnnotationResolver
+import org.kevoree.library.defaultNodeTypes.reflect.MethodAnnotationResolver
 
 public class KevoreeGroup(val target: AbstractGroupType, val nodeName: String, val name: String,val modelService : KevoreeModelHandlerService,val bootService:Bootstraper,val kevsEngine : KevScriptEngineFactory): KInstance {
 
