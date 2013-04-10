@@ -1,0 +1,11 @@
+frontend  main localhost:8070
+default_backend             static_website
+backend static_website
+balance     roundrobin
+option httpchk
+http-check disable-on-404
+server  srv1 localhost:8080 check
+server  srv2 localhost:8082 check
+mode http
+stats uri /stats 
+stats auth  p:p
