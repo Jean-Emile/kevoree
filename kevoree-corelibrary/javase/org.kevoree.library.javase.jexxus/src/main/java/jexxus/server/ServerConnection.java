@@ -44,8 +44,11 @@ public class ServerConnection extends Connection {
 		startTCPListener();
 	}
 
+
+    private Thread tcpThread = null;
+
 	private void startTCPListener() {
-		Thread t = new Thread(new Runnable() {
+        tcpThread = new Thread(new Runnable() {
 			public void run() {
 				while (true) {
 					byte[] ret;
@@ -81,8 +84,8 @@ public class ServerConnection extends Connection {
 				}
 			}
 		});
-		t.setName("Jexxus-TCPSocketListener");
-		t.start();
+        tcpThread.setName("Jexxus-TCPSocketListener");
+        tcpThread.start();
 	}
 
 	@Override
@@ -123,6 +126,9 @@ public class ServerConnection extends Connection {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+        if(tcpThread != null){
+            tcpThread.stop();
+        }
 	}
 
 	InetAddress getAddress() {

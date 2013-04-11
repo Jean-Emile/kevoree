@@ -213,8 +213,10 @@ public class ClientConnection extends Connection {
         }
     }
 
+    private Thread tcpThread = null;
+
     private void startTCPListener() {
-        Thread t = new Thread(new Runnable() {
+        tcpThread = new Thread(new Runnable() {
             public void run() {
                 while (true) {
                     byte[] ret;
@@ -253,12 +255,15 @@ public class ClientConnection extends Connection {
                 }
             }
         });
-        t.setName("Jexxus-TCPSocketListener");
-        t.start();
+        tcpThread.setName("Jexxus-TCPSocketListener");
+        tcpThread.start();
     }
 
+
+    private Thread udpThread = null;
+
     private void startUDPListener() {
-        Thread t = new Thread(new Runnable() {
+        udpThread = new Thread(new Runnable() {
             public void run() {
                 final int BUF_SIZE = 2048;
                 final DatagramPacket inputPacket = new DatagramPacket(new byte[BUF_SIZE], BUF_SIZE);
@@ -276,7 +281,7 @@ public class ClientConnection extends Connection {
                 }
             }
         });
-        t.start();
+        udpThread.start();
     }
 
     @Override
@@ -293,6 +298,15 @@ public class ClientConnection extends Connection {
             }
             connected = false;
         //}
+
+
+        if(tcpThread != null){
+            tcpThread.stop();
+        }
+        if(udpThread != null){
+            udpThread.stop();
+        }
+
     }
 
     @Override
