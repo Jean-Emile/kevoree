@@ -44,6 +44,9 @@ public class Random extends AbstractComponentType implements Runnable {
 	public void stop () {
 		//logger.debug("ARandom ","closing");
 		alive = false;
+        if(t != null){
+            t.interrupt();
+        }
 	}
 
 	@Update
