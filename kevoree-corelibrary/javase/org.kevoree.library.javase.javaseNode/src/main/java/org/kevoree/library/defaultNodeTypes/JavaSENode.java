@@ -195,7 +195,6 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
 	@Override
 	public void postRollback (ContainerRoot containerRoot, ContainerRoot containerRoot1) {
 		logger.warn("JavaSENode update aborted in {} ms",(System.currentTimeMillis() - preTime));
-
         try {
             File preModel = File.createTempFile("pre"+System.currentTimeMillis(),"pre");
             File afterModel = File.createTempFile("post"+System.currentTimeMillis(),"post");
@@ -203,6 +202,7 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
             KevoreeXmiHelper.instance$.save(afterModel.getAbsolutePath(),containerRoot1);
             logger.error("PreModel->"+preModel.getAbsolutePath());
             logger.error("PostModel->"+afterModel.getAbsolutePath());
+
         } catch (Exception e){
             logger.error("Error while saving debug model",e);
         }

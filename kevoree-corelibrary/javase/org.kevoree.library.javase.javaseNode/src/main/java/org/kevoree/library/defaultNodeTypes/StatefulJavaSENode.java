@@ -96,10 +96,8 @@ public class StatefulJavaSENode extends JavaSENode {
     @Override
     public void startNode() {
         super.startNode();
-
         listener = new StatefulModelListener();
         getModelService().registerModelListener(listener);
-
     }
 
     private File getLastPersistedModel() {
@@ -113,7 +111,6 @@ public class StatefulJavaSENode extends JavaSENode {
             baseLocation += File.separator;
         }
         return new File(baseLocation + getNodeName()+".kev");
-
     }
 
     @Stop
