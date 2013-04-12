@@ -1,0 +1,16 @@
+markdown: rdiscount
+pygments: true
+permalink: /posts/:title
+auto: true
+rdiscount:
+  extensions: [smart]
+title : Kevoree Project
+production_url : http://blog.kevoree.org
+description: "Kevoree Project : Blog"
+disqus_shortname: kevoree
+analytics: 
+gauges: 
+author :
+  name : Francois Fouquet
+  github : dukeboard
+  twitter : kevoree

@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+ <title>Kevoree Project</title>
+ <link href="http://blog.kevoree.org/atom.xml" rel="self"/>
+ <link href="http://blog.kevoree.org/"/>
+ <updated>2013-04-12T10:28:29+02:00</updated>
+ <id>http://blog.kevoree.org</id>
+ <author>
+   <name>Francois Fouquet</name>
+ </author>
+
+ 
+ <entry>
+   <title>New Stickers ;-)</title>
+   <link href="http://blog.kevoree.org/posts/new-stickers-"/>
+   <updated>2013-02-25T00:00:00+01:00</updated>
+   <id>http://blog.kevoree.org/posts/new-stickers-</id>
+   <content type="html">&lt;p&gt;Dear Kollowers,&lt;/p&gt;
+&lt;p&gt;WE ARE NOT DEAD. At least, not yet.&lt;/p&gt;
+&lt;p&gt;We are still busy with lots of papers to write, implementations to experiment and thesis to defend, but still working ! As a proof of that, we just received a new goodie :-)&lt;/p&gt;
+&lt;p&gt;Thenew Kevoree stickers has arrived !!&lt;/p&gt;
+&lt;p&gt;[[posterous-content:yHqdufByhjhpziGFAivv]]&lt;/p&gt;
+&lt;p&gt;They give you a first brief outlook on the future graphics of the next generation of Kevoree ;-)&lt;/p&gt;
+&lt;p&gt;Stay tuned ;-)&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree will drive a new node ...</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-will-drive-a-new-node-"/>
+   <updated>2012-11-10T00:00:00+01:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-will-drive-a-new-node-</id>
+   <content type="html">&lt;p&gt;Say Hello to Kevoree drone ;-) .&lt;/p&gt;
+&lt;p&gt;
+&lt;p&gt;This work is done with JeD for local firefighters for emergency area monitoring.&lt;/p&gt;
+&lt;p&gt;The sensors are majors fonctionalities of our autonomics computing case studies, and for gas and temperature sensing, drones allow catching better than ever... of course there non only sensors in the story but also some embedded computer named RapsberryPI...&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;Stay tuned...&lt;/p&gt;
+&lt;/p&gt;
+&lt;p&gt;[[posterous-content:IkintsgrbuEneHDCplEg]]&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Maven server Scheduled Downtime !</title>
+   <link href="http://blog.kevoree.org/posts/maven-server-scheduled-downtime-"/>
+   <updated>2012-10-17T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/maven-server-scheduled-downtime-</id>
+   <content type="html">&lt;p&gt;Our hosting provider is physically moving some servers from one site to another..&lt;/p&gt;
+&lt;p&gt;Our server hosting the Maven repository will be moved tonight Thursday 18th, between 2am and 8am.&lt;/p&gt;
+&lt;p&gt;We will check as soon as the operation is completed that the Maven repository is properly serving the binaries you need.&lt;/p&gt;
+&lt;p&gt;Sorry for the disturbance,&lt;/p&gt;
+&lt;p&gt;The Kevoree Team&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree Tutorial #2 Video is available !!</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-tutorial-2-video-is-available-"/>
+   <updated>2012-07-31T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-tutorial-2-video-is-available-</id>
+   <content type="html">&lt;p&gt;Yes, The second tutorial video of Kevoree is now available.&lt;/p&gt;
+&lt;p&gt;This new tutorial shows the compilation chain, and the continuous design ability offered by Kevoree.&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;&lt;iframe src=&quot;https://www.youtube.com/embed/d1kMzowU4wg&quot; frameborder=&quot;0&quot; height=&quot;360&quot; width=&quot;640&quot;&gt;&lt;/iframe&gt;&lt;/p&gt;
+&lt;p&gt;Have a great time ;-)&lt;/p&gt;
+&lt;p&gt;... and stay tuned !&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>New Kevoree Tutorial video</title>
+   <link href="http://blog.kevoree.org/posts/new-kevoree-tutorial-video"/>
+   <updated>2012-07-30T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/new-kevoree-tutorial-video</id>
+   <content type="html">&lt;p&gt;Good afternoon,&lt;/p&gt;
+&lt;p&gt;A new tutorial video about how to use Kevoree to create a first simple Chat application has juste been released.&lt;/p&gt;
+&lt;p&gt;Pleas have a look at it :-)&lt;/p&gt;
+&lt;p&gt;&lt;iframe src=&quot;https://www.youtube.com/embed/LHO_SBEcpT4&quot; frameborder=&quot;0&quot; height=&quot;360&quot; width=&quot;640&quot;&gt;&lt;/iframe&gt;&lt;/p&gt;
+&lt;p&gt;This is the first video of a serie, we hope to find enough energy to complete the serie :-)&lt;/p&gt;
+&lt;p&gt;Stay tuned ;-)&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree 1.8.2 and Raspberry Pi board</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-1-8-2-and-raspberry-pi-board"/>
+   <updated>2012-07-17T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-1-8-2-and-raspberry-pi-board</id>
+   <content type="html">&lt;p&gt;Hello all,&lt;/p&gt;
+&lt;p&gt;I've just publish Kevoree 1.8.2 , it contains mainly severals bug fix, in Kevoree M@RShell export , Node bootstrap and many others.&lt;/p&gt;
+&lt;p&gt;Another great new, we just receive thanks to our friends and collegues from Norway some RaspberryPI board. First tests on kevoree runtime are very impressive. So we will provide a dedicated runtime to support dynamic adaptation on such devices.&lt;/p&gt;
+&lt;p&gt;Stay tuned &amp;hellip;&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;[[posterous-content:kxoqrfwqhzwqFAclfEFs]]&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>1.8.1</title>
+   <link href="http://blog.kevoree.org/posts/1-8-1"/>
+   <updated>2012-06-25T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/1-8-1</id>
+   <content type="html">&lt;p&gt;We've just pusblish a 1.8.1 version to fix some incompatiblities of aether connectors with windows and to workaround no sha-1 file on remote repository.&lt;/p&gt;
+&lt;p&gt;Some minor naming bug are also fixed in this version&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>1.7.9 Version</title>
+   <link href="http://blog.kevoree.org/posts/1-7-9-version"/>
+   <updated>2012-06-19T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/1-7-9-version</id>
+   <content type="html">&lt;p&gt;Hello all,&lt;/p&gt;
+&lt;p&gt;We've juste publish Kevoree 1.7.9 version.&lt;/p&gt;
+&lt;p&gt;Severals bug improve the stability, especially for android runtime.&lt;/p&gt;
+&lt;p&gt;We also add severals cool feature in KevEditor like save model as KevScript or load from ArduinoNode.&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree 1.7.1 maintenance release</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-1-7-1-maintenance-release"/>
+   <updated>2012-05-16T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-1-7-1-maintenance-release</id>
+   <content type="html">&lt;p&gt;Hi ,&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;Kevoree 1.7.1 has been published. It is a minor maintenance release which fix some collisions usings Kevoree keywords in components.&lt;/p&gt;
+&lt;p&gt;Regards&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree 1.7.0</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-1-7-0"/>
+   <updated>2012-05-10T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-1-7-0</id>
+   <content type="html">&lt;p&gt;Finally the stable release is arrived with some minor revision about core components, core library and also a new tools framework allowing to use Apache Camel on Kevoree.&lt;/p&gt;
+&lt;p&gt;Enjoy and stay tuned ;-)&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree 1.7.0-RC1</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-1-7-0-rc1"/>
+   <updated>2012-04-27T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-1-7-0-rc1</id>
+   <content type="html">&lt;p&gt;&lt;span style=&quot;color: #333333; font-family: Georgia, Times New Roman, Times, serif; font-size: 14px; line-height: 22px; text-align: justify;&quot;&gt;Kevoree team is happy to announce the new Kevoree release candidate: version 1.7.0-RC1.&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span style=&quot;color: #333333; font-family: Georgia, Times New Roman, Times, serif; font-size: 14px; line-height: 22px; text-align: justify;&quot;&gt;This new version contains a lot of bug fixes.&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span style=&quot;color: #333333; font-family: Georgia, Times New Roman, Times, serif; font-size: 14px; line-height: 22px; text-align: justify;&quot;&gt;Final version will be release at the end of the next week.&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;&lt;span style=&quot;color: #333333; font-family: Georgia, Times New Roman, Times, serif; font-size: 14px; line-height: 22px; text-align: justify;&quot;&gt;Please feel free to test and report bugs on&amp;nbsp;&lt;/span&gt;&lt;a href=&quot;https://github.com/dukeboard/kevoree/issues&quot; title=&quot;github issue&quot; target=&quot;_blank&quot; style=&quot;font-family: Georgia, Times New Roman, Times, serif; font-size: 14px; line-height: 22px; text-align: justify;&quot;&gt;github&lt;/a&gt;&amp;nbsp;&lt;span style=&quot;color: #333333; font-family: Georgia, Times New Roman, Times, serif; font-size: 14px; line-height: 22px; text-align: justify;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: Georgia, Times New Roman, Times, serif; font-size: 14px; line-height: 22px; text-align: justify;&quot;&gt;before this date&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: Georgia, Times New Roman, Times, serif; font-size: 14px; line-height: 22px; text-align: justify;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree life ...</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-life-"/>
+   <updated>2012-03-14T00:00:00+01:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-life-</id>
+   <content type="html">&lt;p&gt;
+&lt;p&gt;Software engineering aims at building methods to ensure the robustness of software vis-&amp;agrave;-vis its future developments ... If it is still difficult to imagine such problems when starting a new project, it is interesting to see what happens after a while ...&lt;/p&gt;
+&lt;p&gt;We have exported thanks to gource app a video that shows the evolution of our Git repository from a year ... You say refactoring ... ;-)&lt;/p&gt;
+&lt;/p&gt;
+&lt;p&gt;&lt;iframe src=&quot;http://player.vimeo.com/video/38420403?portrait=0&quot; frameborder=&quot;0&quot; height=&quot;283&quot; width=&quot;500&quot;&gt;&lt;/iframe&gt;&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;Kevoree 1.6 is in final stage . Stay tuned .&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree 1.6 is coming !!!</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-1-6-is-coming-"/>
+   <updated>2012-02-24T00:00:00+01:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-1-6-is-coming-</id>
+   <content type="html">&lt;p&gt;
+&lt;p&gt;We are actively working for finalise the beta phase of Kevoree 1.6 .&lt;/p&gt;
+&lt;p&gt;Please feel free to test it and report bugs.&lt;/p&gt;
+&lt;p&gt;Current version is 1.6.0-BETA2&lt;/p&gt;
+&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree 1.5</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-1-5"/>
+   <updated>2012-01-16T00:00:00+01:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-1-5</id>
+   <content type="html">&lt;p&gt;Kevoree members are happy to announce the new Kevoree stable release 1.5.&lt;/p&gt;
+&lt;p&gt;First works about Kloud has been introduced on this release and more stuff will be available on the next release (1.5.1) during the next month&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree Cloud status</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-cloud-status"/>
+   <updated>2011-12-20T00:00:00+01:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-cloud-status</id>
+   <content type="html">&lt;p&gt;Kevoree&amp;nbsp;Cloud work in progress ... We just received new nodes ...[[posterous-content:BjsAssfDAAaekzfHAmga]]&amp;nbsp;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree Kloud work in progress ! </title>
+   <link href="http://blog.kevoree.org/posts/kevoree-kloud-work-in-progress-"/>
+   <updated>2011-12-16T00:00:00+01:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-kloud-work-in-progress-</id>
+   <content type="html">&lt;p&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;We prepare&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;for some weeks&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;now&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;Kevoree&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;version 1.5.0&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;which will&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;be released&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;soon (~ 20 december)&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;.&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;This version&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;will include a new&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;framework&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;for building&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;Cloud&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;computing architecture.&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;We prepare&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;an internal&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;cloud&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;demonstration&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;, here are the&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;first pictures of&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;span class=&quot;hps&quot; style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;the installation of equipment&lt;/span&gt;&lt;span style=&quot;color: #333333; font-family: arial, sans-serif; font-size: 16px; background-color: #f5f5f5;&quot;&gt;.[[posterous-content:jinIBztsggcgGCBzAbbc]]&lt;/span&gt;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree 1.4</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-1-4"/>
+   <updated>2011-11-14T00:00:00+01:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-1-4</id>
+   <content type="html">&lt;p&gt;Kevoree team is happy to announce that Kevoree 1.4.x branch is now stable and is release under 1.4.1 version. Many work has been done have a new very light runtime with a new data structure. The groups API is also in this this release, several implementations are available, Rest, JmDNS, Serial , etc ... Stay tuned ! :-)&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree 1.4.0 BETA 1</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-1-4-0-beta-1"/>
+   <updated>2011-10-17T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-1-4-0-beta-1</id>
+   <content type="html">&lt;p&gt;First beta of Kevoreee 1.4 is out. Many new features are included, separation between nodes and groups is cleaner. Kevoree Modeling Framework allows a significant gain in memory footprint. More to come ...&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>New tutorial</title>
+   <link href="http://blog.kevoree.org/posts/new-tutorial"/>
+   <updated>2011-10-10T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/new-tutorial</id>
+   <content type="html">&lt;p&gt;A new getting started tutorial has been written by Jean Emile for Java SE platform. This step by step guide details how to write your first hello world component.&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/dukeboard/kevoree/wiki/Getting-Started&quot; title=&quot;Java SE Getting Started&quot; target=&quot;_blank&quot;&gt;https://github.com/dukeboard/kevoree/wiki/Getting-Started&lt;/a&gt;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree 1.2.0 is out</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-1-2-0-is-out"/>
+   <updated>2011-09-29T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-1-2-0-is-out</id>
+   <content type="html">&lt;p&gt;Kevoree 1.2.0 is out ! This stable version includes many bug fixes and supports Arduino nodes out-of-the-box ! The team now concentrates on the next&amp;nbsp;1.3&amp;nbsp;version wich will bring support for cloud infrastructures, Kinect device and node type extensions ... Stay tuned ;-) !&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree release candidate is out</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-release-candidate-is-out"/>
+   <updated>2011-09-08T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-release-candidate-is-out</id>
+   <content type="html">&lt;p&gt;The first release candidate for Kevoree 1.2.0 is out. Please report your bug as quick as possible we are targeting a release for the 15 september 2011.&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>New maven repository</title>
+   <link href="http://blog.kevoree.org/posts/new-maven-repository"/>
+   <updated>2011-07-04T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/new-maven-repository</id>
+   <content type="html">&lt;p&gt;A new maven repository is available to reply to performance needs to serve Kevoree files ! You can use it seamlessly with the previous one just by changin adress maven.kevoree.org to maven2.kevoree.org.&amp;nbsp;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>A brand new day</title>
+   <link href="http://blog.kevoree.org/posts/a-brand-new-day"/>
+   <updated>2011-05-16T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/a-brand-new-day</id>
+   <content type="html">&lt;p&gt;Today is a &lt;em&gt;brand new day.&lt;/em&gt;&amp;nbsp;At least for the Kevoree familly.&amp;nbsp;Today, a new bread of technology is born.&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;The Kevoree team is very please to anounce you the born of&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;&lt;span style=&quot;color: #3366ff;&quot;&gt;&lt;strong&gt;&lt;span style=&quot;font-size: large;&quot;&gt;K-Strip&lt;/span&gt;&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;the Kevoree-powered power strip.&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;[[posterous-content:gdeczwGetodBuEzgenHc]]&lt;/p&gt;
+&lt;p&gt;&lt;span style=&quot;color: #ff6600; font-size: medium;&quot;&gt;Features&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A status led in the front to provide users with feedback&lt;/li&gt;
+&lt;li&gt;A Infrared receiver to control the K-Strip using a remote control&lt;/li&gt;
+&lt;li&gt;4 managed power socket with 4 status led on the top, making it possible to activate/disactivate plugged devices remotely&lt;/li&gt;
+&lt;li&gt;A current sensor inside, to get informed of the overall energy consuption of the K-Strip&lt;/li&gt;
+&lt;li&gt;Temperature and Light sensors on the top&lt;/li&gt;
+&lt;li&gt;A buzzer&lt;/li&gt;
+&lt;li&gt;A standard ElectronicBrick connector on the side to allow future user specific extentions&lt;/li&gt;
+&lt;li&gt;A 433Mhz Transceiver to remotely control the K-Strip using radio frequency communications&lt;/li&gt;
+&lt;li&gt;Firmware customizable through a USB connection.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;K-Strip applications are just limited by your imagination.&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;Control up to 5 DMX-compatible products(&lt;span style=&quot;font-size: x-small;&quot;&gt;&lt;em&gt;DMX extention required&lt;/em&gt;&lt;/span&gt;), while playing a song on the buzzer.&lt;br /&gt;Create a lightning sequence to control four light.&lt;br /&gt;Control by any mean: being placed behind your entertainment devices (TV, DVD player, Sound system), switch on and off the connected devices using a generic remote control, a radio control command.&lt;/p&gt;
+&lt;p&gt;The revolution is on its way.&lt;/p&gt;
+&lt;p&gt;Box it, plug it, play it !&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>K-Stuff prototypes, from the dream to reality</title>
+   <link href="http://blog.kevoree.org/posts/k-stuff-prototypes-from-the-dream-to-reality"/>
+   <updated>2011-05-13T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/k-stuff-prototypes-from-the-dream-to-reality</id>
+   <content type="html">&lt;p&gt;The official &lt;span style=&quot;text-decoration: underline;&quot;&gt;release announcement&lt;/span&gt; of the &lt;strong&gt;&lt;em&gt;first&lt;/em&gt;&lt;/strong&gt; K-Stuff prototype is sheduled for Monday May 16th at 09:00(Paris).&lt;/p&gt;
+&lt;p&gt;A source close to the leading team told that this release is the first of a future entire set of devices Kevoree#Ready. It seems that this first K-Stuff is moreover Kevoree#Inside.&lt;/p&gt;
+&lt;p&gt;To get informed about future posts:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;get new posts directly in your mailbox by subscribing to the Kevoree Blog on the right side of this page&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://www.twitter.com/kevoree&quot;&gt;&lt;img src=&quot;http://twitter-badges.s3.amazonaws.com/twitter-c.png&quot; alt=&quot;S'abonner &amp;amp;agrave; Kevoree sur Twitter&quot; /&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree Release 1.1.0 is now available</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-release-1-1-0-is-now-available"/>
+   <updated>2011-05-12T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-release-1-1-0-is-now-available</id>
+   <content type="html"></content>
+ </entry>
+ 
+ <entry>
+   <title>K-Stuff creation in progress</title>
+   <link href="http://blog.kevoree.org/posts/k-stuff-creation-in-progress"/>
+   <updated>2011-05-10T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/k-stuff-creation-in-progress</id>
+   <content type="html">Francois and I are currently creating &quot;Kevoree ready&quot; devices and connectors for already existing protocols.&lt;br /&gt;In the pictures, you can see different steps in the creation of a DMX connector or a Kevoree-Inside power strip... &lt;br /&gt;More to come :-)&lt;p /&gt;&lt;object height=&quot;300&quot; width=&quot;400&quot;&gt; &lt;param name=&quot;flashvars&quot; value=&quot;offsite=true&amp;amp;lang=fr-fr&amp;amp;page_show_url=%2Fphotos%2F51251871%40N06%2Fsets%2F72157626688223016%2Fshow%2F&amp;amp;page_show_back_url=%2Fphotos%2F51251871%40N06%2Fsets%2F72157626688223016%2F&amp;amp;set_id=72157626688223016&amp;amp;jump_to=&quot; /&gt;&lt;/param&gt; &lt;param name=&quot;movie&quot; value=&quot;http://www.flickr.com/apps/slideshow/show.swf?v=71649&quot; /&gt;&lt;/param&gt; &lt;param name=&quot;allowFullScreen&quot; value=&quot;true&quot; /&gt;&lt;/param&gt;&lt;embed allowfullscreen=&quot;true&quot; src=&quot;http://www.flickr.com/apps/slideshow/show.swf?v=71649&quot; type=&quot;application/x-shockwave-flash&quot; height=&quot;300&quot; flashvars=&quot;offsite=true&amp;amp;lang=fr-fr&amp;amp;page_show_url=%2Fphotos%2F51251871%40N06%2Fsets%2F72157626688223016%2Fshow%2F&amp;amp;page_show_back_url=%2Fphotos%2F51251871%40N06%2Fsets%2F72157626688223016%2F&amp;amp;set_id=72157626688223016&amp;amp;jump_to=&quot; width=&quot;400&quot;&gt;&lt;/embed&gt;&lt;/object&gt;&lt;div class=&quot;blogger-post-footer&quot;&gt;&lt;img class=&quot;posterous_download_image&quot; src=&quot;https://blogger.googleusercontent.com/tracker/5324703543657709-513820956531741819?l=blog.kevoree.org&quot; height=&quot;1&quot; alt=&quot;&quot; width=&quot;1&quot; /&gt;&lt;/div&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree Demo... with a nice picture</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-demo-with-a-nice-picture"/>
+   <updated>2011-04-28T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-demo-with-a-nice-picture</id>
+   <content type="html">[[posterous-content:EtcxHcjrrEhpktEediac]]&lt;br /&gt;&lt;p /&gt;&lt;div&gt;Nice X-Mas tree! And I am not simply talking about the fake tree on the right-hand side ;-)&lt;/div&gt;&lt;p /&gt;&lt;div&gt;Detailed explanations in a future post.&lt;/div&gt;&lt;div class=&quot;blogger-post-footer&quot;&gt;&lt;img class=&quot;posterous_download_image&quot; src=&quot;https://blogger.googleusercontent.com/tracker/5324703543657709-5263278222254107470?l=blog.kevoree.org&quot; height=&quot;1&quot; alt=&quot;&quot; width=&quot;1&quot; /&gt;&lt;/div&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Training Course in progress</title>
+   <link href="http://blog.kevoree.org/posts/training-course-in-progress"/>
+   <updated>2011-04-22T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/training-course-in-progress</id>
+   <content type="html">A Kevoree workshop is in progess today (April 22nd) from 2pm to 4pm at IRISA/INRIA Rennes.&lt;div&gt;Please feel free to contact us if you want to participate.&lt;/div&gt;&lt;p /&gt;&lt;div&gt;Apologize for the late advertisement.&lt;/div&gt;&lt;div class=&quot;blogger-post-footer&quot;&gt;&lt;img class=&quot;posterous_download_image&quot; src=&quot;https://blogger.googleusercontent.com/tracker/5324703543657709-6522656911974037868?l=blog.kevoree.org&quot; height=&quot;1&quot; alt=&quot;&quot; width=&quot;1&quot; /&gt;&lt;/div&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree 1.1.0-RC1 is out !</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-1-1-0-rc1-is-out-"/>
+   <updated>2011-04-18T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-1-1-0-rc1-is-out-</id>
+   <content type="html">Kevoree 1.1.0-RC1 is out !&lt;br /&gt;Many bugs have been fixed and the support of arduino nodes is now supported directly in the editor.&lt;p /&gt;Added Features : GroupType &amp;amp; NodeType&lt;br /&gt;Added Library : Gossiper group algorithm&lt;div class=&quot;blogger-post-footer&quot;&gt;&lt;img class=&quot;posterous_download_image&quot; src=&quot;https://blogger.googleusercontent.com/tracker/5324703543657709-543976264254028292?l=blog.kevoree.org&quot; height=&quot;1&quot; alt=&quot;&quot; width=&quot;1&quot; /&gt;&lt;/div&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Kevoree impressed our MODERATES colleagues</title>
+   <link href="http://blog.kevoree.org/posts/kevoree-impressed-our-moderates-colleagues"/>
+   <updated>2011-04-14T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/kevoree-impressed-our-moderates-colleagues</id>
+   <content type="html">We had a MODERATES project meeting this Wednesday. As usual, we prepared very few slides and mostly relied on live demos... including a demo based on Kevoree, in our brand new show-room (formerly a crappy object-room). Our colleagues were quite impressed by this demo :-)&lt;img class=&quot;posterous_download_image&quot; src=&quot;https://blogger.googleusercontent.com/tracker/5324703543657709-2059841354164832088?l=blog.kevoree.org&quot; height=&quot;1&quot; alt=&quot;&quot; width=&quot;1&quot; /&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>EnTiMid on its way to Kevoree</title>
+   <link href="http://blog.kevoree.org/posts/entimid-on-its-way-to-kevoree"/>
+   <updated>2011-04-08T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/entimid-on-its-way-to-kevoree</id>
+   <content type="html">EnTiMid have been designed to be a component based framework to ease both design and use of home automation solutions.&lt;div&gt;Proposed in several projects, presented in many public interventions, EnTiMid is soon to be released as a commercial product.&lt;/div&gt;&lt;p /&gt;&lt;div&gt;On its way to its industrial life, EnTiMid met Kevoree, and decided to work with.&lt;/div&gt;&lt;div&gt;At this time, all integrations we have done to make EnTiMid work using Kevoree brought promising good news, and new features.&lt;/div&gt;&lt;p /&gt;&lt;div class=&quot;blogger-post-footer&quot;&gt;&lt;img class=&quot;posterous_download_image&quot; src=&quot;https://blogger.googleusercontent.com/tracker/5324703543657709-1411186265187097276?l=blog.kevoree.org&quot; height=&quot;1&quot; alt=&quot;&quot; width=&quot;1&quot; /&gt;&lt;/div&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>MODERATES uses Kevoree as an integration platform</title>
+   <link href="http://blog.kevoree.org/posts/moderates-uses-kevoree-as-an-integration-platform"/>
+   <updated>2011-04-07T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/moderates-uses-kevoree-as-an-integration-platform</id>
+   <content type="html">MODERATES (SINTEF internal project on Model-Driven Engineering for the Internet of Things) uses Kevoree to wrap physical devices into software components, managed by Kevoree. Currenlty integrated: Waveman and ESIC devices (home automation), Arduino-based brick sensors (&lt;a href=&quot;http://www.seeedstudio.com/depot/electronic-brick-starter-kit-p-506.html?cPath=138&amp;amp;zenid=6f3e2c4e4111c582b1edc80da9496998&quot;&gt;http://www.seeedstudio.com/depot/electronic-brick-starter-kit-p-506.html?cPath=138&amp;amp;zenid=6f3e2c4e4111c582b1edc80da9496998&lt;/a&gt;), and a mysterious device to spy the coffee machine...&lt;p /&gt;&lt;div&gt;More to come...&lt;/div&gt;&lt;div class=&quot;blogger-post-footer&quot;&gt;&lt;img class=&quot;posterous_download_image&quot; src=&quot;https://blogger.googleusercontent.com/tracker/5324703543657709-5228069772327298886?l=blog.kevoree.org&quot; height=&quot;1&quot; alt=&quot;&quot; width=&quot;1&quot; /&gt;&lt;/div&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>JNLP fixed !</title>
+   <link href="http://blog.kevoree.org/posts/jnlp-fixed-"/>
+   <updated>2011-04-07T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/jnlp-fixed-</id>
+   <content type="html">A special thank you to Apache Felix developpement team wich has fixed the bug introduced by the update number 1.6.0_24 &amp;nbsp;of java virtual machine. Use of OSGi in Java Web Start and Applet is now ok. As a result the last Kevoree (1.1.0-beta1) runtime can now be launched by the JNLP link.&lt;img class=&quot;posterous_download_image&quot; src=&quot;https://blogger.googleusercontent.com/tracker/5324703543657709-5257979024525805732?l=blog.kevoree.org&quot; height=&quot;1&quot; alt=&quot;&quot; width=&quot;1&quot; /&gt;
+</content>
+ </entry>
+ 
+ <entry>
+   <title>First Kevoree message !</title>
+   <link href="http://blog.kevoree.org/posts/first-kevoree-message-"/>
+   <updated>2011-03-31T00:00:00+02:00</updated>
+   <id>http://blog.kevoree.org/posts/first-kevoree-message-</id>
+   <content type="html">Blog is now open !&lt;img class=&quot;posterous_download_image&quot; src=&quot;https://blogger.googleusercontent.com/tracker/5324703543657709-5549508564598717203?l=blog.kevoree.org&quot; height=&quot;1&quot; alt=&quot;&quot; width=&quot;1&quot; /&gt;
+</content>
+ </entry>
+ 
+
+</feed>
