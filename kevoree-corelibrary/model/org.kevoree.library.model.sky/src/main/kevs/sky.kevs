@@ -8,4 +8,4 @@ merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.camel/{kevo
 //merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.nioChannels/{kevoree.version}"
 merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.basicGossiper/{kevoree.version}"
 merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.webserver.api/{kevoree.version}"
-merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.webserver.tjws/{kevoree.version}"
+merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.webserver.spray/{kevoree.version}"
