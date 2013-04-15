@@ -30,11 +30,6 @@
             <version>${kevoree.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.kevoree.corelibrary.sky</groupId>
-            <artifactId>org.kevoree.library.sky.provider</artifactId>
-            <version>${kevoree.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.kevoree.corelibrary.javase</groupId>
             <artifactId>org.kevoree.library.javase.authentication</artifactId>
             <version>${kevoree.version}</version>
@@ -43,6 +38,11 @@
             <groupId>org.kevoree</groupId>
             <artifactId>org.kevoree.framework</artifactId>
             <version>${kevoree.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>org.json</artifactId>
+            <version>chargebee-1.0</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
