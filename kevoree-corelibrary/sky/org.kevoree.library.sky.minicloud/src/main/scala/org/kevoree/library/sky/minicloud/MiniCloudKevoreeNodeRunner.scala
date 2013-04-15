@@ -119,7 +119,8 @@ class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode) e
       KevoreeXmiHelper.instance$.save(tempFile.getAbsolutePath, childBootStrapModel)
 
 
-     /* if (System.getProperty("java.class.path").contains("plexus-classworlds")) {
+      /*if (System.getProperty("java.class.path").contains("plexus-classworlds")) {
+        //whe maven is used, it dybnamically loads some libraries which are not on the classpath and  "org.kevoree.platform.standalone.App" may be available but is not defined on the classpath properties
         return false //maven use case
       }*/
 
@@ -133,6 +134,7 @@ class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode) e
         }
       }
 
+
       val vmargsObject = iaasNode.getDictionary.get("VMARGS")
       var exec = Array[String](java)
       if (vmargsObject != null) {
@@ -145,12 +147,13 @@ class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode) e
 
       configureLogFile(iaasNode, nodePlatformProcess)
 
+      Thread.sleep(2000) // waiting the jvm is loaded
       val exitValue = nodePlatformProcess.exitValue
       logger.debug("Unable to start platform from current classloader. ExitValue={}", exitValue)
       false
     } catch {
       case e: IllegalThreadStateException => {
-        logger.debug("platform " + nodeName + " is started")
+        logger.info("platform " + nodeName + " is started")
         true
       }
       case _@e => {
@@ -182,6 +185,7 @@ class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode) e
 
         configureLogFile(iaasNode, nodePlatformProcess)
 
+        Thread.sleep(2000) // waiting the jvm is loaded
         nodePlatformProcess.exitValue
         false
       } else {
@@ -190,7 +194,7 @@ class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode) e
       }
     } catch {
       case e: IllegalThreadStateException => {
-        logger.debug("platform " + nodeName + " is started")
+        logger.info("platform " + nodeName + " is started")
         true
       }
     }
