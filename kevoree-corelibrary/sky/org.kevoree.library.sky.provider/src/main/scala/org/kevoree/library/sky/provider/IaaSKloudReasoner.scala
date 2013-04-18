@@ -112,7 +112,7 @@ object IaaSKloudReasoner extends KloudReasoner {
 
   def addNodes(addedNodes: java.util.List[ContainerNode], parentNodeNameOption: Option[String], iaasModel: ContainerRoot, kengine: KevScriptEngine): Boolean = {
     if (!addedNodes.isEmpty) {
-      logger.debug("Try to add all user nodes into the Kloud")
+      logger.debug("Try to add {} user nodes into the Kloud", addedNodes.size())
 
       // create new node using PJavaSENode as type for each user node
       var usedIps = KloudNetworkHelper.listAllIp(iaasModel)
