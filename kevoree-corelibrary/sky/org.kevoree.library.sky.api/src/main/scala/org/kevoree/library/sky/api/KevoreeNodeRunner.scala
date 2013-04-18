@@ -58,7 +58,7 @@ abstract class KevoreeNodeRunner(var nodeName: String) {
     if (ips.size > 0) {
       logger.debug("configure ssh server ip")
       try {
-        replaceStringIntoFile("ListenAddress <ip_address>", ips.mkString("\nListenAddress "), path + File.separator + "etc" + File.separator + "ssh" + File.separator + "sshd_config")
+        replaceStringIntoFile("ListenAddress <ip_address>", "ListenAddress " + ips.mkString("\nListenAddress "), path + File.separator + "etc" + File.separator + "ssh" + File.separator + "sshd_config")
       } catch {
         case _@e =>
           logger.debug("Unable to configure ssh server", e)
