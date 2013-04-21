@@ -13,6 +13,7 @@
         <relativePath>../org.kevoree.library.javase.root/pom.xml</relativePath>
     </parent>
 
+    <!--
     <dependencies>
         <dependency>
             <groupId>org.kevoree</groupId>
@@ -20,5 +21,5 @@
             <version>${kevoree.version}</version>
         </dependency>
     </dependencies>
-
+       -->
 </project>

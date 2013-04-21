@@ -7,8 +7,6 @@ import org.kevoree.annotation.Start;
 import org.kevoree.api.service.core.handler.UUIDModel;
 import org.kevoree.cloner.ModelCloner;
 import org.kevoree.framework.KevoreePropertyHelper;
-import org.kevoree.merger.KevoreeMergerComponent;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -63,7 +61,7 @@ public class AutoBasicGroup extends BasicGroup {
     }
 
     private static ModelCloner cloner = new ModelCloner();
-    private static KevoreeMergerComponent merger = new KevoreeMergerComponent();
+   // private static KevoreeMergerComponent merger = new KevoreeMergerComponent();
 
 
     protected void processRemoteInfo(byte[] rawData, final String ip) {
@@ -78,8 +76,8 @@ public class AutoBasicGroup extends BasicGroup {
                                 logger.info("New IP found for node " + data[1] + "->" + ip);
                                 try {
                                     ContainerRoot modelRW = cloner.clone(model.getModel());
-                                    ContainerRoot newModel = merger.merge(modelRW, requestModel(ip, Integer.parseInt(data[3]), data[0]));
-                                    getModelService().compareAndSwapModel(model, newModel);
+                                   // ContainerRoot newModel = merger.merge(modelRW, requestModel(ip, Integer.parseInt(data[3]), data[0]));
+                                  //  getModelService().compareAndSwapModel(model, newModel);
                                 } catch (Exception e) {
                                     logger.error("Error while merging remote model");
                                 }
