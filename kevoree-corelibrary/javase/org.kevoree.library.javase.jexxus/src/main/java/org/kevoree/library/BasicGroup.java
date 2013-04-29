@@ -31,6 +31,12 @@ import java.util.concurrent.TimeoutException;
  * Date: 07/11/12
  * Time: 17:24
  */
+
+/*
+Changelog
+
+ jedartois@gmail.com  29 avril 2013  fix severals broadcast to other members of the group sync due to ( interaces + multipe call of the method brodcast)
+ */
 @DictionaryType({
         @DictionaryAttribute(name = "port", defaultValue = "8000", optional = true, fragmentDependant = true),
         @DictionaryAttribute(name = "ip", defaultValue = "0.0.0.0", optional = true, fragmentDependant = true),
@@ -135,6 +141,25 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
         pushInternal(model, targetNodeName, pushModel);
     }
 
+    public  void sendModel(String ip,int port,ByteArrayOutputStream output) throws IOException {
+        final UniClientConnection[] conns = new UniClientConnection[1];
+        conns[0] = new UniClientConnection(new ConnectionListener() {
+            @Override
+            public void connectionBroken(Connection broken, boolean forced) {
+            }
+
+            @Override
+            public void receive(byte[] data, Connection from) {
+            }
+
+            @Override
+            public void clientConnected(ServerConnection conn) {
+            }
+        }, ip, port, ssl);
+        conns[0].connect(5000);
+        conns[0].send(output.toByteArray(), Delivery.RELIABLE);
+    }
+
     public void pushInternal(ContainerRoot model, String targetNodeName, byte code) throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         output.write(code);
@@ -154,49 +179,27 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
         }
         List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         if (ips.size() > 0) {
-            logger.debug("Try to send the model using one of the {} defined ips for {}", ips.size(), targetNodeName);
-            for (String ip : ips) {
-                try {
-                    final UniClientConnection[] conns = new UniClientConnection[1];
-                    conns[0] = new UniClientConnection(new ConnectionListener() {
-                        @Override
-                        public void connectionBroken(Connection broken, boolean forced) {
-                        }
+            boolean success = false;
+            int i=0;
+            do {
+                try
+                {
+                    logger.debug("Try to send the model using {} for {}", ips.get(i), targetNodeName);
+                    sendModel(ips.get(i),PORT,output);
+                    success = true;
 
-                        @Override
-                        public void receive(byte[] data, Connection from) {
-                        }
-
-                        @Override
-                        public void clientConnected(ServerConnection conn) {
-                        }
-                    }, ip, PORT, ssl);
-                    conns[0].connect(5000);
-                    conns[0].send(output.toByteArray(), Delivery.RELIABLE);
                 } catch (IOException e) {
-                    logger.debug("Unable to push model on {} using {}", targetNodeName, ip + ":" + PORT);
+                    logger.debug("Unable to push model on {} using {}", targetNodeName, ips.get(i) + ":" + PORT);
+                    success= false;
                 }
-            }
+                i++;
+            }  while (success == false &&  i < ips.size());
+
+
         } else {
             logger.debug("Try to send the model using the localhost ip for {}", targetNodeName);
-
             try {
-                final UniClientConnection[] conns = new UniClientConnection[1];
-                conns[0] = new UniClientConnection(new ConnectionListener() {
-                    @Override
-                    public void connectionBroken(Connection broken, boolean forced) {
-                    }
-
-                    @Override
-                    public void receive(byte[] data, Connection from) {
-                    }
-
-                    @Override
-                    public void clientConnected(ServerConnection conn) {
-                    }
-                }, "127.0.0.1", PORT, ssl);
-                conns[0].connect(5000);
-                conns[0].send(output.toByteArray(), Delivery.RELIABLE);
+                sendModel("127.0.0.1",PORT,output);
             } catch (IOException e) {
                 logger.debug("Unable to push model on {} using {}", targetNodeName, "127.0.0.1:" + PORT, e);
             }
@@ -302,7 +305,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                         final ContainerRoot root = KevoreeXmiHelper.instance$.loadCompressedStream(inputStream);
                         localUpdateModel(root);
                         //from.close();
-                        broadcast(root);
+
                     }
                     break;
                     case pushModelInternal: {
