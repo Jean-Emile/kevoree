@@ -20,7 +20,7 @@ import org.kevoree.api.service.core.script.KevScriptEngineFactory
 import org.kevoree.library.defaultNodeTypes.reflect.MethodAnnotationResolver
 import org.kevoree.library.defaultNodeTypes.reflect.FieldAnnotationResolver
 
-class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeName: String, val _name: String, val modelService: KevoreeModelHandlerService,val bootService:Bootstraper,val kevsEngine : KevScriptEngineFactory): KevoreeChannelFragment, KInstance, ChannelFragment {
+class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeName: String, val _name: String, val modelService: KevoreeModelHandlerService,val bootService:Bootstraper,val kevsEngine : KevScriptEngineFactory, val tg: ThreadGroup): KevoreeChannelFragment, KInstance, ChannelFragment {
 
     val logger = LoggerFactory.getLogger(this.getClass())!!
 
@@ -90,7 +90,7 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
                 met?.invoke(target)
                 (target.getModelService() as ModelHandlerServiceProxy).unsetTempModel()
                 isStarted = true
-                pool = PausablePortThreadPoolExecutor.newPausableThreadPool(1)
+                pool = PausablePortThreadPoolExecutor.newPausableThreadPool(1,tg)
                 return true
             } catch(e: Exception) {
                 kevoree_internal_logger.error("Kevoree Channel Instance Start Error !", e)

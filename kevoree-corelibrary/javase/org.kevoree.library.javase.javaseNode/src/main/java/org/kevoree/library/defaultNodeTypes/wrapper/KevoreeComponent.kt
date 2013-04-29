@@ -52,21 +52,21 @@ public class KevoreeComponent(val ct: AbstractComponentType, val nodeName: Strin
         return ct_started
     }
 
-    public fun initPorts(nodeTypeName: String, modelElement: ComponentInstance) {
+    public fun initPorts(nodeTypeName: String, modelElement: ComponentInstance, tg : ThreadGroup) {
         /* Init Required and Provided Port */
         val bean = modelElement.getTypeDefinition()!!.getBean()
         for(providedPort in modelElement.getProvided()){
             val newPortClazz = ct.javaClass.getClassLoader()!!.loadClass(buildPortBean(bean, nodeTypeName, providedPort.getPortTypeRef()!!.getName()))
             //TODO inject pure reflexif port, if class not found exception
             val newPort = newPortClazz!!.getConstructor(ct.getClass()).newInstance(ct) as KevoreePort
-            newPort.startPort()
+            newPort.startPort(tg)
             ct.getHostedPorts()!!.put(newPort.getName()!!, newPort)
         }
         for(requiredPort in modelElement.getRequired()){
             val newPortClazz = ct.javaClass.getClassLoader()!!.loadClass(buildPortBean(bean, nodeTypeName, requiredPort.getPortTypeRef()!!.getName()))
             //TODO inject pure reflexif port, if class not found exception
             val newPort = newPortClazz!!.getConstructor(ct.getClass()).newInstance(ct) as KevoreePort
-            newPort.startPort()
+            newPort.startPort(tg)
             ct.getNeededPorts()!!.put(newPort.getName()!!, newPort)
         }
         /* End reflexive injection */

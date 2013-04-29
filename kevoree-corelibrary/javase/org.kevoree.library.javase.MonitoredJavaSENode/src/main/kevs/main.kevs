@@ -2,7 +2,7 @@
 merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.MonitoredJavaSENode/{kevoree.version}"
 
 addNode node0 : MonitoredJavaSENode
-addComponent probes@node0 : BasicProbes { period='500' }
+addComponent probes@node0 : ThreadGroupStatsPrinter { period='500' }
 
 
 //addComponent input@node0 : CamelTimer { period='500' }

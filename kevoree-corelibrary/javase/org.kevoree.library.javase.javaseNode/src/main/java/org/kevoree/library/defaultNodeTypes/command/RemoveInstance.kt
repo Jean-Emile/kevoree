@@ -59,6 +59,10 @@ class RemoveInstance(val c: Instance, val nodeName: String, val modelservice: Ke
                 logger.error(" TypeCache "+c.getName()+"does not exist.")
                 return false
             } */
+
+            KevoreeDeployManager.clearRef(c.javaClass.getName()+"_tg", c.getName())
+            //TODO cleanup all sub thread group and associated thread (perhaps in StartStopCmd ?)
+
             KevoreeDeployManager.clearRef(c.javaClass.getName()+"_wrapper", c.getName())
             KevoreeDeployManager.clearRef(c.javaClass.getName(), c.getName())
             return true

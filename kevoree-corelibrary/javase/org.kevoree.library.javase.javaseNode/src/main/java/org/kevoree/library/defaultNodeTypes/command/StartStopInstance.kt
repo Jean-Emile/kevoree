@@ -19,7 +19,26 @@ import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
  * limitations under the License.
  */
 
-class StartStopInstance(c: Instance, nodeName: String, val start: Boolean): LifeCycleCommand(c, nodeName) {
+class StartStopInstance(c: Instance, nodeName: String, val start: Boolean): LifeCycleCommand(c, nodeName),Runnable {
+
+    var t : Thread? = null
+    var resultAsync = false
+    var root : ContainerRoot? = null
+    var iact : KInstance? = null
+    var tg : ThreadGroup? = null
+
+    public override fun run() {
+        Thread.currentThread().setContextClassLoader(iact.javaClass.getClassLoader())
+        if(start){
+            Thread.currentThread().setName("KevoreeStartInstance" + c.getName())
+            resultAsync= iact!!.kInstanceStart(root!!)
+        } else {
+            Thread.currentThread().setName("KevoreeStopInstance" + c.getName())
+            val res = iact!!.kInstanceStop(root!!)
+            Thread.currentThread().setContextClassLoader(null)
+            resultAsync = res
+        }
+    }
 
     override fun undo() {
         StartStopInstance(c, nodeName, !start).execute()
@@ -27,20 +46,29 @@ class StartStopInstance(c: Instance, nodeName: String, val start: Boolean): Life
 
     override fun execute(): Boolean {
 
-        val root = c.getTypeDefinition()!!.eContainer() as ContainerRoot
+        //Look thread group
+        root = c.getTypeDefinition()!!.eContainer() as ContainerRoot
         val ref = KevoreeDeployManager.getRef(c.javaClass.getName()+"_wrapper", c.getName())
+        tg = KevoreeDeployManager.getRef(c.javaClass.getName()+"_tg", c.getName())!! as ThreadGroup
         if(ref != null && ref is KInstance){
-            val iact = ref as KInstance
-            Thread.currentThread().setContextClassLoader(iact.javaClass.getClassLoader())
-            if(start){
-                Thread.currentThread().setName("KevoreeStartInstance" + c.getName())
-                return iact.kInstanceStart(root)
-            } else {
-                Thread.currentThread().setName("KevoreeStopInstance" + c.getName())
-                val res = iact.kInstanceStop(root)
-                Thread.currentThread().setContextClassLoader(null)
-                return res
+            iact = ref as KInstance
+            t = Thread(tg,this)
+            t!!.start()
+            t!!.join()
+            if(!start){
+                //kill subthread
+                val subThread : Array<Thread> = Array<Thread>(tg!!.activeCount(),{i->Thread.currentThread()})
+                tg!!.enumerate(subThread)
+                for(subT in subThread){
+                    try {
+                        subT.stop()
+                    } catch(t : Throwable){
+                        //ignore
+                    }
+                }
             }
+            //call sub
+            return resultAsync
         } else {
             return false
         }

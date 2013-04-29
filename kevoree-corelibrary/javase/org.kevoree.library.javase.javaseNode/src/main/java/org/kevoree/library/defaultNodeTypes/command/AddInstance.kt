@@ -20,6 +20,7 @@ import org.kevoree.Group
 import org.kevoree.framework.KevoreeGroup
 import org.kevoree.Channel
 import org.kevoree.framework.ChannelTypeFragmentThread
+import org.kevoree.DeployUnit
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
@@ -43,38 +44,37 @@ import org.kevoree.framework.ChannelTypeFragmentThread
  * Time: 17:53
  */
 
-class AddInstance(val c: Instance, val nodeName: String, val modelservice: KevoreeModelHandlerService, val kscript: KevScriptEngineFactory, val bs: org.kevoree.api.Bootstraper): PrimitiveCommand {
+class AddInstance(val c: Instance, val nodeName: String, val modelservice: KevoreeModelHandlerService, val kscript: KevScriptEngineFactory, val bs: org.kevoree.api.Bootstraper): PrimitiveCommand, Runnable {
+
 
     private val typeDefinitionAspect = TypeDefinitionAspect()
+
+    var deployUnit : DeployUnit? = null
+    var nodeTypeName : String? = null
+    var tg : ThreadGroup? = null
 
     override fun execute(): Boolean {
         val model = c.getTypeDefinition()!!.eContainer() as ContainerRoot
         val node = model.findNodesByID(nodeName)
-        val deployUnit = typeDefinitionAspect.foundRelevantDeployUnit(c.getTypeDefinition()!!, node!!)
+        deployUnit = typeDefinitionAspect.foundRelevantDeployUnit(c.getTypeDefinition()!!, node!!)!!
         val nodeType = node!!.getTypeDefinition()
-        val nodeTypeName = typeDefinitionAspect.foundRelevantHostNodeType(nodeType as NodeType, c.getTypeDefinition()!!)!!.getName()
+        nodeTypeName = typeDefinitionAspect.foundRelevantHostNodeType(nodeType as NodeType, c.getTypeDefinition()!!)!!.getName()
+        var subThread : Thread? = null
         try {
-
-            val beanClazz = bs.getKevoreeClassLoaderHandler().getKevoreeClassLoader(deployUnit)!!.loadClass(c.getTypeDefinition()!!.getBean())
-            val newBeanInstance = beanClazz!!.newInstance()
-            var newBeanKInstanceWrapper :KInstance? = null
-            if(c is ComponentInstance){
-                newBeanKInstanceWrapper = KevoreeComponent(newBeanInstance as AbstractComponentType,nodeName,c.getName(),modelservice,bs,kscript)
-                (newBeanKInstanceWrapper as KevoreeComponent).initPorts(nodeTypeName,c)
-            }
-            if(c is Group){
-                newBeanKInstanceWrapper = KevoreeGroup(newBeanInstance as AbstractGroupType,nodeName,c.getName(),modelservice,bs,kscript)
-            }
-            if(c is Channel){
-                newBeanKInstanceWrapper = ChannelTypeFragmentThread(newBeanInstance as AbstractChannelFragment,nodeName,c.getName(),modelservice,bs,kscript)
-                (newBeanKInstanceWrapper as ChannelTypeFragmentThread).initChannel()
-            }
-
-            KevoreeDeployManager.putRef(c.javaClass.getName(), c.getName(), newBeanInstance!!)
-            KevoreeDeployManager.putRef(c.javaClass.getName()+"_wrapper", c.getName(), newBeanKInstanceWrapper!!)
-
+            tg = ThreadGroup("kev/"+c.path()!!)
+            subThread = Thread(tg,this)
+            subThread!!.start()
+            subThread!!.join()
+            KevoreeDeployManager.putRef(c.javaClass.getName()+"_tg", c.getName(), tg!!)
             return true
-        } catch(e: Exception) {
+        } catch(e: Throwable) {
+            if(subThread != null){
+                try {
+                    subThread!!.stop() //kill sub thread
+                } catch(t : Throwable){
+                    //ignore killing thread
+                }
+            }
             val message = "Could not start the instance " + c.getName() + ":" + c.getTypeDefinition()!!.getName() + "\n"/*+ " maybe because one of its dependencies is missing.\n"
         message += "Please check that all dependencies of your components are marked with a 'bundle' type (or 'kjar' type) in the pom of the component/channel's project.\n"*/
             logger.error(message, e)
@@ -87,5 +87,27 @@ class AddInstance(val c: Instance, val nodeName: String, val modelservice: Kevor
     override fun undo() {
         RemoveInstance(c, nodeName, modelservice, kscript, bs).execute()
     }
+
+    public override fun run() {
+        val beanClazz = bs.getKevoreeClassLoaderHandler().getKevoreeClassLoader(deployUnit)!!.loadClass(c.getTypeDefinition()!!.getBean())
+        val newBeanInstance = beanClazz!!.newInstance()
+        var newBeanKInstanceWrapper :KInstance? = null
+        if(c is ComponentInstance){
+            newBeanKInstanceWrapper = KevoreeComponent(newBeanInstance as AbstractComponentType,nodeName,c.getName(),modelservice,bs,kscript)
+            (newBeanKInstanceWrapper as KevoreeComponent).initPorts(nodeTypeName!!,c,tg!!)
+        }
+        if(c is Group){
+            newBeanKInstanceWrapper = KevoreeGroup(newBeanInstance as AbstractGroupType,nodeName,c.getName(),modelservice,bs,kscript)
+        }
+        if(c is Channel){
+            newBeanKInstanceWrapper = ChannelTypeFragmentThread(newBeanInstance as AbstractChannelFragment,nodeName,c.getName(),modelservice,bs,kscript,tg!!)
+            (newBeanKInstanceWrapper as ChannelTypeFragmentThread).initChannel()
+        }
+
+        KevoreeDeployManager.putRef(c.javaClass.getName(), c.getName(), newBeanInstance!!)
+        KevoreeDeployManager.putRef(c.javaClass.getName()+"_wrapper", c.getName(), newBeanKInstanceWrapper!!)
+    }
+
+
 
 }
