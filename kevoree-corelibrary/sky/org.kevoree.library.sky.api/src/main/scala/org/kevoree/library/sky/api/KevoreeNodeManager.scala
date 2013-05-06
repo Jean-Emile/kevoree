@@ -13,7 +13,7 @@ import org.slf4j.{LoggerFactory, Logger}
  * @author Erwan Daubert
  * @version 1.0
  */
-class KevoreeNodeManager(node: AbstractHostNode) /*extends Actor*/ {
+class KevoreeNodeManager(node: AbstractHostNode) {
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
