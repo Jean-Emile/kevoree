@@ -3,7 +3,6 @@ package org.kevoree.library.javase.webserver;
 import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractComponentType;
 import org.kevoree.framework.MessagePort;
-import scala.Option;
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,11 +24,11 @@ import scala.Option;
 })
 public class URLFilter extends AbstractComponentType {
 
-    URLHandlerScala handler = null;
+    URLHandler handler = null;
     
     @Start
     public void startHandler() {
-        handler = new URLHandlerScala();
+        handler = new URLHandler();
         handler.initRegex(this.getDictionary().get("urlpattern").toString());
     }
 
@@ -46,10 +45,10 @@ public class URLFilter extends AbstractComponentType {
     
     @Port(name = "request")
     public void requestHandler(Object param){
-        if(handler != null){
-            Option<KevoreeHttpRequest> filtered = handler.check(param);
-            if(filtered.isDefined()){
-                this.getPortByName("filtered", MessagePort.class).process(filtered.get());
+        if(handler != null && param instanceof KevoreeHttpRequest){
+            KevoreeHttpRequest filtered = handler.check((KevoreeHttpRequest)param);
+            if(filtered != null){
+                this.getPortByName("filtered", MessagePort.class).process(filtered);
             }
         }
     }

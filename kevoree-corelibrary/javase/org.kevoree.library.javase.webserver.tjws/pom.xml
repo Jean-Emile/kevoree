@@ -13,6 +13,11 @@
     <artifactId>org.kevoree.library.javase.webserver.tjws</artifactId>
     <name>Kevoree :: CoreLibrary :: JavaSE :: WebServer :: TJWS</name>
 
+
+    <properties>
+        <scala.version>2.9.2</scala.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -23,6 +28,11 @@
             <groupId>org.kevoree.corelibrary.javase</groupId>
             <artifactId>org.kevoree.library.javase.webserver.api</artifactId>
             <version>${kevoree.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
         </dependency>
     </dependencies>
 

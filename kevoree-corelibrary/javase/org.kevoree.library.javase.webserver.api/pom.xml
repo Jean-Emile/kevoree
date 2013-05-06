@@ -14,7 +14,7 @@
     <artifactId>org.kevoree.library.javase.webserver.api</artifactId>
     <name>Kevoree :: CoreLibrary :: JavaSE :: WebServer :: API</name>
 
-    <build>
+    <!--<build>
         <plugins>
             <plugin>
                 <groupId>org.scala-tools</groupId>
@@ -44,14 +44,6 @@
                 </configuration>
             </plugin>
         </plugins>
-    </build>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.version}</version>
-        </dependency>
-    </dependencies>
+    </build>-->
 
 </project>

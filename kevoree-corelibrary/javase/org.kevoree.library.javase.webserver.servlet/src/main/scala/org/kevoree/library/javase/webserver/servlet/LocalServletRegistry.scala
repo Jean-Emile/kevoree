@@ -3,7 +3,7 @@ package org.kevoree.library.javase.webserver.servlet
 import javax.servlet.http.HttpServlet
 import java.io.InputStream
 import org.slf4j.LoggerFactory
-import org.kevoree.library.javase.webserver.{URLHandlerScala, KevoreeHttpResponse, KevoreeHttpRequest}
+import org.kevoree.library.javase.webserver.{URLHandler, KevoreeHttpResponse, KevoreeHttpRequest}
 import scala.xml.XML
 import java.lang.String
 import java.net.URL
@@ -19,7 +19,7 @@ import java.util
 
 class LocalServletRegistry {
 
-  private val servlets = new scala.collection.mutable.HashMap[URLHandlerScala, AbstractHttpServletPage]
+  private val servlets = new scala.collection.mutable.HashMap[URLHandler, AbstractHttpServletPage]
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   def getCDefaultPath : String = "/"
@@ -65,7 +65,7 @@ class LocalServletRegistry {
 
     servletWrapper.getDictionary.put("urlpattern", "**" + urlpattern)
     servletWrapper.startPage()
-    val up = new URLHandlerScala
+    val up = new URLHandler
     up.initRegex("**" + urlpattern)
     servlets.put(up, servletWrapper)
     logger.debug("Subscript servlet for url " + "**" + urlpattern + " => " + servletClass.getClass.getSimpleName)
@@ -85,7 +85,7 @@ class LocalServletRegistry {
       logger.debug("Servlet regsitry for url " + url)
       servlets.foreach {
         s =>
-          logger.debug("=>" + s._1.LocalURLPattern.toString() + " -> " + s._1.precheck(url))
+          logger.debug("=>" + s._1.getLocalURLPattern + " -> " + s._1.precheck(url))
       }
     }
 

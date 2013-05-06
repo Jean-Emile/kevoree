@@ -17,8 +17,12 @@ public class SampleFormPage extends AbstractPage {
 
     @Override
     public KevoreeHttpResponse process(KevoreeHttpRequest request,KevoreeHttpResponse response){
-        response.setContent(SampleFormHelper.generateFormHtml(request.getUrl()));
+        response.setContent(generateFormHtml(/*request.getUrl()*/));
         return response;
     }
 
+
+    private String generateFormHtml() {
+        return "<html><body><form action={\"/sample\"} method=\"POST\"><input type=\"text\" name=\"name\"/><input type=\"text\" name=\"forname\"/><input type=\"submit\" value=\"Send\"/></form></body></html>";
+    }
 }
