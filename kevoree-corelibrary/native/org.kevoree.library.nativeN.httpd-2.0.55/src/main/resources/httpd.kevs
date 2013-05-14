@@ -1,0 +1,10 @@
+tblock
+{
+    createComponentType httpd @ Native
+
+        createDictionaryType httpd
+        {
+                Port : "String" default "8080",
+                ServerRoot : "String" default ""
+        }
+}
