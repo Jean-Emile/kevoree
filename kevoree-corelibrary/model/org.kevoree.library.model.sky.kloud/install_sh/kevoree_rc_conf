@@ -1,0 +1,5 @@
+kevoree_enable="YES"
+kevoree_home="/root/kevoree-service"
+kevoree_version="LATEST"
+kevoree_node_bootstrap="${kevoree_home}/kloud.kevs"
+kevoree_extra_properties="-Dnode.ip=10.0.10.1 -Dnode.inet=alc0 -Dnode.subnet=10.0.10.0 -Dnode.mask=16 -Dnode.defaultFlavour=base -Dnode.availableFlavors=base,base-openjdk6,base-linux,base-linux-openjdk6,base-openjdk6-maven3,base-linux-openjdk6-maven3-android -Dgroup.ssl=false -Dgroup.ipv4only=true -Dnode.loglevel=INFO -Dnode.coreloglevel=WARN -Dnode.update.timeout=600000"

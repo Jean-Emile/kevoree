@@ -1,0 +1,106 @@
+#!/bin/sh
+#
+
+# PROVIDE: kevoree
+# REQUIRE: DAEMON 
+# REQUIRE: LOGIN
+# REQUIRE: NETWORK
+#
+# KEYWORD: shutdown
+#
+# Configuration settings for kevoree in /etc/rc.conf:
+#
+# kevoree_enable (bool):
+#   Set to "NO" by default.
+#   Set it to "YES" to enable kevoree
+#
+# kevoree_home (str):
+#   Default to "$HOME/kevoree-service"
+#   Base kevoree directory
+#
+# 
+
+. /etc/rc.subr
+
+name="kevoree"
+rcvar=`set_rcvar`
+pidfile="/var/run/kevoree.pid"
+
+load_rc_config "${name}"
+
+
+: ${kevoree_enable="NO"}
+: ${kevoree_home="$HOME/kevoree-service"}
+: ${kevoree_version="RELEASE"}
+: ${node_update_timeout="300000"}
+: ${kevoree_node_bootstrap="mvn:org.kevoree.corelibrary.model/org.kevoree.library.model.javase/${kevoree_version}"}
+: ${kevoree_extra_properties=""}
+
+kevoree_service="kevoree-service.jar"
+
+java="/usr/local/bin/java"
+#java_args="-Dcom.sun.management.jmxremote.port=5555 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false 
+java_args="-Xmx1024M -Xms1024M -Djava.awt.headless=true -Dnode.bootstrap=${kevoree_node_bootstrap} -Dnode.name=`/bin/hostname` -Dnode.log.appender=FILE 
+-Dnode.log.appender.file=$kevoree_home/`/bin/hostname`.log -Dnode.update.timeout=${node_update_timeout}  -Dkevoree.version=${kevoree_version} ${kevoree_extra_properties} 
+-jar $kevoree_home/$kevoree_service"
+
+command="/usr/sbin/daemon"
+command_args="-f -p ${pidfile} ${java} ${java_args}"
+#command_args="-p ${pidfile} ${java} ${java_args}"
+
+start_precmd="pid_touch"
+start_cmd="kevoree_start"
+stop_cmd="kevoree_stop"
+status_cmd="kevoree_status"
+
+pid_touch() {
+   touch ${pidfile}
+}
+
+kevoree_start() {
+    echo ${command} ${command_args}
+    exec ${command} ${command_args}
+}
+
+kevoree_stop() {
+    rc_pid=$(kevoree_check_pidfile ${pidfile})
+
+    if [ -z "${rc_pid}" ]; then
+        [ -n "${rc_fast}" ] && return 0
+        echo "${name} not running? (check ${pidfile})."
+        return 1
+    fi
+
+    echo "Stopping ${name}."
+    kill -TERM ${rc_pid} 2> /dev/null && echo "Killed."
+    rm -f ${pidfile}
+}
+
+kevoree_status() {
+    rc_pid=$(kevoree_check_pidfile $pidfile)
+
+    if [ -n "${rc_pid}" ]; then
+        echo "${name} is running as pid ${rc_pid}."
+    else
+        echo "${name} is not running."
+        return 1
+    fi
+}
+
+kevoree_check_pidfile() {
+    _pidfile=$1
+    if [ -z "${_pidfile}" ]; then
+        err 3 'USAGE: kevoree_check_pidfile pidfile'
+    fi
+    if [ ! -f ${_pidfile} ]; then
+        debug "pid file (${_pidfile}): not readable."
+        return
+    fi
+	_pid=`cat ${_pidfile}`
+    if [ -n "`/usr/local/bin/jps -l | grep -e ${_pid}`" ]; then
+        echo -n ${_pid}
+    fi
+}
+
+run_rc_command "$1"
+
