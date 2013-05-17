@@ -22,10 +22,10 @@ public class Test {
 
     public static void main(String[] args) throws Exception {
 
-        ApacheManager t = new ApacheManager("apache2444");
+        ApacheManager t = new ApacheManager("apache2224");
 
-        t.install();
-          t.start();
+        t.install_generics();
+
 
 
 

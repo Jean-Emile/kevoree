@@ -85,39 +85,32 @@ public class ApacheManager {
         FileManager.writeFile(httpdconfigpath,data.toString(),false);
         System.out.println("Updating "+httpdconfigpath);
     }
-    public  void install(){
 
-
+    public  void install_generics(){
         File tmpd = new File(apache_directory+File.separatorChar+"conf");
         tmpd.mkdirs();
-
-
+        File tmpwww = new File(apache_directory+File.separatorChar+"www");
+        tmpwww.mkdirs();
+        properties.setProperty("ServerRoot",apache_directory);
         try
         {
+            httpdexecpath =install_lib("httpd");
 
-            httpdexecpath =    FileManager.copyFileFromPath(SystemHelper.getPathOS()+File.separatorChar+version+File.separatorChar+"httpd", apache_directory, "httpd");
-            System.out.println("Copying "+httpdexecpath);
             System.out.println("chmod "+httpdexecpath);
             // todo check os
             Runtime.getRuntime().exec("chmod 777 "+httpdexecpath);
 
-            String libapr = FileManager.copyFileFromPath(SystemHelper.getPathOS()+File.separatorChar+version+File.separatorChar+"libapr-0.so.0", apache_directory, "libapr-0.so.0");
-            System.out.println("Copying "+libapr);
-            String libaprutil = FileManager.copyFileFromPath(SystemHelper.getPathOS()+File.separatorChar+version+File.separatorChar+"libaprutil-0.so.0", apache_directory, "libaprutil-0.so.0");
-            System.out.println("Copying "+libaprutil);
-            String libexpat =   FileManager.copyFileFromPath(SystemHelper.getPathOS()+File.separatorChar+version+File.separatorChar+"libexpat.so.0", apache_directory, "libexpat.so.0");
-            System.out.println("Copying "+libexpat);
-
-            String mimetype =   FileManager.copyFileFromPath(SystemHelper.getPathOS()+File.separatorChar+version+File.separatorChar+"mime.types", apache_directory+File.separatorChar+"conf", "mime.types");
-            System.out.println("Copying "+mimetype);
-
-
+            FileManager.copyFileFromPath(SystemHelper.getPathOS()+version+File.separatorChar+"mime.types", apache_directory+File.separatorChar+"conf", "mime.types");
             updateConfiguration();
 
-
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
+    }
+
+
+    public String install_lib(String name) throws IOException {
+        return FileManager.copyFileFromPath(SystemHelper.getPathOS()+version+File.separatorChar+name, apache_directory, name);
     }
 
 

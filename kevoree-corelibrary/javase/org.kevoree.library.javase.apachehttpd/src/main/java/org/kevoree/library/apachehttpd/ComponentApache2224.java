@@ -14,38 +14,42 @@ import java.io.IOException;
         @DictionaryAttribute(name = "port", defaultValue = "8080", optional = false),
         @DictionaryAttribute(name = "ServerRoot", defaultValue = "", optional = false)
 })
-//@ComponentType
-public class ComponentApache2444 extends AbstractComponentType {
+@ComponentType
+public class ComponentApache2224 extends AbstractComponentType {
 
-    ApacheManager  manager = new ApacheManager("apache2444");
+    ApacheManager  manager = new ApacheManager("apache2224");
     @Start
-    public void startApache2055() {
+    public void startApache() {
         try {
-
+            manager.getProperties().put("User", "nobody");
+            manager.getProperties().put("Group","bin");
             manager.setPort(Integer.parseInt(getDictionary().get("port").toString()));
             manager.setDocumentRoot(getDictionary().get("ServerRoot").toString());
-            manager.install();
+            manager.install_generics();
+            manager.install_lib("libapr-1.so.0");
+            manager.install_lib("libaprutil-1.so.0");
+            manager.install_lib("libexpat.so.1");
             manager.start();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
     @Stop
-    public void stopApache2055() {
+    public void stopApache() {
         try {
             manager.stop();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 
     @Update
-    public void updateApache2055() {
+    public void updateApache() {
         manager.setPort(Integer.parseInt(getDictionary().get("port").toString()));
         manager.setDocumentRoot(getDictionary().get("ServerRoot").toString());
 
@@ -54,9 +58,9 @@ public class ComponentApache2444 extends AbstractComponentType {
             manager.restart();
 
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
     }
 

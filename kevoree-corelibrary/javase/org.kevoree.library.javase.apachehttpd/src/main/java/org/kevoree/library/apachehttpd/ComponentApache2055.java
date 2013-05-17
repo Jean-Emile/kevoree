@@ -23,12 +23,16 @@ public class ComponentApache2055 extends AbstractComponentType {
     public void startApache2055() {
         try
         {
+
             manager.getProperties().put("User", "nobody");
             manager.getProperties().put("Group","bin");
             manager.setPort(Integer.parseInt(getDictionary().get("port").toString()));
             manager.setDocumentRoot(getDictionary().get("ServerRoot").toString());
 
-            manager.install();
+            manager.install_generics();
+            manager.install_lib("libapr-0.so.0");
+            manager.install_lib("libaprutil-0.so.0");
+            manager.install_lib("libexpat.so.0");
             manager.start();
         } catch (IOException e) {
             e.printStackTrace();
