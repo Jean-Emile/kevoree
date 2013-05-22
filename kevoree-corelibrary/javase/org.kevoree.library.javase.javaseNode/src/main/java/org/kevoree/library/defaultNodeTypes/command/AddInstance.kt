@@ -4,7 +4,6 @@ import org.kevoree.Instance
 import org.kevoree.api.service.core.handler.KevoreeModelHandlerService
 import org.kevoree.api.service.core.script.KevScriptEngineFactory
 import org.kevoree.api.PrimitiveCommand
-import org.slf4j.LoggerFactory
 import org.kevoree.ContainerRoot
 import org.kevoree.framework.kaspects.TypeDefinitionAspect
 import org.kevoree.NodeType
@@ -21,6 +20,7 @@ import org.kevoree.framework.KevoreeGroup
 import org.kevoree.Channel
 import org.kevoree.framework.ChannelTypeFragmentThread
 import org.kevoree.DeployUnit
+import org.kevoree.log.Log
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
@@ -77,12 +77,10 @@ class AddInstance(val c: Instance, val nodeName: String, val modelservice: Kevor
             }
             val message = "Could not start the instance " + c.getName() + ":" + c.getTypeDefinition()!!.getName() + "\n"/*+ " maybe because one of its dependencies is missing.\n"
         message += "Please check that all dependencies of your components are marked with a 'bundle' type (or 'kjar' type) in the pom of the component/channel's project.\n"*/
-            logger.error(message, e)
+            Log.error(message, e)
             return false
         }
     }
-
-    var logger = LoggerFactory.getLogger(this.javaClass)!!
 
     override fun undo() {
         RemoveInstance(c, nodeName, modelservice, kscript, bs).execute()

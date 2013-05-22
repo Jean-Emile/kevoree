@@ -13,10 +13,9 @@ import org.kevoree.framework.AbstractNodeType;
 import org.kevoree.framework.KevoreeXmiHelper;
 import org.kevoree.kompare.KevoreeKompareBean;
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager;
+import org.kevoree.log.Log;
 import org.kevoreeadaptation.AdaptationModel;
 import org.kevoreeadaptation.AdaptationPrimitive;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +35,6 @@ import java.io.InputStreamReader;
         values = {"UpdateType", "AddType", "AddThirdParty", "RemoveType", "RemoveDeployUnit", "UpdateInstance", "UpdateBinding", "UpdateDictionaryInstance", "AddInstance", "RemoveInstance", "AddBinding", "RemoveBinding", "AddFragmentBinding", "RemoveFragmentBinding", "UpdateFragmentBinding", "StartInstance", "StopInstance", "StartThirdParty", "RemoveThirdParty"},
         value = {@PrimitiveCommand(name="AddDeployUnit",maxTime = 120000),@PrimitiveCommand(name="UpdateDeployUnit",maxTime = 120000)})
 public class JavaSENode extends AbstractNodeType implements ModelListener {
-    protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(JavaSENode.class);
 
     private KevoreeKompareBean kompareBean = null;
     private CommandMapper mapper = null;
@@ -167,7 +165,7 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
     @Override
     public boolean preUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
         preTime = System.currentTimeMillis();
-        logger.info("JavaSENode received a new Model to apply...");
+        Log.info("JavaSENode received a new Model to apply...");
         return true;
     }
 
@@ -179,7 +177,7 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
     @Override
     public boolean afterLocalUpdate(ContainerRoot currentModel, ContainerRoot proposedModel) {
         mapper.doEnd();
-        logger.info("JavaSENode V2 Update completed in {} ms",(System.currentTimeMillis() - preTime));
+        Log.info("JavaSENode V2 Update completed in {} ms",(System.currentTimeMillis() - preTime)+"");
         return true;
     }
 
@@ -189,22 +187,22 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
 
 	@Override
 	public void preRollback (ContainerRoot containerRoot, ContainerRoot containerRoot1) {
-		logger.warn("JavaSENode is aborting last update...");
+        Log.warn("JavaSENode is aborting last update...");
 	}
 
 	@Override
 	public void postRollback (ContainerRoot containerRoot, ContainerRoot containerRoot1) {
-		logger.warn("JavaSENode update aborted in {} ms",(System.currentTimeMillis() - preTime));
+        Log.warn("JavaSENode update aborted in {} ms",(System.currentTimeMillis() - preTime)+"");
         try {
             File preModel = File.createTempFile("pre"+System.currentTimeMillis(),"pre");
             File afterModel = File.createTempFile("post"+System.currentTimeMillis(),"post");
             KevoreeXmiHelper.instance$.save(preModel.getAbsolutePath(),containerRoot);
             KevoreeXmiHelper.instance$.save(afterModel.getAbsolutePath(),containerRoot1);
-            logger.error("PreModel->"+preModel.getAbsolutePath());
-            logger.error("PostModel->"+afterModel.getAbsolutePath());
+            Log.error("PreModel->"+preModel.getAbsolutePath());
+            Log.error("PostModel->"+afterModel.getAbsolutePath());
 
         } catch (Exception e){
-            logger.error("Error while saving debug model",e);
+            Log.error("Error while saving debug model",e);
         }
 
 	}

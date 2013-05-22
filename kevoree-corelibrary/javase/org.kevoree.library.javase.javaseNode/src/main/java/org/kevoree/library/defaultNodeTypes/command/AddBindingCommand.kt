@@ -2,7 +2,6 @@ package org.kevoree.library.defaultNodeTypes.command
 
 import org.kevoree.MBinding
 import org.kevoree.api.PrimitiveCommand
-import org.slf4j.LoggerFactory
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
 import org.kevoree.ComponentInstance
 import org.kevoree.framework.AbstractComponentType
@@ -12,6 +11,7 @@ import org.kevoree.framework.KevoreePort
 import org.kevoree.framework.KevoreeChannelFragment
 import org.kevoree.framework.message.PortBindMessage
 import org.kevoree.framework.KevoreeComponent
+import org.kevoree.log.Log
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
@@ -31,8 +31,6 @@ import org.kevoree.framework.KevoreeComponent
 
 class AddBindingCommand(val c: MBinding, val nodeName: String): PrimitiveCommand {
 
-    var logger = LoggerFactory.getLogger(this.javaClass)!!
-
     override fun undo() {
         RemoveBindingCommand(c, nodeName).execute()
     }
@@ -49,10 +47,10 @@ class AddBindingCommand(val c: MBinding, val nodeName: String): PrimitiveCommand
                 val foundNeedPort = casted.getNeededPorts()!!.get(portName)
                 val foundHostedPort = casted.getHostedPorts()!!.get(portName)
                 if(foundNeedPort == null && foundHostedPort == null){
-                    logger.info("Port instance not found in component")
-                    logger.info("Look for " + portName);
-                    logger.info("" + casted.getNeededPorts()!!.containsKey(portName));
-                    logger.info("" + casted.getHostedPorts()!!.containsKey(portName));
+                    Log.info("Port instance not found in component")
+                    Log.info("Look for " + portName);
+                    Log.info("" + casted.getNeededPorts()!!.containsKey(portName));
+                    Log.info("" + casted.getHostedPorts()!!.containsKey(portName));
                     return false
                 }
 
@@ -68,7 +66,7 @@ class AddBindingCommand(val c: MBinding, val nodeName: String): PrimitiveCommand
                 }
                 return false
             } else {
-                logger.error("Error while apply binding , channelFound="+kevoreeChannelFound+",componentFound="+kevoreeComponentFound)
+                Log.error("Error while apply binding , channelFound="+kevoreeChannelFound+",componentFound="+kevoreeComponentFound)
                 return false
             }
         }

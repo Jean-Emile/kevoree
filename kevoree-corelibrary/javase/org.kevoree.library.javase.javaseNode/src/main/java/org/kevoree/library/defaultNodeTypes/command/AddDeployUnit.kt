@@ -15,9 +15,9 @@ package org.kevoree.library.defaultNodeTypes.command
  */
 
 import org.kevoree.DeployUnit
-import org.slf4j.LoggerFactory
 import org.kevoree.api.PrimitiveCommand
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
+import org.kevoree.log.Log
 
 /**
  * Created by IntelliJ IDEA.
@@ -27,8 +27,6 @@ import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
  */
 
 class AddDeployUnit(val du: DeployUnit, val bs: org.kevoree.api.Bootstraper): PrimitiveCommand {
-
-    var logger = LoggerFactory.getLogger(this.javaClass)!!
 
     override fun undo() {
         bs.getKevoreeClassLoaderHandler().removeDeployUnitClassLoader(du)
@@ -49,7 +47,7 @@ class AddDeployUnit(val du: DeployUnit, val bs: org.kevoree.api.Bootstraper): Pr
                 return true
             }
         } catch(e: Exception) {
-            logger.debug("error ", e); return false
+            Log.debug("error ", e); return false
         }
     }
 }

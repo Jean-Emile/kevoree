@@ -4,7 +4,7 @@ import org.kevoree.ContainerRoot;
 import org.kevoree.annotation.*;
 import org.kevoree.api.service.core.handler.ModelListener;
 import org.kevoree.framework.KevoreeXmiHelper;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.io.File;
 
@@ -23,7 +23,6 @@ public class StatefulJavaSENode extends JavaSENode {
 
     private StatefulModelListener listener = null;
     private final String property = "java.io.tmpdir";
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(JavaSENode.class);
     private States state = States.bootstrap;
     private enum States {
         bootstrap,networkLink,ready,loading
@@ -44,28 +43,28 @@ public class StatefulJavaSENode extends JavaSENode {
         }
 
         public void modelUpdated() {
-            logger.debug("ModelUpdated("+StatefulJavaSENode.this.toString()+")");
+            Log.debug("ModelUpdated(" + StatefulJavaSENode.this.toString() + ")");
             switch (state) {
                 case bootstrap: {
                     state=States.networkLink;
-                    logger.debug("State Bootstrap -> Links");
+                    Log.debug("State Bootstrap -> Links");
                 }break;
                 case networkLink: {
                     File inputModel  = getLastPersistedModel();
                     if(inputModel.exists()){
-                        logger.info("Stateful node ready. Loading last config from " + inputModel.getAbsolutePath());
-                        logger.debug("State NetworkLink => Loading");
+                        Log.info("Stateful node ready. Loading last config from " + inputModel.getAbsolutePath());
+                        Log.debug("State NetworkLink => Loading");
                         state=States.loading;
                         getModelService().updateModel(KevoreeXmiHelper.instance$.load(inputModel.getAbsolutePath()));
                     } else {
                         state=States.ready;
-                        logger.debug("State NetworkLink => Ready");
-                        logger.info("Stateful node ready. No stored model found at " + inputModel.getAbsolutePath());
+                        Log.debug("State NetworkLink => Ready");
+                        Log.info("Stateful node ready. No stored model found at " + inputModel.getAbsolutePath());
                     }
                 }break;
                 case loading: {
                     state=States.ready;
-                    logger.debug("State Loading => Ready");
+                    Log.debug("State Loading => Ready");
                 }break;
                 case ready: {
                     try{
@@ -75,20 +74,20 @@ public class StatefulJavaSENode extends JavaSENode {
                         }
                        // logger.debug("Stateful node started storage of new model at " + lastSaved.getAbsolutePath());
                         KevoreeXmiHelper.instance$.save(lastSaved.getAbsolutePath(),getModelService().getLastModel());
-                        logger.info("Stateful node stored new model at " + lastSaved.getAbsolutePath());
+                        Log.info("Stateful node stored new model at " + lastSaved.getAbsolutePath());
                     } catch(Exception e) {
-                        logger.error("Error while saving state",e);
+                        Log.error("Error while saving state",e);
                     }
                 }break;
             }
         }
 
         public void preRollback(ContainerRoot containerRoot, ContainerRoot containerRoot1) {
-            logger.debug("PreRollback");
+            Log.debug("PreRollback");
         }
 
         public void postRollback(ContainerRoot containerRoot, ContainerRoot containerRoot1) {
-            logger.debug("POSTRollback");
+            Log.debug("POSTRollback");
         }
     }
 
@@ -118,7 +117,7 @@ public class StatefulJavaSENode extends JavaSENode {
     public void stopNode() {
         getModelService().unregisterModelListener(listener);
         listener = null;
-        logger.info("Stateful node stopped");
+        Log.info("Stateful node stopped");
         super.stopNode();
     }
 

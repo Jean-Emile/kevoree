@@ -3,7 +3,6 @@ package org.kevoree.library.defaultNodeTypes.command
 import org.kevoree.Instance
 import org.kevoree.framework.AbstractNodeType
 import org.kevoree.api.PrimitiveCommand
-import org.slf4j.LoggerFactory
 import java.util.HashMap
 
 
@@ -15,8 +14,6 @@ import java.util.HashMap
  */
 
 class SelfDictionaryUpdate(val c: Instance, val node: AbstractNodeType): PrimitiveCommand {
-
-    var logger = LoggerFactory.getLogger(this.javaClass)!!
 
     private var lastDictioanry: HashMap<String, Any>? = null
 

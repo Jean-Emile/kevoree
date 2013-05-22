@@ -18,11 +18,11 @@ import org.kevoree.ComponentInstance
 import org.kevoree.ContainerRoot
 import org.kevoree.annotation.KevoreeInject
 import org.kevoree.api.service.core.handler.KevoreeModelHandlerService
-import org.slf4j.LoggerFactory
 import org.kevoree.api.Bootstraper
 import org.kevoree.api.service.core.script.KevScriptEngineFactory
 import org.kevoree.library.defaultNodeTypes.reflect.MethodAnnotationResolver
 import org.kevoree.library.defaultNodeTypes.reflect.FieldAnnotationResolver
+import org.kevoree.log.Log
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
@@ -37,10 +37,7 @@ import org.kevoree.library.defaultNodeTypes.reflect.FieldAnnotationResolver
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public class KevoreeComponent(val ct: AbstractComponentType, val nodeName: String, val name: String, val modelService: KevoreeModelHandlerService,val bootService:Bootstraper,val kevsEngine : KevScriptEngineFactory): KInstance {
-
-
-    val kevoree_internal_logger = LoggerFactory.getLogger(this.javaClass)!!
+public class KevoreeComponent(val ct: AbstractComponentType, val nodeName: String, val name: String, val modelService: KevoreeModelHandlerService, val bootService: Bootstraper, val kevsEngine: KevScriptEngineFactory): KInstance {
 
     fun getKevoreeComponentType(): ComponentType {
         return ct
@@ -52,7 +49,7 @@ public class KevoreeComponent(val ct: AbstractComponentType, val nodeName: Strin
         return ct_started
     }
 
-    public fun initPorts(nodeTypeName: String, modelElement: ComponentInstance, tg : ThreadGroup) {
+    public fun initPorts(nodeTypeName: String, modelElement: ComponentInstance, tg: ThreadGroup) {
         /* Init Required and Provided Port */
         val bean = modelElement.getTypeDefinition()!!.getBean()
         for(providedPort in modelElement.getProvided()){
@@ -130,7 +127,7 @@ public class KevoreeComponent(val ct: AbstractComponentType, val nodeName: Strin
                 ct_started = true
                 return true
             } catch(e: Exception) {
-                kevoree_internal_logger.error("Kevoree Component Instance Start Error !", e)
+                Log.error("Kevoree Component Instance Start Error !", e)
                 ct_started = true //WE PUT COMPONENT IN START STATE TO ALLOW ROLLBACK TO UNSET VARIABLE
                 return false
             }
@@ -155,8 +152,7 @@ public class KevoreeComponent(val ct: AbstractComponentType, val nodeName: Strin
                 ct_started = false
                 return true
             } catch(e: Exception) {
-
-                kevoree_internal_logger.error("Kevoree Component Instance Stop Error !", e)
+                Log.error("Kevoree Component Instance Stop Error !", e)
                 return false
             }
         } else {
@@ -178,7 +174,7 @@ public class KevoreeComponent(val ct: AbstractComponentType, val nodeName: Strin
             }
             return previousDictionary as Map<String, Any>?
         } catch(e: Exception) {
-            kevoree_internal_logger.error("Kevoree Component Instance Update Error !", e)
+            Log.error("Kevoree Component Instance Update Error !", e)
             return null
         }
     }

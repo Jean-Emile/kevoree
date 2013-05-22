@@ -15,9 +15,9 @@ package org.kevoree.library.defaultNodeTypes.command
  */
 
 import org.kevoree.DeployUnit
-import org.slf4j.LoggerFactory
 import java.util.Random
 import org.kevoree.kcl.KevoreeJarClassLoader
+import org.kevoree.log.Log
 
 /**
  * Created by IntelliJ IDEA.
@@ -28,7 +28,6 @@ import org.kevoree.kcl.KevoreeJarClassLoader
 
 class UpdateDeployUnit(val du: DeployUnit, val bs: org.kevoree.api.Bootstraper): EndAwareCommand {
 
-    var logger = LoggerFactory.getLogger(this.javaClass)!!
     var lastKCL: KevoreeJarClassLoader? = null
     var random = Random()
 
@@ -46,7 +45,7 @@ class UpdateDeployUnit(val du: DeployUnit, val bs: org.kevoree.api.Bootstraper):
             bs.getKevoreeClassLoaderHandler().installDeployUnit(du)
             return true
         } catch (e: Exception) {
-            logger.debug("error ", e);return false
+            Log.debug("error ", e);return false
         }
     }
 

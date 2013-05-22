@@ -14,7 +14,6 @@ package org.kevoree.library.defaultNodeTypes.command
  * limitations under the License.
  */
 
-import org.slf4j.LoggerFactory
 import org.kevoree.Channel
 import org.kevoree.api.PrimitiveCommand
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
@@ -22,8 +21,6 @@ import org.kevoree.framework.message.FragmentBindMessage
 import org.kevoree.framework.KevoreeChannelFragment
 
 class AddFragmentBindingCommand(val c: Channel, val remoteNodeName: String, val nodeName: String): PrimitiveCommand {
-
-    var logger = LoggerFactory.getLogger(this.javaClass)!!
 
     override fun execute(): Boolean {
 

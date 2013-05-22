@@ -15,10 +15,10 @@ package org.kevoree.library.defaultNodeTypes.command
  */
 
 import org.kevoree.DeployUnit
-import org.slf4j.LoggerFactory
 import java.util.Random
 import org.kevoree.kcl.KevoreeJarClassLoader
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
+import org.kevoree.log.Log
 
 /**
  * Created by IntelliJ IDEA.
@@ -29,7 +29,6 @@ import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
 
 class RemoveDeployUnit(val du: DeployUnit, val bootstrap: org.kevoree.api.Bootstraper): EndAwareCommand {
 
-    var logger = LoggerFactory.getLogger(this.javaClass)!!
     var random = Random()
     var lastKCL: KevoreeJarClassLoader? = null
 
@@ -49,7 +48,7 @@ class RemoveDeployUnit(val du: DeployUnit, val bootstrap: org.kevoree.api.Bootst
             return true
 
         }catch (e: Exception) {
-            logger.debug("error ", e); return false
+            Log.debug("error ", e); return false
         }
     }
 

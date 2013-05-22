@@ -12,17 +12,15 @@ import org.kevoree.framework.message.Message
 import org.kevoree.framework.message.PortBindMessage
 import org.kevoree.framework.message.PortUnbindMessage
 import org.kevoree.framework.port.PausablePortThreadPoolExecutor
-import org.slf4j.LoggerFactory
 import org.kevoree.annotation.KevoreeInject
 import java.lang.reflect.Modifier
 import org.kevoree.api.Bootstraper
 import org.kevoree.api.service.core.script.KevScriptEngineFactory
 import org.kevoree.library.defaultNodeTypes.reflect.MethodAnnotationResolver
 import org.kevoree.library.defaultNodeTypes.reflect.FieldAnnotationResolver
+import org.kevoree.log.Log
 
 class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeName: String, val _name: String, val modelService: KevoreeModelHandlerService,val bootService:Bootstraper,val kevsEngine : KevScriptEngineFactory, val tg: ThreadGroup): KevoreeChannelFragment, KInstance, ChannelFragment {
-
-    val logger = LoggerFactory.getLogger(this.getClass())!!
 
     public fun initChannel(){
         target.delegate = this
@@ -46,7 +44,6 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
         return _name
     }
 
-    val kevoree_internal_logger = LoggerFactory.getLogger(this.javaClass)!!
     var pool: PausablePortThreadPoolExecutor? = null
     val portsBinded: MutableMap<String, KevoreePort> = HashMap<String, KevoreePort>()
     val fragementBinded: MutableMap<String, KevoreeChannelFragment> = HashMap<String, KevoreeChannelFragment>()
@@ -93,7 +90,7 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
                 pool = PausablePortThreadPoolExecutor.newPausableThreadPool(1,tg)
                 return true
             } catch(e: Exception) {
-                kevoree_internal_logger.error("Kevoree Channel Instance Start Error !", e)
+                Log.error("Kevoree Channel Instance Start Error !", e)
                 return false
             }
         } else {
@@ -116,7 +113,7 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
                 isStarted = false
                 return true
             } catch(e: Exception) {
-                kevoree_internal_logger.error("Kevoree Channel Instance Stop Error !", e)
+                Log.error("Kevoree Channel Instance Stop Error !", e)
                 return false
             }
         } else {
@@ -138,7 +135,7 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
             }
             return previousDictionary as Map<String, Any>?
         } catch(e: Exception) {
-            kevoree_internal_logger.error("Kevoree Group Instance Update Error !", e)
+            Log.error("Kevoree Group Instance Update Error !", e)
             return null
         }
     }
@@ -212,7 +209,7 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
                 return null
             }
         } catch(e:Throwable) {
-            logger.error("Error while sending MSG ",e)
+            Log.error("Error while sending MSG ",e)
             return null
         }
     }
@@ -221,7 +218,7 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
         pool?.pause()
         val res = when(o) {
             is FragmentBindMessage -> {
-                kevoree_internal_logger.debug("FragmentBindMessage=>" + createPortKey(o))
+                Log.debug("FragmentBindMessage=>" + createPortKey(o))
                 val sender = this.createSender((o as FragmentBindMessage).fragmentNodeName, (o as FragmentBindMessage).channelName)
                 val proxy = KevoreeChannelFragmentThreadProxy((o as FragmentBindMessage).fragmentNodeName, (o as FragmentBindMessage).channelName)
                 proxy.channelSender = sender
@@ -234,7 +231,7 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
                 true
             }
             is FragmentUnbindMessage -> {
-                kevoree_internal_logger.debug("Try to unbind channel ")
+                Log.debug("Try to unbind channel ")
                 val actorPort: KevoreeChannelFragment? = fragementBinded.get(createPortKey(o))
                 if (actorPort != null) {
                     //actorPort.stopC()
@@ -245,7 +242,7 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
                     }
                     true
                 } else {
-                    kevoree_internal_logger.debug("Can't unbind Fragment " + createPortKey(o))
+                    Log.debug("Can't unbind Fragment " + createPortKey(o))
                     false
                 }
             }

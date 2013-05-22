@@ -2,7 +2,6 @@ package org.kevoree.library.defaultNodeTypes.command
 
 import org.kevoree.MBinding
 import org.kevoree.api.PrimitiveCommand
-import org.slf4j.LoggerFactory
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
 import org.kevoree.ComponentInstance
 import org.kevoree.framework.AbstractComponentType
@@ -12,6 +11,7 @@ import org.kevoree.framework.message.PortUnbindMessage
 import org.kevoree.framework.message.FragmentUnbindMessage
 import org.kevoree.framework.KevoreeComponent
 import org.kevoree.framework.ChannelFragment
+import org.kevoree.log.Log
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
@@ -30,8 +30,6 @@ import org.kevoree.framework.ChannelFragment
 
 class RemoveBindingCommand(val c : MBinding,val nodeName:String) : PrimitiveCommand {
 
-    var logger = LoggerFactory.getLogger(this.javaClass)!!
-
     override fun undo() {
         AddBindingCommand(c, nodeName).execute()
     }
@@ -49,9 +47,9 @@ class RemoveBindingCommand(val c : MBinding,val nodeName:String) : PrimitiveComm
                 val foundHostedPort = casted.getHostedPorts()!!.get(c.getPort()!!.getPortTypeRef()!!.getName())
 
                 if(foundNeedPort == null && foundHostedPort == null){
-                    logger.info("Port instance not found in component")
-                    logger.info("Look for "+c.getPort()!!.getPortTypeRef()!!.getName());
-                    logger.info(casted.getNeededPorts()!!.values().toString());
+                    Log.info("Port instance not found in component")
+                    Log.info("Look for "+c.getPort()!!.getPortTypeRef()!!.getName());
+                    Log.info(casted.getNeededPorts()!!.values().toString());
                     return false
                 }
                 if (foundNeedPort != null) {

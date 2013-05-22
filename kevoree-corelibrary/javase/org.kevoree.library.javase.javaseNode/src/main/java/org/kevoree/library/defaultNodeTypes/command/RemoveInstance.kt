@@ -15,17 +15,16 @@ package org.kevoree.library.defaultNodeTypes.command
  */
 
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
-import org.slf4j.LoggerFactory
 import org.kevoree.*
 import org.kevoree.api.service.core.handler.KevoreeModelHandlerService
 import org.kevoree.api.service.core.script.KevScriptEngineFactory
 import org.kevoree.api.PrimitiveCommand
 import org.kevoree.framework.KevoreeGeneratorHelper
 import org.kevoree.framework.kaspects.TypeDefinitionAspect
+import org.kevoree.log.Log
 
 class RemoveInstance(val c: Instance, val nodeName: String, val modelservice: KevoreeModelHandlerService, val kscript: KevScriptEngineFactory, val bs: org.kevoree.api.Bootstraper): PrimitiveCommand {
 
-    var logger = LoggerFactory.getLogger(this.javaClass)!!
     private val typeDefinitionAspect = TypeDefinitionAspect()
 
     override fun undo() {
@@ -37,7 +36,7 @@ class RemoveInstance(val c: Instance, val nodeName: String, val modelservice: Ke
     }
 
     override fun execute(): Boolean {
-        logger.debug("CMD REMOVE INSTANCE EXECUTION  - " + c.getName() + " - type - " + c.getTypeDefinition()!!.getName())
+        Log.debug("CMD REMOVE INSTANCE EXECUTION  - " + c.getName() + " - type - " + c.getTypeDefinition()!!.getName())
         try {
             /*
             val instanceRef = KevoreeDeployManager.getRef(c.javaClass.getName(), c.getName())
@@ -65,7 +64,7 @@ class RemoveInstance(val c: Instance, val nodeName: String, val modelservice: Ke
             KevoreeDeployManager.clearRef(c.javaClass.getName(), c.getName())
             return true
         } catch(e: Exception){
-            logger.error("RemoveInstance "+c.getName() + " - type - " + c.getTypeDefinition()!!.getName()+" ",e)
+            Log.error("RemoveInstance "+c.getName() + " - type - " + c.getTypeDefinition()!!.getName()+" ",e)
             return false
         }
     }

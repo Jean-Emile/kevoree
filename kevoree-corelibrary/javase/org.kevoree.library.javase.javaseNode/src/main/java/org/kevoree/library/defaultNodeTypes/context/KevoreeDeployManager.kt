@@ -14,19 +14,17 @@ package org.kevoree.library.defaultNodeTypes.context
  * limitations under the License.
  */
 
-import org.slf4j.LoggerFactory
 import org.kevoree.DeployUnit
 import org.kevoree.framework.AbstractNodeType
 import java.util.ArrayList
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ConcurrentHashMap
+import org.kevoree.log.Log
 
 object KevoreeDeployManager {
 
-
     val internalMap = ConcurrentHashMap<String, Any>()
-    val logger = LoggerFactory.getLogger(this.javaClass)!!
 
     fun getRef(clazzName: String, name: String): Any? {
         return internalMap.get(clazzName + "/" + name)
@@ -46,7 +44,7 @@ object KevoreeDeployManager {
                 val old_du =o  as DeployUnit
                 //CLEANUP KCL CONTEXT
                 if (nodeType.getBootStrapperService()!!.getKevoreeClassLoaderHandler().getKevoreeClassLoader(old_du) != null) {
-                    logger.debug("Force cleanup unitName {}", old_du.getUnitName())
+                    Log.debug("Force cleanup unitName {}", old_du.getUnitName())
                 }
             }
         }

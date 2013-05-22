@@ -15,7 +15,6 @@
 package org.kevoree.framework
 
 import org.kevoree.ContainerRoot
-import org.slf4j.LoggerFactory
 import org.kevoree.api.service.core.handler.KevoreeModelHandlerService
 import org.kevoree.annotation.KevoreeInject
 import java.lang.reflect.Modifier
@@ -23,10 +22,10 @@ import org.kevoree.api.Bootstraper
 import org.kevoree.api.service.core.script.KevScriptEngineFactory
 import org.kevoree.library.defaultNodeTypes.reflect.FieldAnnotationResolver
 import org.kevoree.library.defaultNodeTypes.reflect.MethodAnnotationResolver
+import org.kevoree.log.Log
 
 public class KevoreeGroup(val target: AbstractGroupType, val nodeName: String, val name: String,val modelService : KevoreeModelHandlerService,val bootService:Bootstraper,val kevsEngine : KevScriptEngineFactory): KInstance {
 
-    val kevoree_internal_logger = LoggerFactory.getLogger(this.javaClass)!!
     var isStarted: Boolean = false
     private val resolver = MethodAnnotationResolver(target.javaClass);
     private val fieldResolver = FieldAnnotationResolver(target.javaClass);
@@ -68,7 +67,7 @@ public class KevoreeGroup(val target: AbstractGroupType, val nodeName: String, v
                 isStarted = true
                 return true
             } catch(e: Exception) {
-                kevoree_internal_logger.error("Kevoree Group Instance Start Error !", e)
+                Log.error("Kevoree Group Instance Start Error !", e)
                 return false
             }
         } else {
@@ -87,7 +86,7 @@ public class KevoreeGroup(val target: AbstractGroupType, val nodeName: String, v
                 isStarted = false
                 return true
             } catch (e: Exception){
-                kevoree_internal_logger.error("Kevoree Group Instance Stop Error !", e)
+                Log.error("Kevoree Group Instance Stop Error !", e)
                 return false
             }
         } else {
@@ -109,7 +108,7 @@ public class KevoreeGroup(val target: AbstractGroupType, val nodeName: String, v
             }
             return previousDictionary as Map<String, Any>?
         } catch(e: Exception) {
-            kevoree_internal_logger.error("Kevoree Group Instance Update Error !", e)
+            Log.error("Kevoree Group Instance Update Error !", e)
             return null
         }
     }

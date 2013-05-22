@@ -6,7 +6,6 @@ import org.kevoree.Instance
 import org.kevoree.api.PrimitiveCommand
 import org.kevoree.framework.KInstance
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
-import org.slf4j.LoggerFactory
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
@@ -21,16 +20,8 @@ import org.slf4j.LoggerFactory
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-
 
 class UpdateDictionary(val c: Instance, val nodeName: String): PrimitiveCommand {
-
-    var logger = LoggerFactory.getLogger(this.javaClass)!!
 
     private var lastDictioanry: Map<String, Any>? = null
 
