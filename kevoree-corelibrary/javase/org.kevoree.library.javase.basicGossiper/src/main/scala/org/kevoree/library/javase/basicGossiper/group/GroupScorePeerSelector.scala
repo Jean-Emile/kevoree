@@ -3,7 +3,6 @@ package org.kevoree.library.javase.basicGossiper.group
 import scala.collection.JavaConversions._
 import org.kevoree.api.service.core.handler.KevoreeModelHandlerService
 import java.lang.Math
-import org.slf4j.LoggerFactory
 import actors.Actor
 import collection.mutable
 import org.kevoree.library.javase.basicGossiper.PeerSelector
@@ -12,7 +11,6 @@ import org.kevoree.ContainerRoot
 
 class GroupScorePeerSelector (timeout: Long, modelRef : AtomicReference[ContainerRoot], nodeName: String) extends PeerSelector {
 
-  private val logger = LoggerFactory.getLogger(classOf[GroupScorePeerSelector])
   private val peerCheckMap = new mutable.HashMap[String, (Long, Int)]
   private val peerNbFailure = new mutable.HashMap[String, Int]
 
@@ -67,14 +65,14 @@ class GroupScorePeerSelector (timeout: Long, modelRef : AtomicReference[Containe
           //initNodeScore(nodeName)
           modifyNodeScore(nodeName1, failure = false)
 
-          logger.debug("return a peer between connected nodes: " + nodeName1)
+          org.kevoree.log.Log.debug("return a peer between connected nodes: " + nodeName1)
           nodeName1
         } else {
-          logger.debug("Unable to select a peer")
+          org.kevoree.log.Log.debug("Unable to select a peer")
           ""
         }
       }
-      case None => logger.debug(groupName + " not Found so we are unable to select a peer"); ""
+      case None => org.kevoree.log.Log.debug(groupName + " not Found so we are unable to select a peer"); ""
     }
   }
 
@@ -96,14 +94,14 @@ class GroupScorePeerSelector (timeout: Long, modelRef : AtomicReference[Containe
 
   private def modifyNodeScore (nodeName: String, failure: Boolean) {
     if (failure) {
-      logger.debug("increase node score of " + nodeName + " due to communication failure")
+      org.kevoree.log.Log.debug("increase node score of " + nodeName + " due to communication failure")
       peerNbFailure.get(nodeName) match {
         case Some(nodeTuple) => {
           peerNbFailure.put(nodeName, nodeTuple + 1)
           peerCheckMap.get(nodeName) match {
             case Some(nodeTuple1) => {
               peerCheckMap.put(nodeName, Tuple2(System.currentTimeMillis, nodeTuple1._2 + 2 * (nodeTuple + 1)))
-              logger.debug("Node score of " + nodeName + " is now " + nodeTuple + 2 * (nodeTuple + 1))
+              org.kevoree.log.Log.debug("Node score of " + nodeName + " is now " + nodeTuple + 2 * (nodeTuple + 1))
             }
             case None => peerCheckMap.put(nodeName, Tuple2(System.currentTimeMillis, 2)) // must not appear
           }
@@ -139,7 +137,7 @@ class GroupScorePeerSelector (timeout: Long, modelRef : AtomicReference[Containe
       nodeName =>
         peerCheckMap.put(nodeName, Tuple2(System.currentTimeMillis, 0))
         peerNbFailure.put(nodeName, 0)
-        logger.debug("spam to say that scores are reinitiliaze")
+        org.kevoree.log.Log.debug("spam to say that scores are reinitiliaze")
     }
   }
 

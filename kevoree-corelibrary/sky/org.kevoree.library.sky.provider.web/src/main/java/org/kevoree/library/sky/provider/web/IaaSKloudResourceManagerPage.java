@@ -4,6 +4,7 @@ import org.kevoree.ContainerRoot;
 import org.kevoree.annotation.*;
 import org.kevoree.library.sky.provider.api.IaaSManagerService;
 import org.kevoree.library.sky.provider.api.SubmissionException;
+import org.kevoree.log.Log;
 
 /**
  * User: Erwan Daubert - erwan.daubert@gmail.com
@@ -38,7 +39,7 @@ public class IaaSKloudResourceManagerPage extends KloudResourceManagerPage imple
 	@Override
 	public void add (ContainerRoot model) throws SubmissionException {
         if(isPortBinded("delegate")){
-			logger.debug("call delegate port with method add");
+			Log.debug("call delegate port with method add");
             getPortByName("delegate", IaaSManagerService.class).add(model);
         }
 	}
@@ -46,7 +47,7 @@ public class IaaSKloudResourceManagerPage extends KloudResourceManagerPage imple
 	@Override
 	public void addToNode (ContainerRoot model, String nodeName) throws SubmissionException {
         if(isPortBinded("delegate")){
-			logger.debug("call delegate port with method addToNode");
+            Log.debug("call delegate port with method addToNode");
             getPortByName("delegate", IaaSManagerService.class).addToNode(model, nodeName);
         }
 	}
@@ -54,7 +55,7 @@ public class IaaSKloudResourceManagerPage extends KloudResourceManagerPage imple
 	@Override
 	public void remove (ContainerRoot model) throws SubmissionException {
         if(isPortBinded("delegate")){
-			logger.debug("call delegate port with method remove");
+            Log.debug("call delegate port with method remove");
             getPortByName("delegate", IaaSManagerService.class).remove(model);
         }
 	}
@@ -62,7 +63,7 @@ public class IaaSKloudResourceManagerPage extends KloudResourceManagerPage imple
 	@Override
 	public void merge (ContainerRoot model) throws SubmissionException {
         if(isPortBinded("delegate")){
-			logger.debug("call delegate port with method merge");
+            Log.debug("call delegate port with method merge");
             getPortByName("delegate", IaaSManagerService.class).merge(model);
         }
 	}
@@ -70,7 +71,7 @@ public class IaaSKloudResourceManagerPage extends KloudResourceManagerPage imple
 	@Override
 	public void mergeToNode (ContainerRoot model, String nodeName) throws SubmissionException {
         if(isPortBinded("delegate")){
-			logger.debug("call delegate port with method mergeToNode");
+            Log.debug("call delegate port with method mergeToNode");
             getPortByName("delegate", IaaSManagerService.class).mergeToNode(model, nodeName);
         }
 	}

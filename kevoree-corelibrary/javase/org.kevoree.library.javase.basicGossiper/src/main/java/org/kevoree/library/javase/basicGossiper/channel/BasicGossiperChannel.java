@@ -17,8 +17,7 @@ import org.kevoree.library.javase.basicGossiper.GossiperComponent;
 import org.kevoree.library.javase.basicGossiper.GossiperPeriodic;
 import org.kevoree.library.javase.basicGossiper.GossiperProcess;
 import org.kevoree.library.javase.basicGossiper.Serializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 import scala.Tuple2;
 
 import java.net.InetSocketAddress;
@@ -41,7 +40,6 @@ public class BasicGossiperChannel extends AbstractChannelFragment implements Mod
     private ChannelScorePeerSelector selector;
     private GossiperPeriodic actor;
     private GossiperProcess processValue;
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Start
     public void startGossiperChannel() {
@@ -50,7 +48,7 @@ public class BasicGossiperChannel extends AbstractChannelFragment implements Mod
         dataManager = new DataManagerForChannel(this, this.getNodeName()/*, this.getModelService()*/);
         processValue = new GossiperProcess(this, dataManager, serializer, true);
         selector = new ChannelScorePeerSelector(timeoutLong, this.getModelService(), this.getNodeName());
-        logger.debug(this.getName() + ": initialize GossiperActor");
+        Log.debug(this.getName() + ": initialize GossiperActor");
         actor = new GossiperPeriodic(this, timeoutLong, selector, processValue);
         processValue.start();
         actor.start();
@@ -162,11 +160,11 @@ public class BasicGossiperChannel extends AbstractChannelFragment implements Mod
                 try {
                     port = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
-                    logger.warn("Attribute \"port\" of {} is not an Integer, default value ({}) is used.", getName(), port);
+                    Log.warn("Attribute \"port\" of {} is not an Integer, default value ({}) is used.", getName(), port+"");
                 }
             }
         } else {
-            logger.warn("There is no channel named {}, default value ({}) is used.", getName(), port);
+            Log.warn("There is no channel named {}, default value ({}) is used.", getName(), port+"");
         }
         return port;
     }

@@ -8,6 +8,7 @@ import org.kevoree.annotation.DictionaryType;
 import org.kevoree.annotation.GroupType;
 import org.kevoree.annotation.Library;
 import org.kevoree.framework.KevoreeXmiHelper;
+import org.kevoree.log.Log;
 import org.webbitserver.WebSocketConnection;
 
 import java.io.ByteArrayInputStream;
@@ -44,7 +45,7 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
             maxQueuedModel = Integer.parseInt(getDictionary().get("max_queued_model").toString());
         } catch (Exception e) {
             maxQueuedModel = DEFAULT_MAX_QUEUED_MODEL;
-            logger.warn("\"max_queued_model\" attribute malformed! Using default value {}", DEFAULT_MAX_QUEUED_MODEL);
+            Log.warn("\"max_queued_model\" attribute malformed! Using default value {}", DEFAULT_MAX_QUEUED_MODEL+"");
         }
 
         waitingQueue = new ArrayDeque<Map.Entry<String, ContainerRoot>>(maxQueuedModel);
@@ -59,7 +60,7 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
         updateLocalModel(model);
 
         // for each node in this group
-        logger.debug("Master websocket server is going to broadcast model over {} clients", clients.size());
+        Log.debug("Master websocket server is going to broadcast model over {} clients", clients.size()+"");
         Group group = getModelElement();
         for (ContainerNode subNode : group.getSubNodes()) {
             String subNodeName = subNode.getName();
@@ -85,7 +86,7 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
                         waitingQueue.addLast(entry);
 
                     }
-                    logger.debug(subNodeName+" is not yet connected to master server. It has been added to waiting queue.");
+                    Log.debug(subNodeName+" is not yet connected to master server. It has been added to waiting queue.");
                 }
             }
         }
@@ -99,7 +100,7 @@ public class WebSocketGroupQueuer extends WebSocketGroupEchoer {
             // if we ends up here, it means that this node wasn't connected
             // when a push request was initiated earlier and though it has
             // to get the new model back
-            logger.debug(nodeName+" is in the waiting queue, meaning that we have to send the model back to him");
+            Log.debug(nodeName+" is in the waiting queue, meaning that we have to send the model back to him");
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             KevoreeXmiHelper.instance$.saveStream(baos, getAndRemoveModelFromQueue(nodeName));
             connection.send(baos.toByteArray());

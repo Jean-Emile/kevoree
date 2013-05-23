@@ -2,9 +2,7 @@ package org.kevoree.library.javase.fileSystem.api;
 
 import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractComponentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import org.kevoree.log.Log;
 import java.io.*;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,14 +31,13 @@ public class BasicFileSystem extends AbstractComponentType implements FileServic
 
 //	private String baseURL = "";
 	protected File baseFolder = null;
-	private Logger logger = LoggerFactory.getLogger(BasicFileSystem.class);
 
 	@Start
 	public void start () throws Exception {
 		baseFolder = new File(this.getDictionary().get("basedir").toString());
 //		baseURL = this.getDictionary().get("basedir").toString();
 		if (!baseFolder.exists() && baseFolder.mkdirs() || baseFolder.exists()) {
-			logger.debug("FileSystem initialized with {} as root", baseFolder.getAbsolutePath());
+			Log.debug("FileSystem initialized with {} as root", baseFolder.getAbsolutePath());
 		}
 	}
 
@@ -73,7 +70,7 @@ public class BasicFileSystem extends AbstractComponentType implements FileServic
 				boolean filtered = false;
 				if (extensions != null) {
 					filtered = true;
-					logger.debug("Look for extension for {}", base.getName());
+					Log.debug("Look for extension for {}", base.getName());
 					for (String filter : extensions) {
 						if (base.getName().endsWith(filter)) {
 							filtered = false;
@@ -113,10 +110,10 @@ public class BasicFileSystem extends AbstractComponentType implements FileServic
 
 				return result;
 			} catch (Exception e) {
-				logger.error("Error while getting file ", e);
+				Log.error("Error while getting file ", e);
 			}
 		} else {
-			logger.debug("No file exist = {}", baseFolder.getAbsolutePath() + File.separator + relativePath);
+			Log.debug("No file exist = {}", baseFolder.getAbsolutePath() + File.separator + relativePath);
 			return new byte[0];
 		}
 		return new byte[0];
@@ -152,11 +149,11 @@ public class BasicFileSystem extends AbstractComponentType implements FileServic
 				fw.close();
 				return true;
 			} catch (Exception e) {
-				logger.error("Error while getting file ", e);
+				Log.error("Error while getting file ", e);
 				return false;
 			}
 		} else {
-			logger.debug("No file exist = {}", baseFolder.getAbsolutePath() + File.separator + relativePath);
+			Log.debug("No file exist = {}", baseFolder.getAbsolutePath() + File.separator + relativePath);
 			return false;
 		}
 	}
@@ -170,7 +167,7 @@ public class BasicFileSystem extends AbstractComponentType implements FileServic
 		if (oldFile.renameTo(newFile)) {
 			return true;
 		} else {
-			logger.debug("Unable to move file {} on {}", oldRelativePath, newRelativePath);
+			Log.debug("Unable to move file {} on {}", oldRelativePath, newRelativePath);
 			return false;
 		}
 	}

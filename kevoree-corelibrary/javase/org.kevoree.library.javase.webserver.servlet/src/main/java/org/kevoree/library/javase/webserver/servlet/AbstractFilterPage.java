@@ -5,6 +5,7 @@ import org.kevoree.framework.MessagePort;
 import org.kevoree.library.javase.webserver.AbstractPage;
 import org.kevoree.library.javase.webserver.KevoreeHttpRequest;
 import org.kevoree.library.javase.webserver.KevoreeHttpResponse;
+import org.kevoree.log.Log;
 
 import javax.servlet.*;
 import java.util.*;
@@ -68,7 +69,7 @@ public abstract class AbstractFilterPage extends AbstractPage {
 
 			legacyFilter.init(config);
 		} catch (ServletException e) {
-			logger.error("Error while starting servlet");
+            Log.error("Error while starting servlet");
 		}
 	}
 
@@ -84,29 +85,29 @@ public abstract class AbstractFilterPage extends AbstractPage {
 		KevoreeServletRequest wrapper_request = new KevoreeServletRequest(request, getLastParam(request.getUrl()));
 		KevoreeServletResponse wrapper_response = new KevoreeServletResponse();
 		try {
-			logger.debug("Process filter request");
+			Log.debug("Process filter request");
 			//logger.debug("Sending " + request.getResolvedParams().keySet().size());
 			legacyFilter.doFilter(wrapper_request, wrapper_response, chain);
 //					service(wrapper_request, wrapper_response);
 		} catch (Exception e) {
-			logger.error("Error while processing request", e);
+            Log.error("Error while processing request", e);
 		}
 		wrapper_response.populateKevoreeResponse(response);
 		return response;
 	}
 
 	public void sendFilteredRequest (KevoreeHttpRequest request) {
-		logger.debug("sendFilteredRequest");
+        Log.debug("sendFilteredRequest");
 		getPortByName("filteredRequest", MessagePort.class).process(request);
 	}
 
 	@Port(name = "filteredResponse")
 	public void receiveFilteredResponse (Object msg) {
-		logger.debug("receiveFilteredResponse");
+        Log.debug("receiveFilteredResponse");
 		if (msg instanceof KevoreeHttpResponse) {
 			chain.receiveFilterResponse((KevoreeHttpResponse) msg);
 		} else {
-			logger.debug("Unable to process this kind of result: {}", msg);
+            Log.debug("Unable to process this kind of result: {}", msg.toString());
 		}
 	}
 

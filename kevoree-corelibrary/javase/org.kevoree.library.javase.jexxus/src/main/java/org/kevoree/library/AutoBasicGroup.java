@@ -7,6 +7,8 @@ import org.kevoree.annotation.Start;
 import org.kevoree.api.service.core.handler.UUIDModel;
 import org.kevoree.cloner.ModelCloner;
 import org.kevoree.framework.KevoreePropertyHelper;
+import org.kevoree.log.Log;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -33,7 +35,7 @@ public class AutoBasicGroup extends BasicGroup {
                 try {
                     broadCastMyInfo();
                 } catch (IOException e) {
-                    logger.error("Error while broadcasting node informations ", e);
+                    Log.error("Error while broadcasting node informations ", e);
                 }
             }
             break;
@@ -73,16 +75,16 @@ public class AutoBasicGroup extends BasicGroup {
                         public void run() {
                             UUIDModel model = getModelService().getLastUUIDModel();
                             if (!KevoreePropertyHelper.instance$.getNetworkProperties(model.getModel(), data[1], org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP()).contains(ip)) {
-                                logger.info("New IP found for node " + data[1] + "->" + ip);
+                                Log.info("New IP found for node " + data[1] + "->" + ip);
                                 try {
                                     ContainerRoot modelRW = cloner.clone(model.getModel());
                                    // ContainerRoot newModel = merger.merge(modelRW, requestModel(ip, Integer.parseInt(data[3]), data[0]));
                                   //  getModelService().compareAndSwapModel(model, newModel);
                                 } catch (Exception e) {
-                                    logger.error("Error while merging remote model");
+                                    Log.error("Error while merging remote model");
                                 }
                             } else {
-                                logger.info("Already ok " + data[1] + "->" + ip);
+                                Log.info("Already ok " + data[1] + "->" + ip);
                             }
                         }
                     });

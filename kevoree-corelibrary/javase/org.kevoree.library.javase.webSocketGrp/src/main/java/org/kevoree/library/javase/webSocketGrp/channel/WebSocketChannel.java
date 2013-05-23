@@ -6,8 +6,7 @@ import org.kevoree.api.service.core.handler.ModelListener;
 import org.kevoree.framework.*;
 import org.kevoree.framework.message.Message;
 import org.kevoree.library.javase.webSocketGrp.client.WebSocketClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebServers;
@@ -41,8 +40,6 @@ public class WebSocketChannel extends AbstractChannelFragment {
     private static final int DEFAULT_PORT = 8000;
     private static final int DEFAULT_MAX_QUEUED = 42;
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private WebServer server;
     private Map<String, WebSocketClient> clients;
     private MessageQueuer queuer;
@@ -57,9 +54,9 @@ public class WebSocketChannel extends AbstractChannelFragment {
         try {
             port = Integer.parseInt(getDictionary().get("port").toString());
         } catch (NumberFormatException e) {
-            logger.error("Port attribute must be a valid integer port number! \"{}\" isn't valid", getDictionary().get("port").toString());
+            Log.error("Port attribute must be a valid integer port number! \"{}\" isn't valid", getDictionary().get("port").toString());
             port = DEFAULT_PORT;
-            logger.warn("Using default port {} to proceed channel start...", DEFAULT_PORT);
+            Log.warn("Using default port {} to proceed channel start...", DEFAULT_PORT+"");
         }
 
         // get "maxQueued" from dictionary or DEFAULT_MAX_QUEUED if there is any trouble getting it
@@ -69,7 +66,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
             if (maxQueued < 0) throw new NumberFormatException();
 
         } catch (NumberFormatException e) {
-            logger.error("maxQueued attribute must be a valid positive integer port number");
+            Log.error("maxQueued attribute must be a valid positive integer port number");
         }
 
         // initialize active connections map
@@ -88,7 +85,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
         server.add(RES_TAG+getNodeName(), serverHandler);
         server.start();
 
-        logger.debug("WebSocket server started on {}", server.getUri()+RES_TAG+getNodeName());
+        Log.debug("WebSocket server started on {}", server.getUri()+RES_TAG+getNodeName());
 
         getModelService().registerModelListener(modelListener);
     }
@@ -122,13 +119,13 @@ public class WebSocketChannel extends AbstractChannelFragment {
         try {
             port = Integer.parseInt(getDictionary().get("port").toString());
         } catch (NumberFormatException e) {
-            logger.error("Port attribute must be a valid integer port number! \"{}\" isn't valid", getDictionary().get("port").toString());
+            Log.error("Port attribute must be a valid integer port number! \"{}\" isn't valid", getDictionary().get("port").toString());
             port = DEFAULT_PORT;
-            logger.warn("Using default port {} to proceed channel start...", DEFAULT_PORT);
+            Log.warn("Using default port {} to proceed channel start...", DEFAULT_PORT+"");
         }
 
         if (currentPort != port) {
-            logger.debug("UPDATE DAT CHAN");
+            Log.debug("UPDATE DAT CHAN");
             stopChannel();
             startChannel();
         }
@@ -154,7 +151,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
         return new ChannelFragmentSender() {
             @Override
             public Object sendMessageToRemote(Message message) {
-                logger.debug("createSender: "+remoteNodeName);
+                Log.debug("createSender: "+remoteNodeName);
                 byte[] data = null;
 
                 try {
@@ -210,12 +207,12 @@ public class WebSocketChannel extends AbstractChannelFragment {
 
                     } else {
                         // "replay" is set to "false" just drop that message
-                        logger.warn("Unable to reach web socket server on {}, forgetting this send message request...",
+                        Log.warn("Unable to reach web socket server on {}, forgetting this send message request...",
                                 remoteNodeName);
                     }
 
                 } catch (Exception e) {
-                    logger.debug("Error while sending message to " + remoteNodeName + "-" + remoteChannelName);
+                    Log.debug("Error while sending message to " + remoteNodeName + "-" + remoteChannelName);
                 }
                 return message;
             }
@@ -226,7 +223,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
         int nodePort = parsePortNumber(remoteNodeName);
 
         for (String nodeIp : getAddresses(remoteNodeName)) {
-            logger.debug("Trying to connect to server {}:{} ({}) ...", nodeIp, nodePort, remoteNodeName);
+            Log.debug("Trying to connect to server {}:{} ({}) ...", nodeIp, nodePort+"", remoteNodeName);
 
             URI uri = getWellFormattedURI(nodeIp, nodePort, remoteNodeName);
             WebSocketClient client = new WebSocketClient(uri) {
@@ -247,7 +244,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
                 }
 
             } catch (InterruptedException e) {
-                logger.error("Unable to connect to server {}:{} ({})", nodeIp, nodePort, remoteNodeName);
+                Log.error("Unable to connect to server {}:{} ({})", nodeIp, nodePort+"", remoteNodeName);
             }
         }
 
@@ -268,7 +265,7 @@ public class WebSocketChannel extends AbstractChannelFragment {
             try {
                 return Integer.parseInt(portOption);
             } catch (NumberFormatException e) {
-                logger.warn("Attribute \"port\" of {} is not an Integer", getName());
+                Log.warn("Attribute \"port\" of {} is not an Integer", getName());
                 return 0;
             }
         } else {

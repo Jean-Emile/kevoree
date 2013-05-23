@@ -10,8 +10,7 @@ import org.kevoree.framework.AbstractChannelFragment;
 import org.kevoree.framework.ChannelFragmentSender;
 import org.kevoree.framework.NoopChannelFragmentSender;
 import org.kevoree.framework.message.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,7 +29,6 @@ public class HazelTopic extends AbstractChannelFragment implements MessageListen
 
     HazelcastInstance hazelInstance = null;
     ITopic<Object> topic = null;
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
     ExecutorService messageExecutor = null;
 
     @Start
@@ -72,7 +70,7 @@ public class HazelTopic extends AbstractChannelFragment implements MessageListen
                     try {
                         forward(p, (Message) message.getMessageObject());
                     } catch(Exception e){
-                        logger.error("Can't cast message");
+                        Log.error("Can't cast message");
                     }
                 }
             }

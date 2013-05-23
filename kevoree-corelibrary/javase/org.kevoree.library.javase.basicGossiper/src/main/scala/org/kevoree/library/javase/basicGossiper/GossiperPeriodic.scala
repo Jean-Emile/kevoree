@@ -1,15 +1,12 @@
 package org.kevoree.library.javase.basicGossiper
 
 import actors.{Actor, TIMEOUT}
-import org.slf4j.LoggerFactory
 import org.kevoree.library.basicGossiper.protocol.message.KevoreeMessage.Message
 import org.kevoree.library.basicGossiper.protocol.gossip.Gossip.UpdatedValueNotification
 import java.net.InetSocketAddress
 
 
 class GossiperPeriodic(instance: GossiperComponent, timeout: Long, selector: PeerSelector, process: GossiperProcess) extends Actor {
-
-  private val logger = LoggerFactory.getLogger(this.getClass.getName)
 
   case class STOP()
 
@@ -46,7 +43,7 @@ class GossiperPeriodic(instance: GossiperComponent, timeout: Long, selector: Pee
   private def pull() {
     val peer = selector.selectPeer(instance.getName)
     if (peer != null && !peer.equals("")) {
-      logger.debug("start pulling")
+      org.kevoree.log.Log.debug("start pulling")
       process.initGossip(peer)
     }
   }

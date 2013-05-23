@@ -13,6 +13,15 @@
         <version>2.0.0-SNAPSHOT</version>
         <relativePath>../org.daum.library.android.root/pom.xml</relativePath>
     </parent>
+	
+	<dependencies>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>1.7.5</version>
+    </dependency>
+	</dependencies>
+	
 
     <build>
         <sourceDirectory>../org.daum.library.javase.p2pSock/src</sourceDirectory>

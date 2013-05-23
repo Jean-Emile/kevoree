@@ -1,8 +1,8 @@
 package org.kevoree.library.webserver.tjws
 
-import org.kevoree.library.javase.webserver.{KevoreeHttpRequest, KevoreeHttpResponse}
+import org.kevoree.library.javase.webserver.{KevoreeHttpResponse}
 import org.kevoree.library.javase.webserver.impl.KevoreeHttpResponseImpl
-import actors.{Actor, TIMEOUT, DaemonActor}
+import actors.{Actor, TIMEOUT}
 
 /**
  * Created with IntelliJ IDEA.

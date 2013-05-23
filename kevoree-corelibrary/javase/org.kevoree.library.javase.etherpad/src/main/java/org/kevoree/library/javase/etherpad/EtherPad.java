@@ -7,6 +7,7 @@ import org.kevoree.annotation.DictionaryAttribute;
 import org.kevoree.annotation.DictionaryType;
 import org.kevoree.framework.FileNIOHelper;
 import org.kevoree.library.javase.nodejs.AbstractNodeJSComponentType;
+import org.kevoree.log.Log;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -44,29 +45,29 @@ public class EtherPad extends AbstractNodeJSComponentType {
         try {
             org.apache.commons.io.FileUtils.cleanDirectory(tempDir);
         } catch (IOException e) {
-            logger.error("Error while cleaning dir");
+            Log.error("Error while cleaning dir");
         }
         if(System.getProperty("os.name").toLowerCase().contains("win")){
-            logger.info("Windows detected, downloading EtherPad-Win, Please wait");
+            Log.info("Windows detected, downloading EtherPad-Win, Please wait");
             try {
                 File outF = new File(tempDir,"etherpad-lite.zip");
                 org.apache.commons.io.FileUtils.forceMkdir(tempDir);
                 org.apache.commons.io.FileUtils.copyURLToFile(new URL("http://etherpad.org/etherpad-lite-win.zip"),outF);
-                logger.info("Download in {}",outF.getAbsolutePath());
+                Log.info("Download in {}",outF.getAbsolutePath());
                 unzip(outF,tempDir);
                 outF.delete();
                 org.apache.commons.io.FileUtils.moveDirectory(new File(tempDir.getAbsolutePath()+File.separator+"etherpad-lite-win"),new File(tempDir.getAbsolutePath()+File.separator+"etherpad-lite"));
             } catch (Exception e) {
-                logger.error("Error while preparing etherpad lite windows ",e);
+                Log.error("Error while preparing etherpad lite windows ",e);
             }
         } else {
             FileNIOHelper.unzipToTempDir(getClass().getClassLoader().getResourceAsStream("etherpad-lite.zip"), tempDir, new ArrayList<String>(), new ArrayList<String>());
         }
-        logger.info("Extract EtherPad to dir : "+tempDir.getAbsolutePath());
+        Log.info("Extract EtherPad to dir : "+tempDir.getAbsolutePath());
         try {
             copyparam(tempDir);
         } catch (IOException e) {
-            logger.error("Error while update param",e);
+            Log.error("Error while update param",e);
         }
         return tempDir.getAbsolutePath()+File.separator+"etherpad-lite";
     }

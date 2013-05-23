@@ -4,6 +4,7 @@ import org.kevoree.annotation.ComponentFragment;
 import org.kevoree.library.javase.webserver.AbstractPage;
 import org.kevoree.library.javase.webserver.KevoreeHttpRequest;
 import org.kevoree.library.javase.webserver.KevoreeHttpResponse;
+import org.kevoree.log.Log;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -58,7 +59,7 @@ public abstract class AbstractHttpServletPage extends AbstractPage {
 
 			legacyServlet.init(config);
 		} catch (ServletException e) {
-			logger.error("Error while starting servlet");
+			Log.error("Error while starting servlet");
 		}
 	}
 
@@ -78,7 +79,7 @@ public abstract class AbstractHttpServletPage extends AbstractPage {
 			//logger.debug("Sending " + request.getResolvedParams().keySet().size());
 			legacyServlet.service(wrapper_request, wrapper_response);
 		} catch (Exception e) {
-			logger.error("Error while processing request", e);
+			Log.error("Error while processing request", e);
 		}
 		wrapper_response.populateKevoreeResponse(response);
 		return response;

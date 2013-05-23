@@ -1,7 +1,6 @@
 package org.kevoree.library.javase.webserver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +18,6 @@ import java.util.regex.Pattern;
  * @version 1.0
  */
 public class URLHandler {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
     String localURLPattern = "/";
     private List<String> paramNames;
 
@@ -56,8 +54,8 @@ public class URLHandler {
 
     public KevoreeHttpRequest check(KevoreeHttpRequest url) {
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Try to check => " + localURLPattern + " - " + url);
+        if (Log.DEBUG) {
+            Log.debug("Try to check => " + localURLPattern + " - " + url);
         }
         Matcher m = Pattern.compile(localURLPattern).matcher(url.getUrl());
         if (m.matches()) {

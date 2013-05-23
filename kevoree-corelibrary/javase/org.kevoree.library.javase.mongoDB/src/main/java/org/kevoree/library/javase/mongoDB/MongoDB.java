@@ -9,8 +9,7 @@ import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
 import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractComponentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.io.IOException;
 
@@ -34,7 +33,6 @@ public class MongoDB extends AbstractComponentType {
     MongodProcess mongod = null;
     Mongo mongo = null;
     Thread runnerThread = null;
-    Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Start
     public void start() throws IOException {
@@ -59,7 +57,7 @@ public class MongoDB extends AbstractComponentType {
                     mongod = mongodExecutable.start();
                     mongo = new Mongo("localhost", port);
                 } catch (Exception e) {
-                    logger.error("Error while starting MongoDB ", e);
+                    Log.error("Error while starting MongoDB ", e);
                 }
             }
         };

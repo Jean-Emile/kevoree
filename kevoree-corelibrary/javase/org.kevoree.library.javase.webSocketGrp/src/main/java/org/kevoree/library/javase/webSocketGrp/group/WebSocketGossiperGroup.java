@@ -21,6 +21,7 @@ import org.kevoree.library.javase.basicGossiper.group.GroupSerializer;
 import org.kevoree.library.javase.conflictSolver.AlreadyPassedPrioritySolver;
 import org.kevoree.library.javase.webSocketGrp.client.WebSocketClient;
 import org.kevoree.library.javase.webSocketGrp.net.NetworkSender;
+import org.kevoree.log.Log;
 import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebServers;
@@ -65,7 +66,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
         processValue = new GossiperProcess(this, dataManager, serializer, false);
         processValue.setNetSender(netSender);
         selector = new GroupScorePeerSelector(timeoutLong, this.currentCacheModel, this.getNodeName());
-        logger.debug("{}: initialize GossiperActor", this.getName());
+        Log.debug("{}: initialize GossiperActor", this.getName());
         actor = new GossiperPeriodic(this, timeoutLong, selector, processValue);
         processValue.start();
         actor.start();
@@ -74,7 +75,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
         server = WebServers.createWebServer(port);
         server.add("/", serverHandler);
         server.start();
-        logger.debug("WebSocket server started on {} ({})", getNodeName(), server.getUri());
+        Log.debug("WebSocket server started on {} ({})", getNodeName(), server.getUri().toString());
 
         isRunning = true;
     }
@@ -122,7 +123,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
             try {
                 return pullFrom(uri);
             } catch (Exception e) {
-                logger.warn("Unable to pull model from {} ({}).", nodeName, uri);
+                Log.warn("Unable to pull model from {} ({}).", nodeName, uri.toString());
             }
         }
         throw new Exception("Unable to pull model from "+nodeName);
@@ -201,7 +202,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
             client.send(data);
             client.close();
         } catch (Exception e) {
-            logger.warn("Unable to push model to {}: server may be unreachable", uri);
+            Log.warn("Unable to push model to {}: server may be unreachable", uri.toString());
         }
     }
 
@@ -221,13 +222,13 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
             public void onMessage(ByteBuffer bytes) {
                 // if we end up here, it means that the server
                 // throws a model back at us in answer from the pull request
-                logger.debug("Receiving compressed model...");
+                Log.debug("Receiving compressed model...");
                 ByteArrayInputStream bais = new ByteArrayInputStream(bytes.array());
                 ContainerRoot model = KevoreeXmiHelper.instance$.loadCompressedStream(bais);
                 try {
                     exchanger.exchange(model);
                 } catch (InterruptedException e) {
-                    logger.error("Error while exchanging model from {}", uri, e);
+                    Log.error("Error while exchanging model from {}",e, uri.toString());
                 } finally {
                     // close socket connection in any case
                     close();
@@ -262,7 +263,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
                 try {
                     port = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
-                    logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), port);
+                    Log.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), port+"");
                 }
             }
         }
@@ -273,7 +274,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
         if (ips.size() == 0) {
             String defaultIP = "127.0.0.1";
             entries.put(defaultIP, port);
-            logger.warn("No IP definition found in {}. Default value {} is used.", nodeName, defaultIP);
+            Log.warn("No IP definition found in {}. Default value {} is used.", nodeName, defaultIP);
 
         } else {
             // filling entries with IPs & port
@@ -296,14 +297,14 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
             ByteArrayInputStream stin = new ByteArrayInputStream(data);
             stin.read();
             KevoreeMessage.Message msg = KevoreeMessage.Message.parseFrom(stin);
-            logger.debug("Rec Some MSG {}->{}->{}", new String[]{msg.getContentClass(), msg.getDestName(), msg.getDestNodeName()});
+            Log.debug("Rec Some MSG {}->{}->{}", new String[]{msg.getContentClass(), msg.getDestName(), msg.getDestNodeName()});
             if (!msg.getDestNodeName().equals(getNodeName())) {
                 processValue.receiveRequest(msg);
             } else {
-                logger.debug("message coming from itself, we don't need to manage it");
+                Log.debug("message coming from itself, we don't need to manage it");
             }
         } catch (Exception e) {
-            logger.error("", e);
+            Log.error("", e);
         }
     }
 
@@ -313,7 +314,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
         public void onMessage(WebSocketConnection conn, byte[] msg) throws Throwable {
             switch (msg[0]) {
                 case PUSH:
-                    logger.debug("Client {} is pushing a model", conn.httpRequest().remoteAddress());
+                    Log.debug("Client {} is pushing a model", conn.httpRequest().remoteAddress().toString());
 
                     // deserialize model from byte array
                     ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length-1);
@@ -327,7 +328,7 @@ public class WebSocketGossiperGroup extends BasicGossiperGroup {
                     break;
 
                 case PULL:
-                    logger.debug("Client {} ask for a pull", conn.httpRequest().remoteAddress());
+                    Log.debug("Client {} ask for a pull", conn.httpRequest().remoteAddress().toString());
 
                     ByteArrayOutputStream output = new ByteArrayOutputStream();
                     KevoreeXmiHelper.instance$.saveCompressedStream(output, getModelService().getLastModel());

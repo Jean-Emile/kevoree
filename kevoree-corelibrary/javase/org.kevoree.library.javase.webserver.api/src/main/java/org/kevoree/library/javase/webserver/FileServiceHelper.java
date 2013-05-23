@@ -1,8 +1,6 @@
 package org.kevoree.library.javase.webserver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import org.kevoree.log.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,11 +12,8 @@ import java.util.Properties;
  * User: duke
  * Date: 21/11/11
  * Time: 23:04
- * To change this template use File | Settings | File Templates.
  */
 public class FileServiceHelper {
-
-    private static Logger logger = LoggerFactory.getLogger(FileServiceHelper.class);
 
     static Properties mime = initMime();
     static URLHandler handler = new URLHandler();
@@ -28,7 +23,7 @@ public class FileServiceHelper {
         try {
             p.load(FileServiceHelper.class.getClassLoader().getResourceAsStream("mime.properties"));
         } catch (Exception ex) {
-            logger.debug("MIME map can't be loaded:" + ex);
+            Log.debug("MIME map can't be loaded:" + ex);
         }
         return p;
     }
@@ -56,7 +51,7 @@ public class FileServiceHelper {
         if (file.equals("") || file.equals("/")) {
             file = index;
         }
-        logger.debug("Request rec for file " + file);
+        Log.debug("Request rec for file " + file);
         File in = new File(baseDir + File.separator + file);
         if (in.exists() && in.isFile()) {
             try {
@@ -73,11 +68,11 @@ public class FileServiceHelper {
 
                 return true;
             } catch (Exception e) {
-                logger.error("", e);
+                Log.error("", e);
             }
 
         } else {
-            logger.debug("Ressource not exist " + file);
+            Log.debug("Ressource not exist " + file);
         }
         return false;
     }
@@ -101,7 +96,7 @@ public class FileServiceHelper {
             file = file.substring(1);
         }
 
-        logger.debug("Request rec for file " + file);
+        Log.debug("Request rec for file " + file);
         InputStream in = origin.getClass().getClassLoader().getResourceAsStream(file);
         if (in != null) {
             try {
@@ -113,18 +108,18 @@ public class FileServiceHelper {
                 response.getHeaders().put("Content-Type", (getHttpHeaderFromURL(request.getUrl())));
                 return true;
             } catch (Exception e) {
-                logger.error("", e);
+                Log.error("", e);
             }
 
         } else {
-            logger.debug("Ressource not exist " + file);
+            Log.debug("Ressource not exist " + file);
         }
         return false;
     }
 
 
     private static boolean isRaw(String url) {
-        logger.debug("look extension file to know if the file '{}' is a raw file", url);
+        Log.debug("look extension file to know if the file '{}' is a raw file", url);
         return !(url.endsWith(".js") || url.endsWith(".html") || url.endsWith(".css") || url.endsWith(".jnlp"));
     }
 

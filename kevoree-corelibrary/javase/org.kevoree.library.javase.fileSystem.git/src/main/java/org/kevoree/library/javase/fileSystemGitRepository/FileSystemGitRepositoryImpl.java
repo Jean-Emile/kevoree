@@ -14,8 +14,7 @@ import org.kevoree.framework.AbstractComponentType;
 import org.kevoree.library.javase.fileSystem.api.AbstractItem;
 import org.kevoree.library.javase.fileSystem.api.FileService;
 import org.kevoree.library.javase.fileSystem.api.FolderItem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +31,6 @@ import java.util.Set;
 })
 @ComponentType
 public class FileSystemGitRepositoryImpl extends AbstractComponentType/*extends GitFileSystem*/ implements GitRepositoryActions, FileService {
-
-	private Logger logger = LoggerFactory.getLogger(FileSystemGitRepositoryImpl.class);
 
 	private GitFileSystem fileSystem;
 
@@ -66,7 +63,7 @@ public class FileSystemGitRepositoryImpl extends AbstractComponentType/*extends 
 			item.setName(fileSystem.getBaseFolder().getPath());
 			return item;
 		}
-		logger.debug("Unable to import the repository, because {} doesn't exist in {}'s account or he's not a collaborator of that repository ", nameRepository, login);
+		Log.debug("Unable to import the repository, because {} doesn't exist in {}'s account or he's not a collaborator of that repository ", nameRepository, login);
 		return null;
 	}
 
@@ -90,7 +87,7 @@ public class FileSystemGitRepositoryImpl extends AbstractComponentType/*extends 
 	public AbstractItem initRepository (String login, String password, String nameRepository, String pathRepository) {
 		boolean isCreated = createRepository(login, password, nameRepository);
 		if (isCreated) {
-			logger.debug(" the Repository {} is created ", nameRepository);
+            Log.debug(" the Repository {} is created ", nameRepository);
 			cloneRepository("https://" + login + "@github.com/" + login + "/" + nameRepository + ".git", nameRepository, pathRepository);
 			createFileToInitRepository("https:  //" + login + "@github.com/" + login + "/" + nameRepository + ".git", nameRepository, pathRepository);
 			commitRepository("commit init", login, "Email@login.org");
@@ -109,10 +106,10 @@ public class FileSystemGitRepositoryImpl extends AbstractComponentType/*extends 
 		try {
 			service.getRepository(login, nameRepository);
 
-			logger.debug("The repository {} exists", nameRepository);
+            Log.debug("The repository {} exists", nameRepository);
 			return true;
 		} catch (IOException e) {
-			logger.debug("The repository {} doesn't exist ", nameRepository);
+            Log.debug("The repository {} doesn't exist ", nameRepository);
 			return false;
 		}
 	}
@@ -129,11 +126,11 @@ public class FileSystemGitRepositoryImpl extends AbstractComponentType/*extends 
 				service.createRepository(repo);
 				return true;
 			} catch (IOException e) {
-				logger.debug("Could not create repository", e);
+                Log.debug("Could not create repository", e);
 				return false;
 			}
 		}
-		logger.debug(" Can't create the repository {} because it already exists in {}'s account", nameRepository, login);
+        Log.debug(" Can't create the repository {} because it already exists in {}'s account", nameRepository, login);
 		return false;
 	}
 
@@ -146,10 +143,10 @@ public class FileSystemGitRepositoryImpl extends AbstractComponentType/*extends 
 				fileSystem.addFileToRepository(file);
 				commitRepository("Init Repository with a README.md ", "", "");
 			} else {
-				logger.debug("Unable to create the file {}", directoryPath + nomRepo + "/README.md");
+                Log.debug("Unable to create the file {}", directoryPath + nomRepo + "/README.md");
 			}
 		} catch (IOException e) {
-			logger.debug("Unable to create the file {}", directoryPath + nomRepo + "/README.md", e);
+            Log.debug("Unable to create the file {}",e, directoryPath + nomRepo + "/README.md");
 		}
 	}
 
@@ -165,7 +162,7 @@ public class FileSystemGitRepositoryImpl extends AbstractComponentType/*extends 
 			fileSystem.git = clone.call();
 		} catch (GitAPIException e) {
 			e.printStackTrace();
-			logger.debug("Unable to clone the repository", e);
+            Log.debug("Unable to clone the repository", e);
 		}
 		fileSystem.repository = fileSystem.git.getRepository();
 	}
@@ -179,7 +176,7 @@ public class FileSystemGitRepositoryImpl extends AbstractComponentType/*extends 
 		try {
 			commit.call();
 		} catch (GitAPIException e) {
-			logger.debug("Unable to commit on repository", e);
+            Log.debug("Unable to commit on repository", e);
 		}
 	}
 
@@ -191,13 +188,13 @@ public class FileSystemGitRepositoryImpl extends AbstractComponentType/*extends 
 			fileSystem.git.push().setCredentialsProvider(user).call();
 			return true;
 		} catch (InvalidRemoteException e) {
-			logger.debug("Unable to push on repository", e);
+            Log.debug("Unable to push on repository", e);
 			return false;
 		} catch (TransportException e) {
-			logger.debug("Unable to push on repository", e);
+            Log.debug("Unable to push on repository", e);
 			return false;
 		} catch (GitAPIException e) {
-			logger.debug("Unable to push on repository", e);
+            Log.debug("Unable to push on repository", e);
 			return false;
 		}
 	}

@@ -3,20 +3,18 @@ package org.kevoree.library.javase.basicGossiper.group
 import org.kevoree.ContainerRoot
 import org.kevoree.framework.KevoreeXmiHelper
 import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
-import org.slf4j.LoggerFactory
 import org.kevoree.api.service.core.handler.KevoreeModelHandlerService
 import org.kevoree.library.javase.basicGossiper.Serializer
 
 class GroupSerializer (modelService: KevoreeModelHandlerService) extends Serializer {
 
-  private val logger = LoggerFactory.getLogger (classOf[GroupSerializer])
 
   def serialize (data: Any): Array[Byte] = {
     try {
         stringFromModel (data.asInstanceOf[ContainerRoot])
     } catch {
       case e => {
-        logger.error ("Model cannot be serialized: ", e)
+        org.kevoree.log.Log.error ("Model cannot be serialized: ", e)
         null
       }
     }
@@ -27,7 +25,7 @@ class GroupSerializer (modelService: KevoreeModelHandlerService) extends Seriali
       modelFromString (data)
     } catch {
       case e => {
-        logger.error ("Model cannot be deserialized: ", e)
+        org.kevoree.log.Log.error ("Model cannot be deserialized: ", e)
         null
       }
     }

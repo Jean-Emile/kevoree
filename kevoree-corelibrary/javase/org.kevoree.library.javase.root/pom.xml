@@ -23,23 +23,17 @@
     <modules>
         <module>../org.kevoree.library.javase.swingUI</module>
         <module>../org.kevoree.library.javase.jexxus</module>
-
-        <module>../org.kevoree.library.javase.kotlin</module>
-
         <module>../org.kevoree.library.javase.fileSystem</module>
         <module>../org.kevoree.library.javase.fileSystem.git</module>
         <module>../org.kevoree.library.javase.fileSystem.svn</module>
-
         <module>../org.kevoree.library.javase.javaseNode</module>
         <module>../org.kevoree.library.javase.MonitoredJavaSENode</module>
-
         <module>../org.kevoree.library.javase.p2pSock</module>
         <module>../org.kevoree.library.javase.nioChannels</module>
         <module>../org.kevoree.library.javase.fakeDomo</module>
         <module>../org.kevoree.library.javase.defaultChannels</module>
         <module>../org.kevoree.library.javase.serialCT</module>
         <module>../org.kevoree.library.javase.grapher</module>
-
         <module>../org.kevoree.library.javase.webserver.api</module>
         <module>../org.kevoree.library.javase.webserver.tjws</module>
         <module>../org.kevoree.library.javase.webserver.sample</module>
@@ -49,7 +43,7 @@
         <module>../org.kevoree.library.javase.nanohttpAutoDiscovery</module>
         <module>../org.kevoree.library.javase.camel</module>
         <module>../org.kevoree.library.javase.camel.atom</module>
-		<module>../org.kevoree.library.javase.camel.jetty</module>
+        <module>../org.kevoree.library.javase.camel.jetty</module>
         <module>../org.kevoree.library.javase.authentication</module>
         <module>../org.kevoree.library.javase.mongoDB</module>
         <module>../org.kevoree.library.javase.nodeJS</module>
@@ -61,15 +55,11 @@
         <module>../org.kevoree.library.javase.adaptationSuperviser</module>
         <module>../org.kevoree.library.javase.basicGossiper</module>
         <module>../org.kevoree.library.javase.webSocketGrp</module>
-		<module>../org.kevoree.library.javase.accesscontrolGroup</module>
-
-
+        <module>../org.kevoree.library.javase.accesscontrolGroup</module>
         <module>../org.kevoree.library.javase.mavenCache</module>
         <module>../org.kevoree.library.javase.webserver.webbit</module>
         <module>../org.kevoree.library.javase.autoBasicGossiper</module>
         <module>../org.kevoree.library.javase.jmdns</module>
-
-
     </modules>
 
     <dependencies>

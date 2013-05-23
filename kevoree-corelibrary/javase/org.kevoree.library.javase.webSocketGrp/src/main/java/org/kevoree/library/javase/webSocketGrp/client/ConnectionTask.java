@@ -1,7 +1,6 @@
 package org.kevoree.library.javase.webSocketGrp.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -14,8 +13,6 @@ import java.nio.ByteBuffer;
  *
  */
 public class ConnectionTask implements Runnable {
-
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private URI uri;
     private Handler handler;
@@ -46,10 +43,10 @@ public class ConnectionTask implements Runnable {
                 handler.onConnectionSucceeded(client);
                 return;
             } else {
-                logger.debug("Unable to connect to {}", uri);
+                Log.debug("Unable to connect to {}", uri.toString());
             }
         } catch (InterruptedException e) {
-            logger.debug("[STOP] ConnectionTask to {} = interrupted", uri);
+            Log.debug("[STOP] ConnectionTask to {} = interrupted", uri.toString());
         }
     }
 

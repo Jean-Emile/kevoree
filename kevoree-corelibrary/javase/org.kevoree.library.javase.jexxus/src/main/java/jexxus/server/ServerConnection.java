@@ -12,8 +12,7 @@ import java.net.SocketException;
 import jexxus.common.Connection;
 import jexxus.common.ConnectionListener;
 import jexxus.common.Delivery;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 /**
  * Represents a server's connection to a client.
@@ -29,9 +28,6 @@ public class ServerConnection extends Connection {
 	private final InputStream tcpInput;
 	private boolean connected = true;
 	private int udpPort = -1;
-
-
-    private Logger logger = LoggerFactory.getLogger(getClass());
 
     ServerConnection(Server controller, ConnectionListener listener, Socket socket) throws IOException {
         super(listener, socket.getInetAddress().getHostAddress());
@@ -63,7 +59,7 @@ public class ServerConnection extends Connection {
 						}
 						break;
 					} catch (Exception e) {
-                        logger.debug("Error while read TCP ",e);
+                        Log.debug("Error while read TCP ", e);
 						break;
 					}
 					if (ret == null) {
@@ -79,7 +75,7 @@ public class ServerConnection extends Connection {
 					try {
 						listener.receive(ret, ServerConnection.this);
 					} catch (Exception e) {
-                        logger.debug("Error while read TCP ",e);
+                        Log.debug("Error while read TCP ",e);
 					}
 				}
 			}

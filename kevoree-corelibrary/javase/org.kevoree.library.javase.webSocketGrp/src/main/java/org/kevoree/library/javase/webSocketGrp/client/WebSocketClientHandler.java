@@ -1,7 +1,6 @@
 package org.kevoree.library.javase.webSocketGrp.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -19,9 +18,6 @@ import java.util.concurrent.TimeUnit;
 public class WebSocketClientHandler {
 
     private static final long DEFAULT_LOOP_TIME = 5000;
-
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private long loopTime;
     private ConnectionTask.Handler handler;
     private ScheduledExecutorService pool;
@@ -56,17 +52,17 @@ public class WebSocketClientHandler {
     private ConnectionTask.Handler defaultHandler = new ConnectionTask.Handler() {
         @Override
         public void onMessage(ByteBuffer bytes) {
-            logger.debug("DefaultHandler: onMessage(ByteBuffer) called.");
+            Log.debug("DefaultHandler: onMessage(ByteBuffer) called.");
         }
 
         @Override
         public void onConnectionSucceeded(WebSocketClient client) {
-            logger.debug("DefaultHandler: onConnectionSucceed(WebSocketClient) called.");
+            Log.debug("DefaultHandler: onConnectionSucceed(WebSocketClient) called.");
         }
 
         @Override
         public void onConnectionClosed(WebSocketClient client) {
-            logger.debug("DefaultHandler: onConnectionClosed(WebSocketClient) called.");
+            Log.debug("DefaultHandler: onConnectionClosed(WebSocketClient) called.");
         }
     };
 }

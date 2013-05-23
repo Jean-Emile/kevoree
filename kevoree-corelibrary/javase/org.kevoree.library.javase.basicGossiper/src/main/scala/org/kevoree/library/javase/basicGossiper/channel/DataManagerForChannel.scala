@@ -3,7 +3,6 @@ package org.kevoree.library.javase.basicGossiper.channel
 import java.util.HashMap
 import java.util.UUID
 import org.kevoree.framework.message.Message
-import org.slf4j.LoggerFactory
 import scala.collection.JavaConversions._
 import org.kevoree.library.javase.basicGossiper.{GossiperComponent, DataManager}
 import scala.Any
@@ -13,8 +12,6 @@ class DataManagerForChannel(instance: GossiperComponent, nodeName: String)
   extends DataManager {
 
   private val datas = new HashMap[UUID, (VectorClock, Message)]()
-  private val logger = LoggerFactory.getLogger(classOf[DataManagerForChannel])
-
 
   def getData(uuid: UUID): (VectorClock, Any) = {
     datas.get(uuid)
@@ -77,12 +74,12 @@ class DataManagerForChannel(instance: GossiperComponent, nodeName: String)
   }
 
   private def checkForGarbageInternal(uuids: List[UUID], source: String) {
-    logger.debug("checking uuids for garbage")
+    org.kevoree.log.Log.debug("checking uuids for garbage")
     datas.keySet().toList.foreach {
       key =>
         if (!uuids.contains(key)) {
           if (datas.get(key)._1 /*._1*/ .getEntiesList.exists(e => e.getNodeID.equals(source))) {
-            logger.debug("ALREADY SEEN DATA - GARBAGE IT")
+            org.kevoree.log.Log.debug("ALREADY SEEN DATA - GARBAGE IT")
             datas.remove(key)
           }
         }
@@ -114,7 +111,7 @@ class DataManagerForChannel(instance: GossiperComponent, nodeName: String)
     vectorClock.getEntiesList.filter(e => e.getNodeID.equals(nodeName)) match {
       case scala.collection.mutable.Buffer(e) => // we do nothing
       case scala.collection.mutable.Buffer() => {
-        logger.debug("add myself on the vectorclock!")
+        org.kevoree.log.Log.debug("add myself on the vectorclock!")
         // we add the current nodeName on the vectorclock
         var enties = vectorClock.getEntiesList.toList
         enties = enties ++ List(ClockEntry.newBuilder()

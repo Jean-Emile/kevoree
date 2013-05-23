@@ -1,8 +1,7 @@
 package org.kevoree.library.javase.webSocketGrp.channel;
 
 import org.kevoree.library.javase.webSocketGrp.client.WebSocketClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.net.URI;
 import java.util.ArrayDeque;
@@ -14,11 +13,8 @@ import java.util.Map;
  * User: leiko
  * Date: 3/21/13
  * Time: 5:36 PM
- * To change this template use File | Settings | File Templates.
  */
 public class MessageQueuer {
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Map<String, WebSocketClient> clients;
     private Deque<MessageHolder> queue;
@@ -59,12 +55,12 @@ public class MessageQueuer {
 
                             } catch (InterruptedException e) {
                                 // connection failed, we will try it later
-                                logger.debug("Unable to connect to {}, message still in queue", uri);
+                                Log.debug("Unable to connect to {}, message still in queue", uri.toString());
                             }
                         }
 
                         if (sent) {
-                            logger.debug("Message from queue delivered to {}", strURI);
+                            Log.debug("Message from queue delivered to {}", strURI);
                         } else {
                             // put that message back in the queue
                             queue.addFirst(msg);

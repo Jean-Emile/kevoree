@@ -7,12 +7,9 @@ import org.kevoree.framework.AbstractChannelFragment;
 import org.kevoree.framework.ChannelFragmentSender;
 import org.kevoree.framework.NoopChannelFragmentSender;
 import org.kevoree.framework.message.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,7 +24,6 @@ public class HazelQueue extends AbstractChannelFragment implements Runnable {
     HazelcastInstance hazelInstance = null;
     BlockingQueue<Object> dqueue = null;
     Thread pollThread = null;
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Start
     public void startHazel() {
@@ -73,7 +69,7 @@ public class HazelQueue extends AbstractChannelFragment implements Runnable {
         try {
             dqueue.put(message);
         } catch (InterruptedException e) {
-            logger.error("Message lost on channel {}", getName() + getNodeName(), e);
+            Log.error("Message lost on channel {}",e, getName() + getNodeName());
         }
         return null; //NO RESULT
     }
@@ -100,7 +96,7 @@ public class HazelQueue extends AbstractChannelFragment implements Runnable {
                 }
             }
         } catch (Exception e) {
-            logger.error("Bad message rec", e);
+            Log.error("Bad message rec", e);
         }
 
     }

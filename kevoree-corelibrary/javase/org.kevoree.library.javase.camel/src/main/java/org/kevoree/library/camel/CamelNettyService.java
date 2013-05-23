@@ -7,8 +7,7 @@ import org.kevoree.annotation.ChannelTypeFragment;
 import org.kevoree.annotation.Library;
 import org.kevoree.framework.KevoreeChannelFragment;
 import org.kevoree.framework.message.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.util.List;
 import java.util.Random;
@@ -23,7 +22,6 @@ import java.util.Random;
 @ChannelTypeFragment
 public class CamelNettyService extends CamelNetty {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private Random random = new Random();
 
     @Override
@@ -33,22 +31,22 @@ public class CamelNettyService extends CamelNetty {
                     @Override
                     public void process(Exchange exchange) throws Exception {
                         if (getBindedPorts().isEmpty() && getOtherFragments().isEmpty()) {
-                            logger.debug("No consumer, msg lost=" + exchange.getIn().getBody());
+                            Log.debug("No consumer, msg lost=" + exchange.getIn().getBody());
                         } else {
                             // default behavior is round robin
                             int rang = random.nextInt(getBindedPorts().size() + getOtherFragments().size());
                             Message message = (Message) exchange.getIn().getBody();
                             if (rang < getBindedPorts().size()) {
-                                logger.debug("select rang: {} for channel {}", new Object[]{rang, CamelNettyService.this.getName()});
-                                logger.debug("send message to {}", getBindedPorts().get(rang).getComponentName());
+                                Log.debug("select rang: {} for channel {}", rang+"", CamelNettyService.this.getName());
+                                Log.debug("send message to {}", getBindedPorts().get(rang).getComponentName());
                                 Object result = forward(getBindedPorts().get(rang), message);
                                 // forward the result
                                 exchange.getOut().setBody(result);
                             } else {
                                 rang = rang - getBindedPorts().size();
-                                logger.debug("select rang: {} for channel {}", new Object[]{rang, CamelNettyService.this.getName()});
+                                Log.debug("select rang: {} for channel {}", rang+"", CamelNettyService.this.getName());
                                 KevoreeChannelFragment cf = getOtherFragments().get(rang);
-                                logger.debug("trying to send message on {}", cf.getNodeName());
+                                Log.debug("trying to send message on {}", cf.getNodeName());
                                 List<String> addresses = getAddresses(cf.getNodeName());
                                 if (addresses.size() > 0) {
                                     for (String address : addresses) {
@@ -58,7 +56,7 @@ public class CamelNettyService extends CamelNetty {
                                             exchange.getOut().setBody(result);
                                             break;
                                         } catch (Exception e) {
-                                            logger.debug("Unable to send data to components on {} using {} as address", cf.getNodeName(), "netty:tcp://" + address + ":" + parsePortNumber(cf.getNodeName()), e);
+                                            Log.debug("Unable to send data to components on {} using {} as address",e, cf.getNodeName(), "netty:tcp://" + address + ":" + parsePortNumber(cf.getNodeName()));
                                         }
                                     }
                                 } else {
@@ -67,7 +65,7 @@ public class CamelNettyService extends CamelNetty {
                                         // forward the result
                                         exchange.getOut().setBody(result);
                                     } catch (Exception e) {
-                                        logger.debug("Unable to send data to components on {} using {} as address", cf.getNodeName(), "netty:tcp://127.0.0.1:" + parsePortNumber(cf.getNodeName()), e);
+                                        Log.debug("Unable to send data to components on {} using {} as address",e, cf.getNodeName(), "netty:tcp://127.0.0.1:" + parsePortNumber(cf.getNodeName()));
                                     }
                                 }
                             }
@@ -84,15 +82,15 @@ public class CamelNettyService extends CamelNetty {
                                 public void process(Exchange exchange) throws Exception {
                                     // default behavior is round robin
                                     int rang = random.nextInt(getBindedPorts().size());
-                                    logger.debug("select rang: {} for channel {}", new Object[]{rang, CamelNettyService.this.getName()});
-                                    logger.debug("send message to {}", getBindedPorts().get(rang).getComponentName());
+                                    Log.debug("select rang: {} for channel {}", rang+"", CamelNettyService.this.getName());
+                                    Log.debug("send message to {}", getBindedPorts().get(rang).getComponentName());
                                     Object result = forward(getBindedPorts().get(rang), (Message) exchange.getIn().getBody());
                                     // forward result
                                     exchange.getOut().setBody(result);
                                 }
                             });
                 } catch (Exception e) {
-                    logger.debug("Fail to manage route {}", "netty:tcp://" + address + ":" + port + "?sync=true", e);
+                    Log.debug("Fail to manage route {}",e, "netty:tcp://" + address + ":" + port + "?sync=true");
                 }
             }
         } else {
@@ -102,15 +100,15 @@ public class CamelNettyService extends CamelNetty {
                             public void process(Exchange exchange) throws Exception {
                                 // default behavior is round robin
                                 int rang = random.nextInt(getBindedPorts().size());
-                                logger.debug("select rang: {} for channel {}", new Object[]{rang, CamelNettyService.this.getName()});
-                                logger.debug("send message to {}", getBindedPorts().get(rang).getComponentName());
+                                Log.debug("select rang: {} for channel {}", rang+"", CamelNettyService.this.getName());
+                                Log.debug("send message to {}", getBindedPorts().get(rang).getComponentName());
                                 Object result = forward(getBindedPorts().get(rang), (Message) exchange.getIn().getBody());
                                 // forward result
                                 exchange.getOut().setBody(result);
                             }
                         });
             } catch (Exception e) {
-                logger.debug("Fail to manage route {}", "netty:tcp://127.0.0.1:" + port + "?sync=true", e);
+                Log.debug("Fail to manage route {}",e, "netty:tcp://127.0.0.1:" + port + "?sync=true");
             }
         }
     }

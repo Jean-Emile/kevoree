@@ -2,8 +2,7 @@ package org.kevoree.library.javase.fileSystemSVN;
 
 import org.kevoree.annotation.*;
 import org.kevoree.library.javase.fileSystem.api.BasicFileSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
@@ -37,8 +36,6 @@ import java.util.*;
 public class SvnFileSystem extends BasicFileSystem {
 
 	//	private File baseClone = null;
-	private Logger logger = LoggerFactory.getLogger(SvnFileSystem.class);
-
 	private SVNRepository repository = null;
 	private ISVNAuthenticationManager authManager = null;
 	private SVNUpdateClient client = null;
@@ -50,7 +47,7 @@ public class SvnFileSystem extends BasicFileSystem {
 		baseFolder = File.createTempFile("SVNFileSystem", "temp");
 
 		if (baseFolder.exists() && baseFolder.delete() && baseFolder.mkdir()) {
-			logger.info("Create temp SVN clone at " + baseFolder.getAbsolutePath());
+            Log.info("Create temp SVN clone at " + baseFolder.getAbsolutePath());
 			repository = SVNRepositoryFactory.create(SVNURL.parseURIDecoded(this.getDictionary().get("url").toString()));
 			authManager = SVNWCUtil.createDefaultAuthenticationManager(this.getDictionary().get("login").toString(), this.getDictionary().get("pass").toString());
 			repository.setAuthenticationManager(authManager);
@@ -60,7 +57,7 @@ public class SvnFileSystem extends BasicFileSystem {
 			client.doCheckout(SVNURL.parseURIDecoded(this.getDictionary().get("url").toString()), baseFolder, SVNRevision.create(lastRevision), SVNRevision.create(lastRevision), SVNDepth.INFINITY,
 					true);
 		} else {
-			logger.debug("Unable to create the local folder to checkout the repository");
+            Log.debug("Unable to create the local folder to checkout the repository");
 			throw new Exception("Unable to create the local folder to checkout the repository");
 		}
 	}
@@ -75,7 +72,7 @@ public class SvnFileSystem extends BasicFileSystem {
 		try {
 			repository.unlock(unlocks, false, null);
 		} catch (SVNException e) {
-			logger.error("Error while release lock ", e);
+            Log.error("Error while release lock ", e);
 		}
 		repository.closeSession();
 		repository = null;
@@ -156,7 +153,7 @@ public class SvnFileSystem extends BasicFileSystem {
 						repository.lock(locks, "AutoLock Kevoree Editor", false, null);
 						lockedFile.add(relatvePathClean[0]);
 					} catch (SVNException e) {
-						logger.error("Error while acquire lock ", e);
+                        Log.error("Error while acquire lock ", e);
 					}
 				}
 			};
@@ -214,7 +211,7 @@ public class SvnFileSystem extends BasicFileSystem {
 				clientCommit.doCommit(paths, true, "AutoCommit Kevoree Editor", null, null, false, false, SVNDepth.INFINITY);
 				lockedFile.remove(relatvePathClean);
 			} catch (SVNException e) {
-				logger.error("error while unkock and commit svn ", e);
+                Log.error("error while unkock and commit svn ", e);
 			}
 		}
 		return result;
@@ -232,7 +229,7 @@ public class SvnFileSystem extends BasicFileSystem {
 			repository.lock(locks, "AutoLock Kevoree Editor", false, null);
 			lockedFile.add(relatvePathClean[0]);
 		} catch (SVNException e) {
-			logger.error("Error while acquire lock ", e);
+            Log.error("Error while acquire lock ", e);
 		}
 	}
 
@@ -255,7 +252,7 @@ public class SvnFileSystem extends BasicFileSystem {
 				lockedFile.remove(relativePathClean);
 				return true;
 			} catch (SVNException e) {
-				logger.error("error while unkock and commit svn ", e);
+                Log.error("error while unkock and commit svn ", e);
 			}
 		}
 		return false;
@@ -280,7 +277,7 @@ public class SvnFileSystem extends BasicFileSystem {
 				lockedFile.remove(relativePathClean);
 				return true;
 			} catch (SVNException e) {
-				logger.error("error while unlock and commit svn ", e);
+                Log.error("error while unlock and commit svn ", e);
 			}
 		}
 		return false;
@@ -330,7 +327,7 @@ public class SvnFileSystem extends BasicFileSystem {
 				}
 			}
 		} catch (SVNException e) {
-			logger.error("Error while getRevision");
+            Log.error("Error while getRevision");
 		}
 	}
 

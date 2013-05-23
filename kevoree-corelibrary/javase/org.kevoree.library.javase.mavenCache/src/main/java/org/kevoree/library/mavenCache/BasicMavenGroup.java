@@ -8,8 +8,7 @@ import org.kevoree.annotation.GroupType;
 import org.kevoree.api.service.core.classloading.DeployUnitResolver;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.library.BasicGroup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,7 +35,6 @@ public class BasicMavenGroup extends BasicGroup implements Runnable, DeployUnitR
     NanoHTTPD srv = null;
     ExecutorService pool = null;
     AtomicReference<ContainerRoot> cachedModel = new AtomicReference<ContainerRoot>();
-    Logger logger = LoggerFactory.getLogger(this.getClass());
     private Boolean server = false;
     private AtomicReference<List<String>> remoteURLS = null;
 
@@ -80,12 +78,12 @@ public class BasicMavenGroup extends BasicGroup implements Runnable, DeployUnitR
                     for (ContainerNode child : group.getSubNodes()) {
                         Object server = KevoreePropertyHelper.instance$.getProperty(group, "server", true, child.getName());
                         if (server != null) {
-                            logger.info("Cache Found on node " + child.getName());
+                            Log.info("Cache Found on node " + child.getName());
                             List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model, child.getName(), org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
                             Object port = KevoreePropertyHelper.instance$.getProperty(child, "repo_port", false, null);
                             for (String remoteIP : ips) {
                                 String url = "http://" + remoteIP + ":" + port;
-                                logger.info("Add URL " + url);
+                                Log.info("Add URL " + url);
                                 urls.add(url);
                             }
                         }
@@ -102,7 +100,7 @@ public class BasicMavenGroup extends BasicGroup implements Runnable, DeployUnitR
         ContainerRoot model = cachedModel.get();
         if (model != null) {
             for (DeployUnit du : model.getDeployUnits()) {
-                logger.debug("CacheFile for DU : " + du.getUnitName() + ":" + du.getGroupName() + ":" + du.getVersion());
+                Log.debug("CacheFile for DU : " + du.getUnitName() + ":" + du.getGroupName() + ":" + du.getVersion());
                 File cachedFile = getBootStrapperService().resolveDeployUnit(du);
             }
         }
@@ -111,7 +109,7 @@ public class BasicMavenGroup extends BasicGroup implements Runnable, DeployUnitR
     @Override
     public File resolve(DeployUnit du) {
         File resolved = getBootStrapperService().resolveArtifact(du.getUnitName(), du.getGroupName(), du.getVersion(), remoteURLS.get());
-        logger.info("DU " + du.getUnitName() + " from cache resolution " + (resolved != null));
+        Log.info("DU " + du.getUnitName() + " from cache resolution " + (resolved != null));
         return null;
     }
 }

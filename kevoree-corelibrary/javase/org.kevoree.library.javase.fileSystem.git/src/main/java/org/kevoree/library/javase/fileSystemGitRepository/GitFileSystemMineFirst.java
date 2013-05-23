@@ -1,20 +1,15 @@
 package org.kevoree.library.javase.fileSystemGitRepository;
 
 
-import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.CommitCommand;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.kevoree.annotation.*;
 import org.kevoree.library.javase.fileSystem.api.AbstractItem;
-import org.kevoree.library.javase.fileSystem.api.BasicFileSystem;
 import org.kevoree.library.javase.fileSystem.api.FileItem;
 import org.kevoree.library.javase.fileSystem.api.FolderItem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.io.*;
 import java.util.Date;
@@ -37,10 +32,6 @@ import java.util.Set;
 })
 @ComponentType
 public class GitFileSystemMineFirst extends GitFileSystem {
-	private Logger logger = LoggerFactory.getLogger(GitFileSystemMineFirst.class);
-
-
-
 
     @Start
     public void start () throws Exception {
@@ -106,7 +97,7 @@ public class GitFileSystemMineFirst extends GitFileSystem {
                 fw.close();
                 return true;
             } catch (Exception e) {
-                logger.error("Error while getting file ", e);
+                Log.error("Error while getting file ", e);
                 return false;
             }
     }
@@ -281,7 +272,7 @@ public class GitFileSystemMineFirst extends GitFileSystem {
 			removeFileToRepository(oldFile);
 			return true;
 		} else {
-			logger.debug("Unable to move file {} on {}", oldRelativePath, newRelativePath);
+            Log.debug("Unable to move file {} on {}", oldRelativePath, newRelativePath);
 			return false;
 		}
 	}
@@ -290,7 +281,7 @@ public class GitFileSystemMineFirst extends GitFileSystem {
 		try {
 			git.pull().call();
 		} catch (GitAPIException e) {
-			logger.error("Error while trying to update local repository", e);
+            Log.error("Error while trying to update local repository", e);
 		}
 	}
 
@@ -302,7 +293,7 @@ public class GitFileSystemMineFirst extends GitFileSystem {
 		try {
 			commit.call();
 		} catch (GitAPIException e) {
-			logger.error("Unable to commit on repository ", e);
+            Log.error("Unable to commit on repository ", e);
 		}
 	}
 
@@ -313,9 +304,9 @@ public class GitFileSystemMineFirst extends GitFileSystem {
 			git.add().addFilepattern(finalFilePath).call();
 			result = true;
 		} catch (NoFilepatternException e) {
-			logger.debug("Unable to add file on repository ", e);
+            Log.debug("Unable to add file on repository ", e);
 		} catch (GitAPIException e) {
-			logger.debug("Unable to add file on repository ", e);
+            Log.debug("Unable to add file on repository ", e);
 		}
 		return result;
 	}
@@ -324,14 +315,14 @@ public class GitFileSystemMineFirst extends GitFileSystem {
 		Boolean result = false;
 		try {
 			String finalFilePath = fileToRemove.getPath().substring(fileToRemove.getPath().indexOf(baseFolder.getPath()) + baseFolder.getPath().length() + 1);
-			logger.debug(" file f " + fileToRemove.getPath() + " string " + finalFilePath);
+            Log.debug(" file f " + fileToRemove.getPath() + " string " + finalFilePath);
 			git.rm().addFilepattern(finalFilePath).call();
 			commitRepository(" File " + finalFilePath + " removed ", " name ", " email ");// TODO fix name and email
 			result = true;
 		} catch (NoFilepatternException e) {
-			logger.debug("Cannot remove file to repository " + e);
+            Log.debug("Cannot remove file to repository " + e);
 		} catch (GitAPIException e) {
-			logger.debug("Unable to remove file on repository ", e);
+            Log.debug("Unable to remove file on repository ", e);
 		}
 		return result;
 	}

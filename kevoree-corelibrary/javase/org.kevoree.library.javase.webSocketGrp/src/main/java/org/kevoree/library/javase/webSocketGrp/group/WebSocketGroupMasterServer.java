@@ -8,6 +8,7 @@ import org.kevoree.library.javase.webSocketGrp.client.WebSocketClient;
 import org.kevoree.library.javase.webSocketGrp.exception.MultipleMasterServerException;
 import org.kevoree.library.javase.webSocketGrp.exception.NoMasterServerFoundException;
 import org.kevoree.library.javase.webSocketGrp.exception.NotAMasterServerException;
+import org.kevoree.log.Log;
 import org.webbitserver.WebSocketConnection;
 
 import java.io.ByteArrayInputStream;
@@ -83,13 +84,13 @@ public class WebSocketGroupMasterServer extends AWebSocketGroup {
             WebSocketClient client = new WebSocketClient(uri) {
                 @Override
                 public void onMessage(ByteBuffer bytes) {
-                    logger.debug("Receiving compressed model...");
+                    Log.debug("Receiving compressed model...");
                     ByteArrayInputStream bais = new ByteArrayInputStream(bytes.array());
                     final ContainerRoot root = KevoreeXmiHelper.instance$.loadCompressedStream(bais);
                     try {
                         exchanger.exchange(root);
                     } catch (InterruptedException e) {
-                        logger.error("error while waiting model from "+ masterServerNodeName, e);
+                        Log.error("error while waiting model from "+ masterServerNodeName, e);
                     } finally {
                         close();
                     }
@@ -105,7 +106,7 @@ public class WebSocketGroupMasterServer extends AWebSocketGroup {
                 break;
 
             } else {
-                logger.warn("Unable to connect to master server on {} ({})", uri, masterServerNodeName);
+                Log.warn("Unable to connect to master server on {} ({})", uri.toString(), masterServerNodeName);
             }
         }
 
@@ -114,25 +115,25 @@ public class WebSocketGroupMasterServer extends AWebSocketGroup {
 
     @Override
     protected void onClientTriggerModelUpdate() {
-        logger.debug("onClientTriggerModelUpdate");
+        Log.debug("onClientTriggerModelUpdate");
     }
 
     @Override
     protected void onServerTriggerModelUpdate() {
-        logger.debug("onServerTriggerModelUpdate");
+        Log.debug("onServerTriggerModelUpdate");
     }
 
     @Override
     protected void onMasterServerPushEvent(WebSocketConnection conn, byte[] msg) {
-        logger.debug("PUSH: " + conn.httpRequest().remoteAddress() + " asked for a PUSH");
+        Log.debug("PUSH: " + conn.httpRequest().remoteAddress() + " asked for a PUSH");
         ByteArrayInputStream bais = new ByteArrayInputStream(msg, 1, msg.length - 1);
         ContainerRoot model = KevoreeXmiHelper.instance$.loadCompressedStream(bais);
         updateLocalModel(model);
 
-        logger.debug("Master websocket server is going to broadcast model over {} clients", clients.size());
+        Log.debug("Master websocket server is going to broadcast model over {} clients", clients.size()+"");
         // broadcasting model to each client
         for (WebSocketConnection wsConn : clients.keySet()) {
-            logger.debug("Trying to push model to client " + conn.httpRequest().remoteAddress());
+            Log.debug("Trying to push model to client " + conn.httpRequest().remoteAddress());
             wsConn.send(msg, 1, msg.length - 1); // offset is for the control byte
         }
     }
@@ -144,30 +145,30 @@ public class WebSocketGroupMasterServer extends AWebSocketGroup {
         if ((nodeName = clients.remove(conn)) != null) {
             str = " => "+nodeName + " removed from active connections.";
         }
-        logger.debug("CLOSE: Client "
+        Log.debug("CLOSE: Client "
                 + conn.httpRequest().remoteAddress()
                 + " closed connection with server" + str);
     }
 
     @Override
     protected void onMasterServerOpenEvent(WebSocketConnection conn) {
-        logger.debug("OPEN: New client opens connection: "
+        Log.debug("OPEN: New client opens connection: "
                 + conn.httpRequest().remoteAddress());
     }
 
     @Override
     protected void onMasterServerRegisterEvent(WebSocketConnection conn, String nodeToRegister) {
         clients.put(conn, nodeToRegister);
-        logger.debug(
+        Log.debug(
                 "REGISTER: New client ({}) added to active connections: {}",
-                nodeToRegister, conn.httpRequest().remoteAddress());
+                nodeToRegister, conn.httpRequest().remoteAddress().toString());
         // sending master server nodeName back to client
         conn.send(getNodeName());
     }
 
     @Override
     protected void onMasterServerPullEvent(WebSocketConnection conn, byte[] msg) {
-        logger.debug("PULL: Client " + conn.httpRequest().remoteAddress()
+        Log.debug("PULL: Client " + conn.httpRequest().remoteAddress()
                 + " ask for a pull");
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         KevoreeXmiHelper.instance$.saveCompressedStream(output,
@@ -185,7 +186,7 @@ public class WebSocketGroupMasterServer extends AWebSocketGroup {
                 modelSent = true;
             }
         } catch (InterruptedException e) {
-            logger.error("", e);
+            Log.error("", e);
         }
 
         return modelSent;

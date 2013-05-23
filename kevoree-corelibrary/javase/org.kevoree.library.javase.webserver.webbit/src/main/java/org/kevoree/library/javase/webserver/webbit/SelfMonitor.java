@@ -2,8 +2,7 @@ package org.kevoree.library.javase.webserver.webbit;
 
 import org.kevoree.context.Metric;
 import org.kevoree.context.PutHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,7 +20,6 @@ public class SelfMonitor implements Runnable {
 
     private URL url = null;
     private Metric m = null;
-    private Logger logger = LoggerFactory.getLogger(SelfMonitor.class);
 
     public SelfMonitor(URL url, Metric m) {
         this.url = url;
@@ -43,10 +41,10 @@ public class SelfMonitor implements Runnable {
             long latency = System.currentTimeMillis() - before;
             PutHelper.addValue(m, latency + "");
 
-            logger.info("Put latency (ms) = "+latency);
+            Log.info("Put latency (ms) = " + latency);
 
         } catch (IOException e) {
-            logger.error("",e);
+            Log.error("",e);
             //TODO put in context latency very high
         } finally {
             try {

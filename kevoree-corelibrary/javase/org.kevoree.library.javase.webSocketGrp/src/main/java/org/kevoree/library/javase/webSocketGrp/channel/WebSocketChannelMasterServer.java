@@ -9,8 +9,7 @@ import org.kevoree.library.javase.webSocketGrp.client.ConnectionTask;
 import org.kevoree.library.javase.webSocketGrp.client.WebSocketClient;
 import org.kevoree.library.javase.webSocketGrp.client.WebSocketClientHandler;
 import org.kevoree.library.javase.webSocketGrp.exception.MultipleMasterServerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebServers;
@@ -39,12 +38,8 @@ import java.util.concurrent.TimeUnit;
 public class WebSocketChannelMasterServer extends AbstractChannelFragment {
 
     private static final int DEFAULT_MAX_QUEUED = 42;
-
     protected static final byte REGISTER = 0;
     protected static final byte FORWARD = 1;
-
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private WebSocketClient client;
     private WebServer server;
     private Integer port = null;
@@ -66,7 +61,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
             if (maxQueued < 0) throw new NumberFormatException();
 
         } catch (NumberFormatException e) {
-            logger.error("maxQueued attribute must be a valid positive integer number");
+            Log.error("maxQueued attribute must be a valid positive integer number");
         }
 
         useQueue = Boolean.parseBoolean(getDictionary().get("use_queue").toString());
@@ -81,7 +76,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                 // try to add all the old values to the new one
                 waitingQueue.addAll(bkpQueue);
             } catch (IllegalStateException e) {
-                logger.warn("\"maxQueued\" property has been reduced since last update, dropping some pending messages...");
+                Log.warn("\"maxQueued\" property has been reduced since last update, dropping some pending messages...");
             }
         } else {
             // this is not an update
@@ -102,8 +97,8 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
             server.add("/" +getNodeName()+"/"+getName(), serverHandler);
             server.start();
 
-            logger.debug("[SERVER] Started on ws://{}:{}{} (use_queue = {}, maxQueued = {})",
-                    server.getUri().getHost(), server.getPort(), "/"+getNodeName()+"/"+getName(), useQueue, maxQueued);
+            Log.debug("[SERVER] Started on ws://{}:{}{} (use_queue = {}, maxQueued = {})",
+                    server.getUri().getHost(), server.getPort()+"", "/"+getNodeName()+"/"+getName(), useQueue+"", maxQueued+"");
 
         } else {
             // we are just a client initiating a connection to master server
@@ -113,8 +108,8 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                 @Override
                 public void onConnectionSucceeded(WebSocketClient cli) {
                     // connection to master server succeed on one of the different URIs
-                    logger.debug("[CLIENT] Connected to master server {} (use_queue = {}, maxQueued = {})",
-                            cli.getURI(), useQueue, maxQueued);
+                    Log.debug("[CLIENT] Connected to master server {} (use_queue = {}, maxQueued = {})",
+                            cli.getURI().toString(), useQueue+"", maxQueued+"");
 
                     // stop all other connection attempts
                     wsClientHandler.stopAllTasks();
@@ -130,7 +125,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
 
                         // if use_queue is true, check if there is any message in the waitingQueue
                         if (useQueue && !waitingQueue.isEmpty()) {
-                            logger.debug("[CLIENT] {} pending message{}, sending them right now...", waitingQueue.size(),
+                            Log.debug("[CLIENT] {} pending message{}, sending them right now...", waitingQueue.size()+"",
                                     (waitingQueue.size() > 1 ? "s" : ""));
                             Iterator<MessageHolder> it = waitingQueue.iterator();
 
@@ -144,15 +139,15 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                         }
 
                     } catch (IOException e) {
-                        logger.warn("Unable to send registration message to master server");
+                        Log.warn("Unable to send registration message to master server");
                     }
                 }
 
                 @Override
                 public void onConnectionClosed(WebSocketClient cli) {
-                    logger.debug("Connection has been closed");
+                    Log.debug("Connection has been closed");
                     if (cli.equals(client)) {
-                        logger.debug("Gonna try to reconnect to server...");
+                        Log.debug("Gonna try to reconnect to server...");
                         client = null;
                         for (URI uri : getMasterServerURIs()) {
                             wsClientHandler.startConnectionTask(uri);
@@ -164,12 +159,12 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                 public void onMessage(ByteBuffer bytes) {
                     // if we end up here, it means that master server just forward
                     // a Message for us, so process it
-                    logger.debug("[CLIENT] New message received");
+                    Log.debug("[CLIENT] New message received");
                     remoteDispatchByte(bytes.array());
                 }
             });
             for (URI uri : uris) {
-                logger.debug("Add {} to WebSocketClientHandler", uri.toString());
+                Log.debug("Add {} to WebSocketClientHandler", uri.toString());
                 wsClientHandler.startConnectionTask(uri);
             }
         }
@@ -194,7 +189,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
 
     @Update
     public void updateChannel() throws Exception {
-        logger.debug("UPDATE");
+        Log.debug("UPDATE");
         stopChannel();
         startChannel();
     }
@@ -241,11 +236,11 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                                 // remote node has not established a connection with master server yet
                                 // or connection has been closed, so putting message in the waiting queue
                                 if (useQueue) {
-                                    logger.debug("Message added to queue." +
+                                    Log.debug("Message added to queue." +
                                             " {} is not yet connected to master server on {}/{}", remoteNodeName, getName(), getNodeName());
                                     addMessageToQueue(remoteNodeName, msgBytes);
                                 } else {
-                                    logger.debug("{} is not connected, \"use_queue\" = false : dropping message");
+                                    Log.debug("{} is not connected, \"use_queue\" = false : dropping message");
                                 }
                             }
 
@@ -269,16 +264,16 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                             } else {
                                 if (useQueue) {
                                     // client is not connected yet, holding message in a queue
-                                    logger.debug("Not connected to master server yet: message to {} added to queue.", remoteNodeName);
+                                    Log.debug("Not connected to master server yet: message to {} added to queue.", remoteNodeName);
                                     addMessageToQueue(remoteNodeName, baos.toByteArray());
                                 } else {
-                                    logger.debug("Not connected to master and \"use_queue = false\": dropping message");
+                                    Log.debug("Not connected to master and \"use_queue = false\": dropping message");
                                 }
                             }
                         }
 
                     } catch (IOException e) {
-                        logger.debug("Error while sending message to {} (remoteChannel: {})", remoteNodeName, remoteChannelName);
+                        Log.debug("Error while sending message to {} (remoteChannel: {})", remoteNodeName, remoteChannelName);
                     }
                 }
 
@@ -357,7 +352,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
             ois.close();
             remoteDispatch(mess);
         } catch (Exception e) {
-            logger.warn("Something went wrong while deserializing message in {}", getNodeName());
+            Log.warn("Something went wrong while deserializing message in {}", getNodeName());
         }
     }
 
@@ -400,17 +395,17 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                 case REGISTER:
                     String nodeName = new String(msg, 1, msg.length-1);
                     if (clients.containsValue(nodeName)) {
-                        logger.debug("Already got {} in my active connections," +
+                        Log.debug("Already got {} in my active connections," +
                                 " gonna close the old one, and keep the fresh new", nodeName);
                         clients.inverse().get(nodeName).close();
                         clients.inverse().remove(nodeName);
                     }
                     clients.put(connection, nodeName);
-                    logger.debug("New registered client \"{}\" from {}", nodeName, connection.httpRequest().remoteAddress());
+                    Log.debug("New registered client \"{}\" from {}", nodeName, connection.httpRequest().remoteAddress().toString());
 
                     List<byte[]> pendingList = getPendingMessages(nodeName);
                     if (useQueue && !pendingList.isEmpty()) {
-                        logger.debug("Sending pending messages from waiting queue to {} ...", nodeName);
+                        Log.debug("Sending pending messages from waiting queue to {} ...", nodeName);
                         for (byte[] data : pendingList) {
                             // we process the data to be sure we were not a client before
                             // because if we were a client, messages in waitingQueue are not
@@ -439,19 +434,19 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
                         ois.close();
 
                         if (clients.containsValue(mess.recipient)) {
-                            logger.debug("[SERVER] I know the dude, forwarding message to him...");
+                            Log.debug("[SERVER] I know the dude, forwarding message to him...");
                             // sending message to recipient
                             WebSocketConnection recipient = clients.inverse().get(mess.recipient);
                             recipient.send(mess.getByteContent());
 
                         } else if (mess.recipient.equals(getNodeName())) {
-                            logger.debug("[SERVER] oh this is a forward for me actually, dispatching to my face");
+                            Log.debug("[SERVER] oh this is a forward for me actually, dispatching to my face");
                             remoteDispatchByte(mess.getByteContent());
 
 
                         } else {
                             if (useQueue) {
-                                logger.debug("[SERVER] well, dude is not connected, forward request added to queue...");
+                                Log.debug("[SERVER] well, dude is not connected, forward request added to queue...");
                                 // recipient has not yet established a connection with master server
                                 // putting it in the queue
                                 addMessageToQueue(mess.recipient, mess.getByteContent());
@@ -460,7 +455,7 @@ public class WebSocketChannelMasterServer extends AbstractChannelFragment {
 
 
                     } catch (Exception e) {
-                        logger.debug("Something went wrong while deserializing message from {}", senderNode);
+                        Log.debug("Something went wrong while deserializing message from {}", senderNode);
                     }
                     break;
 

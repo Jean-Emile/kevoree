@@ -6,18 +6,16 @@ import scala.collection.JavaConversions._
 
 case class VectorClockAspect (self: VectorClock) {
 
-  private val logger = org.slf4j.LoggerFactory.getLogger(classOf[VectorClockAspect])
-
   def printDebug () {
     if (self != null) {
-      logger.debug("VectorClock" + " - " + self.getEntiesCount + " - " + self.getTimestamp)
+      org.kevoree.log.Log.debug("VectorClock" + " - " + self.getEntiesCount + " - " + self.getTimestamp)
       self.getEntiesList.foreach {
         enties =>
-          logger.debug(enties.getNodeID + "-" + enties.getVersion /*+"-"+enties.getTimestamp*/)
+          org.kevoree.log.Log.debug(enties.getNodeID + "-" + enties.getVersion /*+"-"+enties.getTimestamp*/)
       }
-      logger.debug("-- end vector clock --")
+      org.kevoree.log.Log.debug("-- end vector clock --")
     } else {
-      logger.debug("vectorclock is null!")
+      org.kevoree.log.Log.debug("vectorclock is null!")
     }
   }
 

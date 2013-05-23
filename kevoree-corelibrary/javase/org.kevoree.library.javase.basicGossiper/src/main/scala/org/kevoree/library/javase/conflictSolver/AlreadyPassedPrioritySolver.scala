@@ -5,7 +5,7 @@ import org.kevoree.ContainerRoot
 import org.kevoree.merger.KevoreeMergerComponent
 import java.util
 import org.kevoree.api.service.core.script.KevScriptEngineFactory
-import org.slf4j.{LoggerFactory, Logger}
+import org.kevoree.log.Log
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,7 +16,6 @@ import org.slf4j.{LoggerFactory, Logger}
 class AlreadyPassedPrioritySolver(kevsFactory : KevScriptEngineFactory) extends ConflictSolver {
 
   private val mergerComponent = new KevoreeMergerComponent()
-  protected var logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def resolve(current: (VectorClock, ContainerRoot), proposed: (VectorClock, ContainerRoot), sourceNodeName : String, currentNodeName : String): ContainerRoot = {
 
@@ -39,7 +38,7 @@ class AlreadyPassedPrioritySolver(kevsFactory : KevScriptEngineFactory) extends 
     for(i <- 0 until beforeNodeNames.size()-1){
       kevengine.addVariable("nodeName",beforeNodeNames.get(i))
       kevengine.append("removeNode {nodeName}")
-      logger.debug("remove {} to allow the merge of this node from the new model", beforeNodeNames.get(i))
+      Log.debug("remove {} to allow the merge of this node from the new model", beforeNodeNames.get(i))
     }
     val cleanedModel = kevengine.interpret()
     mergerComponent.merge(cleanedModel,proposed._2)

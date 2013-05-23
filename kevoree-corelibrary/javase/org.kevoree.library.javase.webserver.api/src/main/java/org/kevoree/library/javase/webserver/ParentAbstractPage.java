@@ -4,6 +4,7 @@ import org.kevoree.annotation.ComponentFragment;
 import org.kevoree.annotation.Library;
 import org.kevoree.annotation.Start;
 import org.kevoree.annotation.Update;
+import org.kevoree.log.Log;
 
 /**
  * User: Erwan Daubert - erwan.daubert@gmail.com
@@ -22,7 +23,7 @@ public abstract class ParentAbstractPage extends AbstractPage {
     public void startPage() {
         if (!this.getDictionary().get("urlpattern").toString().endsWith("**")) {
             this.getDictionary().put("urlpattern", this.getDictionary().get("urlpattern").toString() + "**");
-            logger.debug("Parent abstract page start with pattern = {}", this.getDictionary().get("urlpattern").toString());
+            Log.debug("Parent abstract page start with pattern = {}", this.getDictionary().get("urlpattern").toString());
         }
         super.startPage();
     }

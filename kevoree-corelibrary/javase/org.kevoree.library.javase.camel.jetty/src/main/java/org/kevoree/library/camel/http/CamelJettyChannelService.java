@@ -9,8 +9,7 @@ import org.kevoree.annotation.DictionaryType;
 import org.kevoree.annotation.Library;
 import org.kevoree.framework.KevoreeChannelFragment;
 import org.kevoree.framework.message.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.util.List;
 import java.util.Random;
@@ -31,7 +30,6 @@ import java.util.Random;
 })
 // TODO define upper bounds to 1
 public class CamelJettyChannelService extends CamelJettyChannelMessage {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private Random random = new Random();
 
     @Override
@@ -41,22 +39,22 @@ public class CamelJettyChannelService extends CamelJettyChannelMessage {
                     @Override
                     public void process(Exchange exchange) throws Exception {
                         if (getBindedPorts().isEmpty() && getOtherFragments().isEmpty()) {
-                            logger.debug("No consumer, msg lost=" + exchange.getIn().getBody());
+                            Log.debug("No consumer, msg lost=" + exchange.getIn().getBody());
                         } else {
                             // default behavior is round robin
                             int rang = random.nextInt(getBindedPorts().size() + getOtherFragments().size());
                             Message message = (Message) exchange.getIn().getBody();
                             if (rang < getBindedPorts().size()) {
-                                logger.debug("select rang: {} for channel {}", new Object[]{rang, CamelJettyChannelService.this.getName()});
-                                logger.debug("send message to {}", getBindedPorts().get(rang).getComponentName());
+                                Log.debug("select rang: {} for channel {}", rang + "", CamelJettyChannelService.this.getName());
+                                Log.debug("send message to {}", getBindedPorts().get(rang).getComponentName());
                                 Object result = forward(getBindedPorts().get(rang), message);
                                 // forward the result
                                 exchange.getOut().setBody(result);
                             } else {
                                 rang = rang - getBindedPorts().size();
-                                logger.debug("select rang: {} for channel {}", new Object[]{rang, CamelJettyChannelService.this.getName()});
+                                Log.debug("select rang: {} for channel {}", rang+"", CamelJettyChannelService.this.getName());
                                 KevoreeChannelFragment cf = getOtherFragments().get(rang);
-                                logger.debug("Trying to send message on {}", getOtherFragments().get(rang).getNodeName());
+                                Log.debug("Trying to send message on {}", getOtherFragments().get(rang).getNodeName());
                                 List<String> addresses = getAddresses(cf.getNodeName());
                                 if (addresses.size() > 0) {
                                     for (String address : addresses) {
@@ -66,7 +64,7 @@ public class CamelJettyChannelService extends CamelJettyChannelMessage {
                                             exchange.getOut().setBody(result);
                                             break;
                                         } catch (Exception e) {
-                                            logger.debug("Unable to send data to components on {} using {} as address", cf.getNodeName(), "jetty:http://" + address + ":" + parsePortNumber(getOtherFragments().get(rang).getNodeName()), e);
+                                            Log.debug("Unable to send data to components on {} using {} as address",e, cf.getNodeName(), "jetty:http://" + address + ":" + parsePortNumber(getOtherFragments().get(rang).getNodeName()));
                                         }
                                     }
                                 } else {
@@ -75,7 +73,7 @@ public class CamelJettyChannelService extends CamelJettyChannelMessage {
                                         // forward the result
                                         exchange.getOut().setBody(result);
                                     } catch (Exception e) {
-                                        logger.debug("Unable to send data to components on {} using {} as address", cf.getNodeName(), "jetty:http://127.0.0.1:" + parsePortNumber(getOtherFragments().get(rang).getNodeName()), e);
+                                        Log.debug("Unable to send data to components on {} using {} as address",e, cf.getNodeName(), "jetty:http://127.0.0.1:" + parsePortNumber(getOtherFragments().get(rang).getNodeName()));
                                     }
                                 }
                             }
@@ -92,15 +90,15 @@ public class CamelJettyChannelService extends CamelJettyChannelMessage {
                                 public void process(Exchange exchange) throws Exception {
                                     // default behavior is round robin
                                     int rang = random.nextInt(getBindedPorts().size());
-                                    logger.debug("select rang: {} for channel {}", new Object[]{rang, CamelJettyChannelService.this.getName()});
-                                    logger.debug("send message to {}", getBindedPorts().get(rang).getComponentName());
+                                    Log.debug("select rang: {} for channel {}", rang+"", CamelJettyChannelService.this.getName());
+                                    Log.debug("send message to {}", getBindedPorts().get(rang).getComponentName());
                                     Object result = forward(getBindedPorts().get(rang), (Message) exchange.getIn().getBody());
                                     // forward result
                                     exchange.getOut().setBody(result);
                                 }
                             });
                 } catch (Exception e) {
-                    logger.debug("Fail to manage route {}", "http://" + address + ":" + port, e);
+                    Log.debug("Fail to manage route {}",e, "http://" + address + ":" + port);
                 }
             }
         } else {
@@ -110,15 +108,15 @@ public class CamelJettyChannelService extends CamelJettyChannelMessage {
                             public void process(Exchange exchange) throws Exception {
                                 // default behavior is round robin
                                 int rang = random.nextInt(getBindedPorts().size());
-                                logger.debug("select rang: {} for channel {}", new Object[]{rang, CamelJettyChannelService.this.getName()});
-                                logger.debug("send message to {}", getBindedPorts().get(rang).getComponentName());
+                                Log.debug("select rang: {} for channel {}",rang+"", CamelJettyChannelService.this.getName());
+                                Log.debug("send message to {}", getBindedPorts().get(rang).getComponentName());
                                 Object result = forward(getBindedPorts().get(rang), (Message) exchange.getIn().getBody());
                                 // forward result
                                 exchange.getOut().setBody(result);
                             }
                         });
             } catch (Exception e) {
-                logger.debug("Fail to manage route {}", "http://127.0.0.1:" + port, e);
+                Log.debug("Fail to manage route {}",e, "http://127.0.0.1:" + port);
             }
         }
     }

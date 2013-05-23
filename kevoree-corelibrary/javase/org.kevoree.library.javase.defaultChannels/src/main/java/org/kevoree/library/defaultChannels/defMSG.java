@@ -23,8 +23,7 @@ import org.kevoree.framework.ChannelFragmentSender;
 import org.kevoree.framework.KevoreeChannelFragment;
 import org.kevoree.framework.NoopChannelFragmentSender;
 import org.kevoree.framework.message.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 /**
  *
@@ -34,13 +33,10 @@ import org.slf4j.LoggerFactory;
 @ChannelTypeFragment
 public class defMSG extends AbstractChannelFragment {
 
-	private Logger logger = LoggerFactory.getLogger(defMSG.class);
-
-
     @Override
     public Object dispatch(Message msg) {
         if (getBindedPorts().isEmpty() && getOtherFragments().isEmpty()) {
-           logger.debug("No consumer, msg lost");
+           Log.debug("No consumer, msg lost");
         }
         for (org.kevoree.framework.KevoreePort p : getBindedPorts()) {
             forward(p, msg);
@@ -55,18 +51,18 @@ public class defMSG extends AbstractChannelFragment {
 
     @Start
     public void startHello() {
-       logger.debug("Hello Channel");
+       Log.debug("Hello Channel");
     }
 
     @Stop
     public void stopHello() {
-        logger.debug("Bye Channel");
+        Log.debug("Bye Channel");
     }
 
     @Update
     public void updateHello() {
         for (String s : this.getDictionary().keySet()) {
-            logger.debug("Dic => " + s + " - " + this.getDictionary().get(s));
+            Log.debug("Dic => " + s + " - " + this.getDictionary().get(s));
         }
     }
 
@@ -77,7 +73,7 @@ public class defMSG extends AbstractChannelFragment {
 
     @LocalBindingUpdated
     public void updateLocalBinding(){
-         logger.info("local binding updated");
+         Log.info("local binding updated");
     }
 
 }

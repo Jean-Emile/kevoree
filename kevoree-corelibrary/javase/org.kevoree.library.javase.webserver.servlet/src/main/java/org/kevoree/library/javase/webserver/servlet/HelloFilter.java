@@ -1,6 +1,7 @@
 package org.kevoree.library.javase.webserver.servlet;
 
 import org.kevoree.annotation.ComponentType;
+import org.kevoree.log.Log;
 
 import javax.servlet.*;
 import java.io.IOException;
@@ -33,10 +34,10 @@ public class HelloFilter  extends AbstractFilterPage {
 
 		@Override
 		public void doFilter (ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-			logger.debug("Filter request");
+			Log.debug("Filter request");
 			// do nothing on request
 			chain.doFilter(request, response);
-			logger.debug("Filter request after chain.doFilter");
+			Log.debug("Filter request after chain.doFilter");
 			// add hello world on the begin of the response
 			response.getOutputStream().write(("Hello World from Filter: " + getName()).getBytes("UTF-8"));
 		}

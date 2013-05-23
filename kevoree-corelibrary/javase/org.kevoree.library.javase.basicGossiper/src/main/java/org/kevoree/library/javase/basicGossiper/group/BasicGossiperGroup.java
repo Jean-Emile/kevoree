@@ -16,9 +16,7 @@ import org.kevoree.library.javase.basicGossiper.GossiperPeriodic;
 import org.kevoree.library.javase.basicGossiper.GossiperProcess;
 import org.kevoree.library.javase.basicGossiper.Serializer;
 import org.kevoree.library.javase.conflictSolver.AlreadyPassedPrioritySolver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import org.kevoree.log.Log;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -40,18 +38,17 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
     protected GossiperPeriodic actor;
     protected GroupScorePeerSelector selector;
     private GossiperProcess processValue;
-    protected Logger logger = LoggerFactory.getLogger(BasicGossiperGroup.class);
 
     @Start
     public void startGossiperGroup() throws IOException {
-        logger.debug("START BasicGossiper");
+        Log.debug("START BasicGossiper");
         udp = true;
         Long timeoutLong = Long.parseLong((String) this.getDictionary().get("interval"));
         Serializer serializer = new GroupSerializer(this.getModelService());
         dataManager = new DataManagerForGroup(this.getName(), this.getNodeName(), this.getModelService(), new AlreadyPassedPrioritySolver(getKevScriptEngineFactory()));
         processValue = new GossiperProcess(this, dataManager, serializer, false);
         selector = new GroupScorePeerSelector(timeoutLong, this.currentCacheModel, this.getNodeName());
-        logger.debug("{}: initialize GossiperActor", this.getName());
+        Log.debug("{}: initialize GossiperActor", this.getName());
         actor = new GossiperPeriodic(this, timeoutLong, selector, processValue);
         processValue.start();
         actor.start();
@@ -64,20 +61,20 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
             ByteArrayInputStream stin = new ByteArrayInputStream(data);
             stin.read();
             KevoreeMessage.Message msg = KevoreeMessage.Message.parseFrom(stin);
-            logger.debug("Rec Some MSG {}->{}->{}", new String[]{msg.getContentClass(), msg.getDestName(), msg.getDestNodeName()});
+            Log.debug("Rec Some MSG {}->{}->{}", new String[]{msg.getContentClass(), msg.getDestName(), msg.getDestNodeName()});
             if (!msg.getDestNodeName().equals(getNodeName())) {
                 processValue.receiveRequest(msg);
             } else {
-                logger.debug("message coming from itself, we don't need to manage it");
+                Log.debug("message coming from itself, we don't need to manage it");
             }
         } catch (Exception e) {
-            logger.error("", e);
+            Log.error("", e);
         }
     }
 
     @Stop
     public void stopGossiperGroup() {
-        logger.debug("STOP BasicGossiper");
+        Log.debug("STOP BasicGossiper");
         super.stopRestGroup();
         if (actor != null) {
             actor.stop();
@@ -98,7 +95,7 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
     @Update
     public void updateGossiperGroup() throws IOException {
         if (port != Integer.parseInt(this.getDictionary().get("port").toString())) {
-            logger.info("try to update configuration of {}", this.getName());
+            Log.info("try to update configuration of {}", this.getName());
             stopGossiperGroup();
             startGossiperGroup();
         }
@@ -128,11 +125,11 @@ public class BasicGossiperGroup extends BasicGroup implements GossiperComponent 
                 try {
                     port = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
-                    logger.warn("Attribute \"port\" of {} is not an Integer, default value ({}) is used.", getName(), port);
+                    Log.warn("Attribute \"port\" of {} is not an Integer, default value ({}) is used.", getName(), port+"");
                 }
             }
         } else {
-            logger.warn("There is no group named {}, default value ({}) is used.", getName(), port);
+            Log.warn("There is no group named {}, default value ({}) is used.", getName(), port+"");
         }
         return port;
     }

@@ -16,8 +16,7 @@ import org.kevoree.library.javase.webSocketGrp.dummy.KeyChecker;
 import org.kevoree.library.javase.webSocketGrp.exception.MultipleMasterServerException;
 import org.kevoree.library.javase.webSocketGrp.exception.NoMasterServerFoundException;
 import org.kevoree.library.javase.webSocketGrp.exception.NotAMasterServerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebServers;
@@ -82,8 +81,6 @@ import java.util.concurrent.atomic.AtomicReference;
 })
 @GroupType
 public abstract class AWebSocketGroup extends AbstractGroupType implements DeployUnitResolver {
-
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     //========================
     // Protocol related fields
@@ -234,12 +231,12 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
     public File resolve(DeployUnit du) {
         File resolved = getBootStrapperService().resolveArtifact(
                 du.getUnitName(), du.getGroupName(), du.getVersion(), remoteURLS.get());
-        logger.info("DU " + du.getUnitName() + " from cache resolution " + (resolved != null));
+        Log.info("DU " + du.getUnitName() + " from cache resolution " + (resolved != null));
         return null;
     }
 
     protected void updateLocalModel(final ContainerRoot model) {
-        logger.debug("local update model");
+        Log.debug("local update model");
         new Thread() {
             public void run() {
                 try {
@@ -247,7 +244,7 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
                     getModelService().atomicUpdateModel(model);
                     getModelService().registerModelListener(AWebSocketGroup.this);
                 } catch (Exception e) {
-                    logger.error("", e);
+                    Log.error("", e);
                 }
 
                 if (isClient) {
@@ -343,7 +340,7 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
         server.add("/", handler);
         server.start();
 
-        logger.debug("Master WebSocket server started on ws://{}:{}/", server.getUri().getHost(), server.getUri().getPort());
+        Log.debug("Master WebSocket server started on ws://{}:{}/", server.getUri().getHost(), server.getUri().getPort()+"");
     }
 
     /**
@@ -368,18 +365,18 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
             wsClientHandler.setHandler(new ConnectionTask.Handler() {
                 @Override
                 public void onMessage(ByteBuffer bytes) {
-                    logger.debug("Compressed model given by master server: loading...");
+                    Log.debug("Compressed model given by master server: loading...");
                     ByteArrayInputStream bais = new ByteArrayInputStream(bytes.array());
                     ContainerRoot model = KevoreeXmiHelper.instance$.loadCompressedStream(bais);
                     updateLocalModel(model);
-                    logger.debug("Model loaded from XMI compressed bytes");
+                    Log.debug("Model loaded from XMI compressed bytes");
                 }
 
                 @Override
                 public void onConnectionSucceeded(WebSocketClient cli) {
                     // keep a pointer on that winner
                     client = cli;
-                    logger.debug("Client {} on {} connected to master server.", client.getURI(), getNodeName());
+                    Log.debug("Client {} on {} connected to master server.", client.getURI().toString(), getNodeName());
 
                     try {
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -388,7 +385,7 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
                         client.send(baos.toByteArray());
 
                     } catch (IOException e) {
-                        logger.error("", e);
+                        Log.error("", e);
                     }
                 }
 
@@ -476,7 +473,7 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
             Object mvnPort = KevoreePropertyHelper.instance$.getProperty(getModelElement(), "repo_puerto", false, null);
             for (Map.Entry<String, Integer> entry: getMasterServerAddresses().entrySet()) {
                 String url = "http://" + entry.getKey() + ":" + mvnPort;
-                logger.info("Add URL " + url);
+                Log.info("Add URL " + url);
                 urls.add(url);
             }
             remoteURLS.set(urls);
@@ -492,7 +489,7 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
                     ContainerRoot model = cachedModel.get();
                     if (model != null) {
                         for (DeployUnit du : model.getDeployUnits()) {
-                            logger.debug("CacheFile for DU : " + du.getUnitName() + ":" + du.getGroupName() + ":" + du.getVersion());
+                            Log.debug("CacheFile for DU : " + du.getUnitName() + ":" + du.getGroupName() + ":" + du.getVersion());
                             File cachedFile = getBootStrapperService().resolveDeployUnit(du);
                         }
                     }
@@ -653,8 +650,7 @@ public abstract class AWebSocketGroup extends AbstractGroupType implements Deplo
                     break;
 
                 default:
-                    logger.debug("Receiving {} as msg[0]: I do NOT know this control byte! Known control bytes are {}",
-                            msg[0], new byte[] {PUSH, PULL, REGISTER, UPDATED});
+                    Log.debug("Receiving {} as msg[0]: I do NOT know this control byte! Known control bytes are {}",msg[0]+"", new Byte[]{PUSH, PULL, REGISTER, UPDATED}+"");
                     break;
             }
         }

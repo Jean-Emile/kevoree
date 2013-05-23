@@ -1,13 +1,11 @@
 package org.kevoree.library.javase.nodejs;
 
-import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import de.flapdoodle.embed.nodejs.*;
 import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractComponentType;
 import org.kevoree.framework.FileNIOHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,14 +31,13 @@ public abstract class AbstractNodeJSComponentType extends AbstractComponentType 
         try {
             org.apache.commons.io.FileUtils.forceDeleteOnExit(temp);
         } catch (IOException e) {
-            logger.error("Error while cleaning temp dir ",e);
+            Log.error("Error while cleaning temp dir ", e);
         }
         return temp.getAbsolutePath();
     }
 
     private Thread t = null;
     NodejsProcess node = null;
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Start
     public void start() {
@@ -64,7 +61,7 @@ public abstract class AbstractNodeJSComponentType extends AbstractComponentType 
                 try {
                     node = nodeExecutable.start();
                 } catch (IOException e) {
-                    logger.error("Error while starting nodeJS", e);
+                    Log.error("Error while starting nodeJS", e);
                 }
             }
         };

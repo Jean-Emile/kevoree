@@ -16,40 +16,31 @@
     </parent>
 
     <dependencies>
-
-        <!--
-        <dependency>
-            <groupId>org.kevoree.corelibrary.javase</groupId>
-            <artifactId>org.kevoree.library.javase.basicGossiper</artifactId>
-            <version>${kevoree.version}</version>
-        </dependency>
-                           -->
-
         <dependency>
             <groupId>org.kevoree.corelibrary.javase</groupId>
             <artifactId>org.kevoree.library.javase.jexxus</artifactId>
             <version>${kevoree.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.kevoree.tools</groupId>
             <artifactId>org.kevoree.tools.accesscontrol.framework</artifactId>
             <version>${kevoree.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.kevoree.tools</groupId>
             <artifactId>org.kevoree.tools.modelsync</artifactId>
             <version>${kevoree.version}</version>
         </dependency>
-
-
         <dependency>
             <groupId>org.kevoree.tools</groupId>
             <artifactId>org.kevoree.tools.marShell</artifactId>
             <version>${kevoree.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.5</version>
+        </dependency>
 
     </dependencies>
 

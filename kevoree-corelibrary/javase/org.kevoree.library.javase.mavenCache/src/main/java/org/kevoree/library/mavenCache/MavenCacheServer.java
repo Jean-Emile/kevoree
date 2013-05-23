@@ -5,8 +5,7 @@ import org.kevoree.DeployUnit;
 import org.kevoree.annotation.*;
 import org.kevoree.api.service.core.handler.ModelListener;
 import org.kevoree.framework.AbstractComponentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +29,6 @@ public class MavenCacheServer extends AbstractComponentType implements ModelList
     NanoHTTPD srv = null;
     ExecutorService pool = null;
     AtomicReference<ContainerRoot> cachedModel = new AtomicReference<ContainerRoot>();
-    Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Start
     public void startCacheSrv() throws IOException {
@@ -82,7 +80,7 @@ public class MavenCacheServer extends AbstractComponentType implements ModelList
         ContainerRoot model = cachedModel.get();
         if(model != null){
             for(DeployUnit du : model.getDeployUnits()){
-                logger.debug("CacheFile for DU : "+du.getUnitName()+":"+du.getGroupName()+":"+du.getVersion());
+                Log.debug("CacheFile for DU : " + du.getUnitName() + ":" + du.getGroupName() + ":" + du.getVersion());
                 File cachedFile = getBootStrapperService().resolveDeployUnit(du);
             }
         }

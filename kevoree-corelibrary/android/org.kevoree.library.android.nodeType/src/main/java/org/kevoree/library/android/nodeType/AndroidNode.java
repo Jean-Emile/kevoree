@@ -5,10 +5,9 @@ import org.kevoree.annotation.*;
 import org.kevoree.api.service.core.logging.KevoreeLogLevel;
 import org.kevoree.framework.AbstractNodeType;
 import org.kevoree.kompare.KevoreeKompareBean;
+import org.kevoree.log.Log;
 import org.kevoreeadaptation.AdaptationModel;
 import org.kevoreeadaptation.AdaptationPrimitive;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.kevoree.library.defaultNodeTypes.CommandMapper;
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager;
 
@@ -29,8 +28,6 @@ import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager;
 		values = {"UpdateType", "UpdateDeployUnit", "AddType", "AddDeployUnit", "AddThirdParty", "RemoveType", "RemoveDeployUnit", "UpdateInstance", "UpdateBinding", "UpdateDictionaryInstance", "AddInstance", "RemoveInstance", "AddBinding", "RemoveBinding", "AddFragmentBinding", "RemoveFragmentBinding", "UpdateFragmentBinding", "StartInstance", "StopInstance", "StartThirdParty", "RemoveThirdParty"},
 		value = {})
 public class AndroidNode extends AbstractNodeType {
-
-	private static final Logger logger = LoggerFactory.getLogger(AndroidNode.class);
 
 	private KevoreeKompareBean kompareBean = null;
 	private CommandMapper mapper = null;
@@ -59,13 +56,13 @@ public class AndroidNode extends AbstractNodeType {
 
 	@Update
 	public void updateNode () {
-		logger.info("Updating node and maybe log levels...");
+		Log.info("Updating node and maybe log levels...");
 		setLogLevel();
 	}
 
 	private void setLogLevel () {
 		if (getBootStrapperService().getKevoreeLogService() != null) {
-			logger.info("setting log levels...");
+            Log.info("setting log levels...");
 			KevoreeLogLevel logLevel = KevoreeLogLevel.WARN;
 			KevoreeLogLevel corelogLevel = KevoreeLogLevel.WARN;
 			if ("DEBUG".equals(getDictionary().get("logLevel"))) {

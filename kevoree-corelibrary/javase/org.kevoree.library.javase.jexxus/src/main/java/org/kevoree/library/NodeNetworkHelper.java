@@ -5,9 +5,7 @@ import org.kevoree.api.service.core.script.KevScriptEngineFactory;
 import org.kevoree.cloner.ModelCloner;
 import org.kevoree.framework.AbstractGroupType;
 import org.kevoree.framework.KevoreePlatformHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import org.kevoree.log.Log;
 import java.net.Inet4Address;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -20,8 +18,6 @@ import java.util.Enumeration;
  * Time: 07:41
  */
 public class NodeNetworkHelper {
-
-    private static Logger logger = LoggerFactory.getLogger(NodeNetworkHelper.class);
 
     public static void main(String[] args){
         getAddresses();
@@ -44,7 +40,7 @@ public class NodeNetworkHelper {
             }
         }
         catch(Exception e) {
-            logger.error("",e);
+            Log.error("", e);
         }
         return addresses;
     }
@@ -53,8 +49,7 @@ public class NodeNetworkHelper {
     public static ContainerRoot addNetworkProperty (ContainerRoot model, String nodeName ,java.util.HashMap<String,String> ips , KevScriptEngineFactory kevScriptEngineFactory) {
         for(String key : ips.keySet()){
             KevoreePlatformHelper.instance$.updateNodeLinkProp(model, nodeName, nodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), key, ips.get(key), 100);
-            logger.info("add {} as IP of {}", key, nodeName);
-
+            Log.info("add {} as IP of {}", key, nodeName);
         }
         return model;
     }

@@ -6,6 +6,7 @@ import org.kevoree.annotation.GroupType;
 import org.kevoree.library.javase.basicGossiper.group.BasicGossiperGroup;
 import org.kevoree.library.javase.jmdns.JmDNSComponent;
 import org.kevoree.library.javase.jmdns.JmDNSListener;
+import org.kevoree.log.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class AutoBasicGossiperGroup extends BasicGossiperGroup implements JmDNSL
 
     @Override
     public void notifyNewSubNode(String remoteNodeName) {
-        logger.debug("new remote node discovered, try to pull the model from {}", remoteNodeName);
+        Log.debug("new remote node discovered, try to pull the model from {}", remoteNodeName);
 //        super.actor.doGossip(remoteNodeName);
         List<String> nodeNames = new ArrayList<String>(1);
         nodeNames.add(remoteNodeName);

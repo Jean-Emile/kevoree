@@ -7,9 +7,6 @@ import jexxus.common.Delivery;
 import jexxus.server.ServerConnection;
 import org.kevoree.library.basicGossiper.protocol.message.KevoreeMessage;
 import org.kevoree.library.javase.basicGossiper.GossiperProcess;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -29,8 +26,6 @@ public class NetworkSender implements INetworkSender {
         process = p;
     }
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Override
     public void sendMessageUnreliable(KevoreeMessage.Message m, InetSocketAddress addr) {
         try {
@@ -44,7 +39,7 @@ public class NetworkSender implements INetworkSender {
             dsocket.send(packet);
             dsocket.close();
         } catch (Exception e) {
-            logger.debug("", e);
+            org.kevoree.log.Log.debug("", e);
         }
     }
 
@@ -73,10 +68,10 @@ public class NetworkSender implements INetworkSender {
             m.writeTo(output);
             conn.send(output.toByteArray(), Delivery.RELIABLE);
             output.close();
-            logger.debug("message ({}) sent to {}", m.getContentClass() , addr.toString());
+            org.kevoree.log.Log.debug("message ({}) sent to {}", m.getContentClass() , addr.toString());
             return true;
         } catch (Exception e) {
-            logger.debug("", e);
+            org.kevoree.log.Log.debug("", e);
         } finally {
             if (conn != null && conn.isConnected()) {
                 try {

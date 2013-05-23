@@ -8,8 +8,7 @@ import org.kevoree.framework.KevoreeChannelFragment;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.message.Message;
 import org.kevoree.library.camel.framework.AbstractKevoreeCamelChannelType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.util.List;
 
@@ -27,7 +26,6 @@ import java.util.List;
 })
 public class CamelNetty extends AbstractKevoreeCamelChannelType {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
     protected int port;
 
     /* found a solution to remobe */
@@ -59,7 +57,7 @@ public class CamelNetty extends AbstractKevoreeCamelChannelType {
                     @Override
                     public void process(Exchange exchange) throws Exception {
                         if (getBindedPorts().isEmpty() && getOtherFragments().isEmpty()) {
-                            logger.debug("No consumer, msg lost=" + exchange.getIn().getBody());
+                            Log.debug("No consumer, msg lost=" + exchange.getIn().getBody());
                         } else {
                             for (org.kevoree.framework.KevoreePort p : getBindedPorts()) {
                                 if (exchange.getIn().getBody() instanceof Message) {
@@ -74,14 +72,14 @@ public class CamelNetty extends AbstractKevoreeCamelChannelType {
                                             getContext().createProducerTemplate().sendBody("netty:tcp://" + address + ":" + parsePortNumber(cf.getNodeName()), exchange.getIn().getBody());
                                             break;
                                         } catch (Exception e) {
-                                            logger.debug("Unable to send data to components on {} using {} as address", cf.getNodeName(), "netty:tcp://" + address + ":" + parsePortNumber(cf.getNodeName()), e);
+                                            Log.debug("Unable to send data to components on {} using {} as address",e, cf.getNodeName(), "netty:tcp://" + address + ":" + parsePortNumber(cf.getNodeName()));
                                         }
                                     }
                                 } else {
                                     try {
                                         getContext().createProducerTemplate().sendBody("netty:tcp://127.0.0.1:" + parsePortNumber(cf.getNodeName()), exchange.getIn().getBody());
                                     } catch (Exception e) {
-                                        logger.debug("Unable to send data to components on {} using {} as address", cf.getNodeName(), "netty:tcp://127.0.0.1:" + parsePortNumber(cf.getNodeName()), e);
+                                        Log.debug("Unable to send data to components on {} using {} as address",e, cf.getNodeName(), "netty:tcp://127.0.0.1:" + parsePortNumber(cf.getNodeName()));
                                     }
                                 }
                             }
@@ -105,7 +103,7 @@ public class CamelNetty extends AbstractKevoreeCamelChannelType {
                                 }
                             });
                 } catch (Exception e) {
-                    logger.debug("Fail to manage route {}", "netty:tcp://" + address + ":" + port + "?sync=true", e);
+                    Log.debug("Fail to manage route {}",e, "netty:tcp://" + address + ":" + port + "?sync=true");
                 }
             }
         } else {
@@ -122,7 +120,7 @@ public class CamelNetty extends AbstractKevoreeCamelChannelType {
                             }
                         });
             } catch (Exception e) {
-                logger.debug("Fail to manage route {}", "netty:tcp://127.0.0.1:" + port + "?sync=true", e);
+                Log.debug("Fail to manage route {}",e, "netty:tcp://127.0.0.1:" + port + "?sync=true");
             }
         }
     }
@@ -139,10 +137,10 @@ public class CamelNetty extends AbstractKevoreeCamelChannelType {
             try {
                 port = Integer.parseInt(portOption);
             } catch (NumberFormatException e) {
-                logger.warn("Attribute \"port\" of {} is not an Integer, Default value ({}) is returned", getName(), port);
+                Log.warn("Attribute \"port\" of {} is not an Integer, Default value ({}) is returned", getName(), port+"");
             }
         } else {
-            logger.info("Attribute \"port\" of {} is not set for {}, Default value ({}) is returned", new String[]{getName(), nodeName, port + ""});
+            Log.info("Attribute \"port\" of {} is not set for {}, Default value ({}) is returned", getName(), nodeName, port + "");
         }
         return port;
     }

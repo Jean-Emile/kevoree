@@ -1,7 +1,6 @@
 package org.kevoree.library.javase.basicGossiper
 
 import java.net.InetSocketAddress
-import org.slf4j.LoggerFactory
 import java.util.UUID
 import org.kevoree.library.basicGossiper.protocol.message.KevoreeMessage.Message
 import org.kevoree.library.basicGossiper.protocol.gossip.Gossip._
@@ -23,8 +22,6 @@ class GossiperProcess(instance: GossiperComponent,
 
   var netSender: INetworkSender = new NetworkSender(this)
 
-
-  private val logger = LoggerFactory.getLogger(classOf[GossiperProcess])
 
   case class STOP()
 
@@ -95,11 +92,11 @@ class GossiperProcess(instance: GossiperComponent,
               processMetadataInternal(VectorClockUUIDs.parseFrom(message.getContent), message)
             }
             case UpdatedValueNotificationClazz => {
-              logger.debug("notification received from " + message.getDestNodeName)
+              org.kevoree.log.Log.debug("notification received from " + message.getDestNodeName)
               initGossip(message.getDestNodeName)
             }
             case UUIDDataRequestClazz => {
-              logger.debug("UUIDDataRequest received")
+              org.kevoree.log.Log.debug("UUIDDataRequest received")
               send(message.getDestNodeName, buildData(message))
               /*val notSent = buildAddresses(message.getDestNodeName).forall {
                 address => !netSender.sendMessage(buildData(message), address)
@@ -142,7 +139,7 @@ class GossiperProcess(instance: GossiperComponent,
           val uuid = UUID.fromString(vectorClockUUID.getUuid)
 
           if (dataManager.getUUIDVectorClock(uuid) == null) {
-            logger.debug("add empty local vectorClock with the uuid if it is not already defined")
+            org.kevoree.log.Log.debug("add empty local vectorClock with the uuid if it is not already defined")
             dataManager.setData(uuid, Tuple2[VectorClock, Message](VectorClock.newBuilder.setTimestamp(System.currentTimeMillis).build, Message.newBuilder().buildPartial()),
               message.getDestNodeName)
           }
@@ -165,23 +162,23 @@ class GossiperProcess(instance: GossiperComponent,
         val occured = VersionUtils.compare(dataManager.getUUIDVectorClock(uuid), remoteVectorClock)
         occured match {
           case Occured.AFTER => {
-            logger.debug("VectorClocks comparison into GossiperRequestSender give us: AFTER")
+            org.kevoree.log.Log.debug("VectorClocks comparison into GossiperRequestSender give us: AFTER")
           }
           case Occured.BEFORE => {
-            logger.debug("VectorClocks comparison into GossiperRequestSender give us: BEFORE")
+            org.kevoree.log.Log.debug("VectorClocks comparison into GossiperRequestSender give us: BEFORE")
             send(message.getDestNodeName, askForData(uuid))
             /*buildAddresses(message).foreach {
               address => askForData(uuid, message.getDestNodeName, address)
             }*/
           }
           case Occured.CONCURRENTLY => {
-            logger.debug("VectorClocks comparison into GossiperRequestSender give us: CONCURRENTLY")
+            org.kevoree.log.Log.debug("VectorClocks comparison into GossiperRequestSender give us: CONCURRENTLY")
             send(message.getDestNodeName, askForData(uuid))
             /*buildAddresses(message).foreach {
               address => askForData(uuid, message.getDestNodeName, address)
             }*/
           }
-          case _ => logger.error("unexpected match into initSecondStep")
+          case _ => org.kevoree.log.Log.error("unexpected match into initSecondStep")
         }
     }
   }
@@ -205,7 +202,7 @@ class GossiperProcess(instance: GossiperComponent,
           vectorClock.getEntiesList.find(p => p.getNodeID == instance.getNodeName) match {
             case Some(p) => //NOOP
             case None => {
-              logger.debug("add entries for the local node.")
+              org.kevoree.log.Log.debug("add entries for the local node.")
               val newenties = ClockEntry.newBuilder.setNodeID(instance.getNodeName) /*.setTimestamp(System.currentTimeMillis)*/ .setVersion(1).build
               vectorClock = VectorClock.newBuilder(vectorClock).addEnties(newenties).setTimestamp(System.currentTimeMillis).build
             }
@@ -228,16 +225,16 @@ class GossiperProcess(instance: GossiperComponent,
       .setDestNodeName(instance.getNodeName)
     val uuidDataRequest = UUIDDataRequest.parseFrom(message.getContent)
     val data = dataManager.getData(UUID.fromString(uuidDataRequest.getUuid))
-    logger.debug("before serializing data : {}", data)
+    org.kevoree.log.Log.debug("before serializing data : {}", data.toString())
     val bytes: Array[Byte] = serializer.serialize(data._2)
-    logger.debug("after serializing data")
+    org.kevoree.log.Log.debug("after serializing data")
     if (bytes != null) {
       val modelBytes = ByteString.copyFrom(bytes)
       val modelBytes2 = VersionedModel.newBuilder.setUuid(uuidDataRequest.getUuid).setVector(data._1).setModel(modelBytes).build.toByteString
       responseBuilder.setContentClass(classOf[VersionedModel].getName).setContent(modelBytes2)
       responseBuilder.build()
     } else {
-      logger.warn("Serialization failed !")
+      org.kevoree.log.Log.warn("Serialization failed !")
       null
     }
   }
@@ -246,9 +243,9 @@ class GossiperProcess(instance: GossiperComponent,
   private def buildVectorClockUUIDs(message: Message): Message = {
     var responseBuilder: Message.Builder = Message.newBuilder.setDestName(instance.getName)
       .setDestNodeName(instance.getNodeName)
-    logger.debug("VectorClockUUIDsRequest request received")
+    org.kevoree.log.Log.debug("VectorClockUUIDsRequest request received")
     val uuidVectorClocks = dataManager.getUUIDVectorClocks
-    logger.debug("local uuids " + uuidVectorClocks.keySet().mkString(","))
+    org.kevoree.log.Log.debug("local uuids " + uuidVectorClocks.keySet().mkString(","))
     var vectorClockUUIDsBuilder = VectorClockUUIDs.newBuilder
     var resultMessage: Message = null
     uuidVectorClocks.keySet.foreach {
@@ -259,7 +256,7 @@ class GossiperProcess(instance: GossiperComponent,
           responseBuilder = Message.newBuilder.setDestName(instance.getName).setDestNodeName(instance.getNodeName)
           val modelBytes = vectorClockUUIDsBuilder.build.toByteString
           responseBuilder.setContentClass(classOf[VectorClockUUIDs].getName).setContent(modelBytes)
-          logger.debug("send vectorclock for " + uuid + " to " + message.getDestNodeName)
+          org.kevoree.log.Log.debug("send vectorclock for " + uuid + " to " + message.getDestNodeName)
           resultMessage = responseBuilder.build()
           vectorClockUUIDsBuilder = VectorClockUUIDs.newBuilder
         }

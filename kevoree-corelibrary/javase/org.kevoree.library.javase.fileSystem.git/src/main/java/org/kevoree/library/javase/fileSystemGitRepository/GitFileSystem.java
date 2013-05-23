@@ -10,8 +10,7 @@ import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.kevoree.annotation.*;
 import org.kevoree.library.javase.fileSystem.api.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -34,7 +33,6 @@ import java.util.Set;
 })
 @ComponentType
 public class GitFileSystem extends BasicFileSystem {
-	private Logger logger = LoggerFactory.getLogger(GitFileSystem.class);
 
 	//	protected File baseClone = null;
 	protected Repository repository = null;
@@ -59,7 +57,7 @@ public class GitFileSystem extends BasicFileSystem {
 			git = Git.open(baseFolder);
 			repository = git.getRepository();
 		} else {
-			logger.debug("Unable to create the local folder to clone the repository");
+            Log.debug("Unable to create the local folder to clone the repository");
 			throw new Exception("Unable to create the local folder to clone the repository");
 		}
 	}
@@ -303,7 +301,7 @@ public class GitFileSystem extends BasicFileSystem {
 			removeFileToRepository(oldFile);
 			return true;
 		} else {
-			logger.debug("Unable to move file {} on {}", oldRelativePath, newRelativePath);
+            Log.debug("Unable to move file {} on {}", oldRelativePath, newRelativePath);
 			return false;
 		}
 	}
@@ -312,7 +310,7 @@ public class GitFileSystem extends BasicFileSystem {
 		try {
 			git.pull().call();
 		} catch (GitAPIException e) {
-			logger.error("Error while trying to update local repository", e);
+            Log.error("Error while trying to update local repository", e);
 		}
 	}
 
@@ -324,7 +322,7 @@ public class GitFileSystem extends BasicFileSystem {
 		try {
 			commit.call();
 		} catch (GitAPIException e) {
-			logger.error("Unable to commit on repository ", e);
+            Log.error("Unable to commit on repository ", e);
 		}
 	}
 
@@ -335,9 +333,9 @@ public class GitFileSystem extends BasicFileSystem {
 			git.add().addFilepattern(finalFilePath).call();
 			result = true;
 		} catch (NoFilepatternException e) {
-			logger.debug("Unable to add file on repository ", e);
+            Log.debug("Unable to add file on repository ", e);
 		} catch (GitAPIException e) {
-			logger.debug("Unable to add file on repository ", e);
+            Log.debug("Unable to add file on repository ", e);
 		}
 		return result;
 	}
@@ -346,14 +344,14 @@ public class GitFileSystem extends BasicFileSystem {
 		Boolean result = false;
 		try {
 			String finalFilePath = fileToRemove.getPath().substring(fileToRemove.getPath().indexOf(baseFolder.getPath()) + baseFolder.getPath().length() + 1);
-			logger.debug(" file f " + fileToRemove.getPath() + " string " + finalFilePath);
+            Log.debug(" file f " + fileToRemove.getPath() + " string " + finalFilePath);
 			git.rm().addFilepattern(finalFilePath).call();
 			commitRepository(" File " + finalFilePath + " removed ", " name ", " email ");// TODO fix name and email
 			result = true;
 		} catch (NoFilepatternException e) {
-			logger.debug("Cannot remove file to repository " + e);
+            Log.debug("Cannot remove file to repository " + e);
 		} catch (GitAPIException e) {
-			logger.debug("Unable to remove file on repository ", e);
+            Log.debug("Unable to remove file on repository ", e);
 		}
 		return result;
 	}

@@ -3,10 +3,10 @@ package org.kevoree.library.javase.nanohttp
 import org.kevoree.ContainerRoot
 import scala.collection.JavaConversions._
 import java.net.{SocketException, NetworkInterface}
-import org.slf4j.LoggerFactory
 import org.kevoree.api.service.core.script.KevScriptEngineFactory
 import org.kevoree.framework.{KevoreePlatformHelper, AbstractGroupType}
 import org.kevoree.cloner.ModelCloner
+import org.kevoree.log.Log
 
 /**
  * User: Erwan Daubert - erwan.daubert@gmail.com
@@ -18,7 +18,6 @@ import org.kevoree.cloner.ModelCloner
  */
 
 object NodeNetworkHelper {
-  private val logger = LoggerFactory.getLogger(getClass)
 
   val cloner = new ModelCloner
 
@@ -74,7 +73,7 @@ object NodeNetworkHelper {
     }
     catch {
       case ex: SocketException => {
-        logger.info("Unable to retrieve IP addresses", ex)
+        Log.info("Unable to retrieve IP addresses", ex)
       }
     }
     addresses
@@ -84,7 +83,7 @@ object NodeNetworkHelper {
     ips.foreach {
       ip =>
         KevoreePlatformHelper.instance$.updateNodeLinkProp(model, nodeName, nodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP, ip._1, ip._2, 100)
-        logger.info("add "+ip._1+" as IP of "+nodeName)
+        Log.info("add "+ip._1+" as IP of "+nodeName)
     }
     Some(model)
   }

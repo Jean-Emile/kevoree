@@ -1,20 +1,17 @@
 package org.kevoree.library.javase.basicGossiper.channel
 
-import org.slf4j.LoggerFactory
 import org.kevoree.framework.message.Message
 import org.kevoree.library.javase.basicGossiper.Serializer
 
 
 class ChannelSerializer extends Serializer {
 
-  private val logger = LoggerFactory.getLogger(classOf[ChannelSerializer])
-
 	def serialize(data: Any): Array[Byte] = {
 		try {
 			stringFromMessage(data.asInstanceOf[Message])
 		} catch {
 			case _@e => {
-				logger.error(e.getMessage, e)
+        org.kevoree.log.Log.error(e.getMessage, e)
 				null
 			}
 		}
@@ -25,7 +22,7 @@ class ChannelSerializer extends Serializer {
 			messageFromString(data)
 		} catch {
 			case _@e => {
-				logger.error(e.getMessage, e)
+        org.kevoree.log.Log.error(e.getMessage, e)
 				null
 			}
 		}

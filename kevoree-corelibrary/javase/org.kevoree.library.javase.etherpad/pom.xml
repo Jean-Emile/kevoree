@@ -14,11 +14,11 @@
     </parent>
 
     <dependencies>
-           <dependency>
-               <groupId>${parent.groupId}</groupId>
-               <artifactId>org.kevoree.library.javase.nodeJS</artifactId>
-               <version>${kevoree.version}</version>
-           </dependency>
+        <dependency>
+            <groupId>${parent.groupId}</groupId>
+            <artifactId>org.kevoree.library.javase.nodeJS</artifactId>
+            <version>${kevoree.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

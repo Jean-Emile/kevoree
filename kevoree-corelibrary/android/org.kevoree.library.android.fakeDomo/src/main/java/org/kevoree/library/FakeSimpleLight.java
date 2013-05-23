@@ -8,8 +8,7 @@ import org.kevoree.android.framework.helper.UIServiceHandler;
 import org.kevoree.android.framework.service.KevoreeAndroidService;
 import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractComponentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.io.InputStream;
 
@@ -32,7 +31,6 @@ import java.io.InputStream;
 @Library(name = "Android")
 @ComponentType
 public class FakeSimpleLight extends AbstractComponentType implements ToggleLightService {
-    private static final Logger logger = LoggerFactory.getLogger(FakeSimpleLight.class);
 
     private KevoreeAndroidService uiService = null;
     private ImageView view = null;
@@ -70,20 +68,20 @@ public class FakeSimpleLight extends AbstractComponentType implements ToggleLigh
                 InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("ampAllume.png");
                 image = BitmapFactory.decodeStream(inputStream);
             } catch (Exception e) {
-				logger.debug("Unable to apply color on light", e);
+				Log.debug("Unable to apply color on light", e);
             }
         } else {
             try {
                 InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("ampEteinte.png");
                 image = BitmapFactory.decodeStream(inputStream);
             } catch (Exception e) {
-				logger.debug("Unable to apply color on light", e);
+                Log.debug("Unable to apply color on light", e);
             }
         }
         if (image != null) {
             view.setImageBitmap(image);
         } else {
-            logger.debug("Image not found via classloader {}",this.getClass().getClassLoader());
+            Log.debug("Image not found via classloader {}",this.getClass().getClassLoader().toString());
         }
     }
 

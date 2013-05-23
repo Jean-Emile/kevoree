@@ -6,8 +6,7 @@ import org.kevoree.library.javase.webserver.KevoreeHttpRequest;
 import org.kevoree.library.javase.webserver.KevoreeHttpResponse;
 import org.kevoree.library.webserver.internal.KTinyWebServerInternalServe;
 import org.kevoree.library.webserver.tjws.RequestHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -25,7 +24,6 @@ import java.io.IOException;
 @ComponentType
 public class KTinyWebServer extends AbstractWebServer implements Runnable {
 
-	protected Logger logger = LoggerFactory.getLogger(KTinyWebServer.class.getName());
 	private KTinyWebServerInternalServe srv = null;
 	private Thread mainT = null;
 	private RequestHandler handler = null;
@@ -59,7 +57,7 @@ public class KTinyWebServer extends AbstractWebServer implements Runnable {
 							resp.setContentLength(Integer.parseInt(res.getHeaders().get("Content-Length")));
 						}
 					} catch (NumberFormatException e) {
-						logger.warn("{} is not an Integer", res.getHeaders().get("Content-Length"));
+						Log.warn("{} is not an Integer", res.getHeaders().get("Content-Length"));
 					}
 					if (res.getRawContent() != null) {
 						resp.getOutputStream().write(res.getRawContent());

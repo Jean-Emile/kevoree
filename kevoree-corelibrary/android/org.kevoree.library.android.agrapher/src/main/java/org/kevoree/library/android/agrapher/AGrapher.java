@@ -7,8 +7,7 @@ import org.kevoree.android.framework.helper.UIServiceHandler;
 import org.kevoree.android.framework.service.KevoreeAndroidService;
 import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractComponentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 
 /**
@@ -40,7 +39,6 @@ public class AGrapher extends AbstractComponentType {
     private int history_size = 60;
     private int color_axe = Color.WHITE;
     private int color_courbe = Color.RED;
-    private static final Logger logger = LoggerFactory.getLogger(AGrapher.class);
     private LinearLayout layout = null;
     private GraphLine graphline = null;
     // private Logger logger = LoggerFactory.getLogger(AGrapher.class);
@@ -122,7 +120,7 @@ public class AGrapher extends AbstractComponentType {
                 double val = Double.parseDouble(msg.toString());
                 graphline.add(val);
             } catch (Exception e2) {
-                logger.warn("Grapher bad message => " + e2.getMessage());
+                Log.warn("Grapher bad message => " + e2.getMessage());
             }
         }
 

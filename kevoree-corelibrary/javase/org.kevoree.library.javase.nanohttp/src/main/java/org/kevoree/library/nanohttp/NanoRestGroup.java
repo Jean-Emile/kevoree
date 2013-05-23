@@ -9,10 +9,8 @@ import org.kevoree.framework.AbstractGroupType;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.KevoreeXmiHelper;
 import org.kevoree.library.javase.nanohttp.NodeNetworkHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 import scala.Option;
-
 import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -39,7 +37,6 @@ import java.util.concurrent.Executors;
 @Library(name = "JavaSE", names = "Android")
 public class NanoRestGroup extends AbstractGroupType {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
     protected NanoHTTPD server = null;
     //	private ModelSerializer modelSaver = new ModelSerializer();
     private KevoreeModelHandlerService handler = null;
@@ -68,17 +65,17 @@ public class NanoRestGroup extends AbstractGroupType {
                 if ("POST".equals(method)) {
                     if (uri.endsWith("/model/current") || uri.endsWith("/model/current/zip")) {
                         try {
-                            logger.debug("Model receive, process to load");
+                            Log.debug("Model receive, process to load");
                             ContainerRoot model = null;
                             if (uri.endsWith("zip")) {
                                 model = KevoreeXmiHelper.instance$.loadCompressedStream(body);
-                                logger.debug("Load  model From ZIP Stream");
+                                Log.debug("Load  model From ZIP Stream");
                             } else {
                                 model = KevoreeXmiHelper.instance$.loadStream(body);
-                                logger.debug("Load  model From XMI Stream");
+                                Log.debug("Load  model From XMI Stream");
                             }
                             body.close();
-                            logger.debug("Model loaded,send to core");
+                            Log.debug("Model loaded,send to core");
                             String srcNodeName = "";
                             Boolean externalSender = true;
                             Enumeration e = parms.propertyNames();
@@ -90,7 +87,7 @@ public class NanoRestGroup extends AbstractGroupType {
                             }
                             for (ContainerNode subNode : getModelElement().getSubNodes()) {
                                 if (subNode.getName().trim().equals(srcNodeName.trim())) {
-                                    logger.debug("model received from another node: forward is not needed");
+                                    Log.debug("model received from another node: forward is not needed");
                                     externalSender = false;
                                 }
                             }
@@ -115,7 +112,7 @@ public class NanoRestGroup extends AbstractGroupType {
 
                             return new NanoHTTPD.Response(HTTP_OK, MIME_HTML, "<ack nodeName=\"" + getNodeName() + "\" />");
                         } catch (Exception e) {
-                            logger.error("Error while loading model ", e);
+                            Log.error("Error while loading model ", e);
                             return new NanoHTTPD.Response(HTTP_BADREQUEST, MIME_HTML, "Error while uploading model");
                         }
                     }
@@ -209,7 +206,7 @@ public class NanoRestGroup extends AbstractGroupType {
                     try {
                         internalPush(getModelService().getLastModel(), subNode.getName(), this.getNodeName());
                     } catch (Exception e) {
-                        logger.warn("Unable to notify other members of {} group", group.getName());
+                        Log.warn("Unable to notify other members of {} group", group.getName());
                     }
                 }
             }
@@ -227,34 +224,34 @@ public class NanoRestGroup extends AbstractGroupType {
                 try {
                     PORT = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
-                    logger.warn("Attribute \"port\" of {} is not an Integer. Default value ({}) is used", getName(), PORT);
+                    Log.warn("Attribute \"port\" of {} is not an Integer. Default value ({}) is used", getName(), PORT+"");
                 }
             }
             List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
             if (ips.size() > 0) {
             for (String ip : ips) {
                 try {
-                    logger.debug("try to send model on url=>" + "http://" + ip + ":" + PORT + "/model/current");
+                    Log.debug("try to send model on url=>" + "http://" + ip + ":" + PORT + "/model/current");
                     sendModel(model, "http://" + ip + ":" + PORT + "/model/current");
                     sendModel = true;
                     // avoid sendModel to another ip if we already have send the model
                     break;
                 } catch (Exception e) {
-                    logger.debug("send model on url=>" + "http://" + ip + ":" + PORT + "/model/current has failed");
+                    Log.debug("send model on url=>" + "http://" + ip + ":" + PORT + "/model/current has failed");
                 }
             }
             } else {
                 try {
-                    logger.debug("try to send model on url=>" + "http://127.0.0.1:" + PORT + "/model/current");
+                    Log.debug("try to send model on url=>" + "http://127.0.0.1:" + PORT + "/model/current");
                     sendModel(model, "http://127.0.0.1:" + PORT + "/model/current");
                     sendModel = true;
                 } catch (Exception e) {
-                    logger.debug("send model on url=>" + "http://127.0.0.1:" + PORT + "/model/current has failed");
+                    Log.debug("send model on url=>" + "http://127.0.0.1:" + PORT + "/model/current has failed");
                 }
             }
         }
         if (!sendModel) {
-            logger.debug("Unable to push the model to targetNodeName because the group ({}) doesn't exist", getName());
+            Log.debug("Unable to push the model to targetNodeName because the group ({}) doesn't exist", getName());
             throw new Exception("Unable to push the model to targetNodeName because the group (" + getName() + ") doesn't exist");
         }
     }
@@ -269,24 +266,24 @@ public class NanoRestGroup extends AbstractGroupType {
                 try {
                     PORT = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
-                    logger.warn("Attribute \"port\" of {} is not an Integer. Default value ({}) is used", getName(), PORT);
+                    Log.warn("Attribute \"port\" of {} is not an Integer. Default value ({}) is used", getName(), PORT+"");
                 }
             }
             List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
             for (String ip : ips) {
                 try {
-                    logger.debug("try to send model on url=>" + "http://" + ip + ":" + PORT + "/model/current?nodesrc=" + sender);
+                    Log.debug("try to send model on url=>" + "http://" + ip + ":" + PORT + "/model/current?nodesrc=" + sender);
                     sendModel(model, "http://" + ip + ":" + PORT + "/model/current?nodesrc=" + sender);
                     sendModel = true;
                     // avoid sendModel to another ip if we already have send the model
                     break;
                 } catch (Exception e) {
-                    logger.debug("send model on url=>" + "http://127.0.0.1:" + PORT + "/model/current?nodesrc=" + sender + " has failed");
+                    Log.debug("send model on url=>" + "http://127.0.0.1:" + PORT + "/model/current?nodesrc=" + sender + " has failed");
                 }
             }
         }
         if (!sendModel) {
-            logger.debug("Unable to push the model to {}", targetNodeName);
+            Log.debug("Unable to push the model to {}", targetNodeName);
             throw new Exception("Unable to push the model to " + targetNodeName);
         }
     }
@@ -303,7 +300,7 @@ public class NanoRestGroup extends AbstractGroupType {
         try {
             sendModel(model, urlPath2, true);
         } catch (Exception e) {
-            logger.debug("Unable to push a model on {}", urlPath);
+            Log.debug("Unable to push a model on {}", urlPath);
             sendModel(model, urlPath, false);
         }
 
@@ -317,7 +314,7 @@ public class NanoRestGroup extends AbstractGroupType {
             KevoreeXmiHelper.instance$.saveStream(outStream, model);
         }
         outStream.flush();
-        logger.debug("Try URL PATH " + urlPath);
+        Log.debug("Try URL PATH " + urlPath);
         URL url = new URL(urlPath);
         URLConnection conn = url.openConnection();
         conn.setConnectTimeout(3000);
@@ -341,22 +338,22 @@ public class NanoRestGroup extends AbstractGroupType {
             try {
                 PORT = Integer.parseInt(portOption);
             } catch (NumberFormatException e) {
-                logger.warn("Attribute \"port\" of {} is not an Integer. Default value ({}) is used", getName(), PORT);
+                Log.warn("Attribute \"port\" of {} is not an Integer. Default value ({}) is used", getName(), PORT+"");
             }
         }
         List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(getModelService().getLastModel(), targetNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         ContainerRoot model = null;
         for (String ip : ips) {
             try {
-                logger.debug("try to pull model on url=>" + "http://" + ip + ":" + PORT + "/model/current");
+                Log.debug("try to pull model on url=>" + "http://" + ip + ":" + PORT + "/model/current");
                 model = pullModel("http://" + ip + ":" + PORT + "/model/current");
             } catch (Exception e) {
-                logger.debug("Unable to pull model from {} using {} as URL", targetNodeName, "http://" + ip + ":" + PORT + "/model/current", e);
+                Log.debug("Unable to pull model from {} using {} as URL",e, targetNodeName, "http://" + ip + ":" + PORT + "/model/current");
             }
         }
 
         if (model == null) {
-            logger.debug("Unable to pull a model from " + targetNodeName);
+            Log.debug("Unable to pull a model from " + targetNodeName);
             throw new Exception("Unable to pull a model from " + targetNodeName);
         } else {
             return model;
@@ -369,14 +366,14 @@ public class NanoRestGroup extends AbstractGroupType {
         try {
             model = pullModel(urlPath + "/zip", true);
         } catch (Exception e) {
-            logger.debug("Unable to pull model from {}/zip", urlPath, e);
+            Log.debug("Unable to pull model from {}/zip",e, urlPath);
         }
 
         if (model == null) {
             try {
                 model = pullModel(urlPath, false);
             } catch (Exception e) {
-                logger.debug("Unable to pull model from {}", urlPath, e);
+                Log.debug("Unable to pull model from {}",e, urlPath);
             }
         }
         if (model == null) {

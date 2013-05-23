@@ -7,7 +7,6 @@ import org.kevoree.ContainerRoot
 import org.kevoree.api.service.core.handler.KevoreeModelHandlerService
 import java.lang.Math
 import scala.collection.JavaConversions._
-import org.slf4j.LoggerFactory
 import org.kevoree.library.javase.basicGossiper.{Occured, VersionUtils, VectorClockAspect, DataManager}
 import org.kevoree.merger.KevoreeMergerComponent
 import org.kevoree.framework.{KevoreeXmiHelper, FileNIOHelper}
@@ -26,10 +25,9 @@ class DataManagerForGroup(nameInstance: String, selfNodeName: String, modelServi
                 ClockEntry.newBuilder.setNodeID(selfNodeName).setVersion(1)
                   .setTimestamp(System.currentTimeMillis()).build)*/
     .build
-  private val logger = LoggerFactory.getLogger(classOf[DataManagerForGroup])
 
   def getData(uuid: UUID): (VectorClock, Any) = {
-    logger.debug("getData")
+    org.kevoree.log.Log.debug("getData")
     val result = if (uuid.equals(this.uuid)) {
       if ((vectorClock.getEntiesCount == 0) || modelService.getLastModification.after(lastCheckedTimeStamp)) {
         setVectorClock(increment())
@@ -38,7 +36,7 @@ class DataManagerForGroup(nameInstance: String, selfNodeName: String, modelServi
     } else {
       null
     }
-    logger.debug("getData end")
+    org.kevoree.log.Log.debug("getData end")
     result
   }
 
@@ -56,24 +54,24 @@ class DataManagerForGroup(nameInstance: String, selfNodeName: String, modelServi
   def removeData(uuid: UUID, tuple: (VectorClock, Any)) {}
 
   def getUUIDVectorClock(uuid: UUID): VectorClock = {
-    logger.debug("getUUIDVectorClock")
+    org.kevoree.log.Log.debug("getUUIDVectorClock")
     val result = {
       if ((vectorClock.getEntiesCount == 0) || modelService.getLastModification.after(lastCheckedTimeStamp)) {
         setVectorClock(increment())
       }
       getUUIDVectorClockFromUUID(uuid)
     }
-    logger.debug("getUUIDVectorClock end")
+    org.kevoree.log.Log.debug("getUUIDVectorClock end")
     result
   }
 
   def getUUIDVectorClocks: java.util.Map[UUID, VectorClock] = {
-    logger.debug("getUUIDVectorClocks")
+    org.kevoree.log.Log.debug("getUUIDVectorClocks")
     val result = {if ((vectorClock.getEntiesCount == 0) || modelService.getLastModification.after(lastCheckedTimeStamp)) {
       setVectorClock(increment())
     }
     getAllUUIDVectorClocks }
-    logger.debug("getUUIDVectorClocks end")
+    org.kevoree.log.Log.debug("getUUIDVectorClocks end")
     result
   }
 
@@ -91,27 +89,27 @@ class DataManagerForGroup(nameInstance: String, selfNodeName: String, modelServi
     val occured = VersionUtils.compare(vectorClock, tuple._1)
     occured match {
       case Occured.AFTER => {
-        logger.debug("VectorClocks comparison into DataManager give us: AFTER")
+        org.kevoree.log.Log.debug("VectorClocks comparison into DataManager give us: AFTER")
       }
       case Occured.BEFORE => {
-        logger.debug("VectorClocks comparison into DataManager give us: BEFORE")
+        org.kevoree.log.Log.debug("VectorClocks comparison into DataManager give us: BEFORE")
         updateModelOrHaraKiri(tuple._2)
         lastNodeSynchronization = source
         setVectorClock(localMerge(tuple._1))
       }
       case Occured.CONCURRENTLY => {
-        logger.debug("VectorClocks comparison into DataManager give us: CONCURRENTLY")
-        logger.debug("merge local and remote model due to concurrency")
+        org.kevoree.log.Log.debug("VectorClocks comparison into DataManager give us: CONCURRENTLY")
+        org.kevoree.log.Log.debug("merge local and remote model due to concurrency")
         val solvedModel = solver.resolve((vectorClock,modelService.getLastModel),(tuple),source,selfNodeName)
         updateModelOrHaraKiri(solvedModel)
         lastNodeSynchronization = source
         // update local vectorclock according to both local and remote vectorclocks
-        logger.debug("BEFORE MERGE CONCURENCY")
+        org.kevoree.log.Log.debug("BEFORE MERGE CONCURENCY")
         vectorClock.printDebug()
         setVectorClock(localMerge(tuple._1))
-        logger.debug("AFTER MERGE CONCURENCY")
+        org.kevoree.log.Log.debug("AFTER MERGE CONCURENCY")
         increment()
-        logger.debug("AFTER INCREMENT CONCURENCY")
+        org.kevoree.log.Log.debug("AFTER INCREMENT CONCURENCY")
 
         /*
         val localDate = new Date(vectorClock.getTimestamp)
@@ -136,7 +134,7 @@ class DataManagerForGroup(nameInstance: String, selfNodeName: String, modelServi
           }
         } */
 
-        logger.debug("Local date is after, do nothing")
+        org.kevoree.log.Log.debug("Local date is after, do nothing")
       }
       case _ =>
     }
@@ -153,7 +151,7 @@ class DataManagerForGroup(nameInstance: String, selfNodeName: String, modelServi
   }
 
   private def increment(): VectorClock = {
-    logger.debug("Increment")
+    org.kevoree.log.Log.debug("Increment")
     val currentTimeStamp = System.currentTimeMillis
     val incrementedEntries = new java.util.ArrayList[ClockEntry]
     var selfFound = false;
@@ -179,7 +177,7 @@ class DataManagerForGroup(nameInstance: String, selfNodeName: String, modelServi
         .build());
       //lastCheckedTimeStamp = modelService.getLastModification
     }
-    logger.debug("End increment")
+    org.kevoree.log.Log.debug("End increment")
     VectorClock.newBuilder().addAllEnties(incrementedEntries).setTimestamp(currentTimeStamp).build()
   }
 

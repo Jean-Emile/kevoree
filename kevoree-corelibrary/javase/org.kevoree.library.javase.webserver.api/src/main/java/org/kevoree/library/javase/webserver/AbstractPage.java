@@ -4,8 +4,7 @@ import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractComponentType;
 import org.kevoree.framework.MessagePort;
 import org.kevoree.library.javase.webserver.impl.KevoreeHttpResponseImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 /**
  * Created by IntelliJ IDEA.
@@ -29,7 +28,6 @@ import org.slf4j.LoggerFactory;
 })
 public abstract class AbstractPage extends AbstractComponentType {
 
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
     protected static final int NO_RETURN_RESPONSE = 418;
     protected URLHandler handler = new URLHandler();
 
@@ -41,7 +39,7 @@ public abstract class AbstractPage extends AbstractComponentType {
     @Start
     public void startPage() {
         handler.initRegex(this.getDictionary().get("urlpattern").toString());
-        logger.debug("Abstract page start");
+        Log.debug("Abstract page start");
     }
 
     @Stop
@@ -55,7 +53,7 @@ public abstract class AbstractPage extends AbstractComponentType {
     }
 
     public KevoreeHttpRequest resolveRequest(Object param) {
-        logger.debug("KevoreeHttpRequest handler triggered");
+        Log.debug("KevoreeHttpRequest handler triggered");
         if (param instanceof KevoreeHttpRequest) {
             return handler.check((KevoreeHttpRequest) param);
         } else {
@@ -78,7 +76,7 @@ public abstract class AbstractPage extends AbstractComponentType {
             if (response.getStatus() != 418) {
                 this.getPortByName("content", MessagePort.class).process(response);//SEND MESSAGE
             } else {
-                logger.debug("Status code correspond to tea pot: No response returns!");
+                Log.debug("Status code correspond to tea pot: No response returns!");
             }
         }
     }
@@ -98,11 +96,11 @@ public abstract class AbstractPage extends AbstractComponentType {
         }
         request.setUrl(url);
         if (isPortBinded("forward")) {
-            logger.debug("forward request for url = {} with completeURL = {}", url, request.getCompleteUrl());
+            Log.debug("forward request for url = {} with completeURL = {}", url, request.getCompleteUrl());
             getPortByName("forward", MessagePort.class).process(request);
             response.setStatus(NO_RETURN_RESPONSE);
         } else {
-            logger.debug("Unable to forward request because the forward port is not bind for {}", getName());
+            Log.debug("Unable to forward request because the forward port is not bind for {}", getName());
             response.setContent("Unable to forward request because the forward port is not bound for " + getName() + "@" + getNodeName());
         }
         return response;

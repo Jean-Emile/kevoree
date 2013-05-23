@@ -12,8 +12,7 @@ import org.kevoree.api.service.core.classloading.DeployUnitResolver;
 import org.kevoree.api.service.core.handler.ModelListener;
 import org.kevoree.framework.AbstractComponentType;
 import org.kevoree.framework.KevoreePropertyHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,8 +28,6 @@ import java.util.concurrent.atomic.AtomicReference;
 @Library(name = "JavaSE")
 @ComponentType
 public class MavenP2PResolver extends AbstractComponentType implements DeployUnitResolver, ModelListener {
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Start
     public void startResolver(){
@@ -53,7 +50,7 @@ public class MavenP2PResolver extends AbstractComponentType implements DeployUni
     @Override
     public File resolve(DeployUnit du) {
         File resolved = getBootStrapperService().resolveArtifact(du.getUnitName(), du.getGroupName(), du.getVersion(), remoteURLS.get());
-        logger.info("DU "+du.getUnitName()+" from cache resolution "+(resolved!= null));
+        Log.info("DU " + du.getUnitName() + " from cache resolution " + (resolved != null));
         return null;
     }
 
@@ -80,11 +77,11 @@ public class MavenP2PResolver extends AbstractComponentType implements DeployUni
             for(ComponentInstance inst : node.getComponents()){
                 if(inst.getTypeDefinition().getName().equals("MavenCacheServer")){
                     List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model, node.getName(), org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
-                    logger.info("Cache Found on node "+node.getName());
+                    Log.info("Cache Found on node "+node.getName());
                     Object port = KevoreePropertyHelper.instance$.getProperty(inst,"port",false,null);
                     for(String remoteIP : ips){
                        String url = "http://"+remoteIP+":"+port;
-                        logger.info("Add URL "+url);
+                        Log.info("Add URL "+url);
                        urls.add(url);
                     }
 

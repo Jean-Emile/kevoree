@@ -16,6 +16,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+        <dependency>
             <groupId>org.kevoree.corelibrary.javase</groupId>
             <artifactId>org.kevoree.library.javase.webserver.api</artifactId>
             <version>${kevoree.version}</version>

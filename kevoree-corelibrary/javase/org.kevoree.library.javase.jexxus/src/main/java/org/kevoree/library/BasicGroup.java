@@ -14,8 +14,7 @@ import org.kevoree.annotation.*;
 import org.kevoree.framework.AbstractGroupType;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.KevoreeXmiHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kevoree.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -46,8 +45,6 @@ Changelog
 @Library(name = "JavaSE", names = "Android")
 public class BasicGroup extends AbstractGroupType implements ConnectionListener {
 
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private final byte getModel = 0;
     private final byte pushModel = 1;
     private final byte pushModelInternal = 3;
@@ -68,7 +65,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
         } else {
             server = new Server(this, port, ssl);
         }
-        logger.info("BasicGroup listen on " + port + "-SSL=" + ssl);
+        Log.info("BasicGroup listen on " + port + "-SSL=" + ssl);
         server.startServer();
         starting = true;
     }
@@ -111,7 +108,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                             getModelService().atomicUpdateModel(modelOption);
                             getModelService().registerModelListener(BasicGroup.this);
                         } catch (Exception e) {
-                            logger.error("", e);
+                            Log.error("", e);
                         }
                     }
                 }.start();
@@ -123,14 +120,14 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
     }
 
     protected void broadcast(ContainerRoot model) {
-        logger.debug("Try to broadcast the model to other members of the group {}", getName());
+        Log.debug("Try to broadcast the model to other members of the group {}", getName());
         Group group = getModelElement();
         for (ContainerNode subNode : group.getSubNodes()) {
             if (!subNode.getName().equals(this.getNodeName())) {
                 try {
                     pushInternal(model, subNode.getName(), pushModelInternal);
                 } catch (Exception e) {
-                    logger.warn("Unable to notify other members of {} group", group.getName());
+                    Log.warn("Unable to notify other members of {} group", group.getName());
                 }
             }
         }
@@ -173,7 +170,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                 try {
                     PORT = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
-                    logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
+                    Log.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT+"");
                 }
             }
         }
@@ -184,12 +181,12 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
             do {
                 try
                 {
-                    logger.debug("Try to send the model using {} for {}", ips.get(i), targetNodeName);
+                    Log.debug("Try to send the model using {} for {}", ips.get(i), targetNodeName);
                     sendModel(ips.get(i),PORT,output);
                     success = true;
 
                 } catch (IOException e) {
-                    logger.debug("Unable to push model on {} using {}", targetNodeName, ips.get(i) + ":" + PORT);
+                    Log.debug("Unable to push model on {} using {}", targetNodeName, ips.get(i) + ":" + PORT);
                     success= false;
                 }
                 i++;
@@ -197,11 +194,11 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
 
 
         } else {
-            logger.debug("Try to send the model using the localhost ip for {}", targetNodeName);
+            Log.debug("Try to send the model using the localhost ip for {}", targetNodeName);
             try {
                 sendModel("127.0.0.1",PORT,output);
             } catch (IOException e) {
-                logger.debug("Unable to push model on {} using {}", targetNodeName, "127.0.0.1:" + PORT, e);
+                Log.debug("Unable to push model on {} using {}",e, targetNodeName, "127.0.0.1:" + PORT);
             }
         }
     }
@@ -217,7 +214,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                 try {
                     PORT = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
-                    logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
+                    Log.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT+"");
                 }
             }
         }
@@ -227,14 +224,14 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                 try {
                     return requestModel(ip, PORT, targetNodeName);
                 } catch (Exception e) {
-                    logger.debug("Unable to request model on {} using {}", targetNodeName, ip + ":" + PORT, e);
+                    Log.debug("Unable to request model on {} using {}",e, targetNodeName, ip + ":" + PORT);
                 }
             }
         } else {
             try {
                 return requestModel("127.0.0.1", PORT, targetNodeName);
             } catch (Exception e) {
-                logger.debug("Unable to request model on {} using {}", targetNodeName, "127.0.0.1:" + PORT, e);
+                Log.debug("Unable to request model on {} using {}",e, targetNodeName, "127.0.0.1:" + PORT);
             }
         }
         throw new Exception("Unable to pull model on " + targetNodeName);
@@ -250,7 +247,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                 try {
                     exchanger.exchange(null);
                 } catch (InterruptedException e) {
-                    logger.error("", e);
+                    Log.error("", e);
                 }
             }
 
@@ -261,7 +258,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                 try {
                     exchanger.exchange(root);
                 } catch (InterruptedException e) {
-                    logger.error("error while waiting model from " + targetNodeName, e);
+                    Log.error("error while waiting model from " + targetNodeName, e);
                 } finally {
                     conns[0].close();
                 }
@@ -287,7 +284,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
     public void receive(byte[] data, Connection from) {
         try {
             if (data == null) {
-                logger.error("Null rec");
+                Log.error("Null rec");
             } else {
                 switch (data[0]) {
                     case getModel: {
@@ -321,7 +318,7 @@ public class BasicGroup extends AbstractGroupType implements ConnectionListener 
                 }
             }
         } catch (Exception e) {
-            logger.error("Something bad ...", e);
+            Log.error("Something bad ...", e);
         }
 
     }

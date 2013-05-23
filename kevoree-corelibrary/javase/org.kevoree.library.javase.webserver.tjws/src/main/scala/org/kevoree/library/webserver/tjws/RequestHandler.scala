@@ -1,10 +1,8 @@
 package org.kevoree.library.webserver.tjws
 
-import org.slf4j.LoggerFactory
 import org.kevoree.library.javase.webserver.{AbstractWebServer, KevoreeHttpRequest, KevoreeHttpResponse}
-import org.kevoree.framework.{MessagePort, AbstractComponentType}
-import collection.mutable.Stack
-import actors.{Actor}
+import org.kevoree.framework.MessagePort
+import actors.Actor
 import collection.mutable
 
 /**
@@ -30,7 +28,6 @@ class RequestHandler(origin: AbstractWebServer) extends Actor {
     }
   }
 
-  val log = LoggerFactory.getLogger(this.getClass)
   var handlers = new Array[ResponseHandler](200)
   var freeIDS = new mutable.Stack[Int]()
 
