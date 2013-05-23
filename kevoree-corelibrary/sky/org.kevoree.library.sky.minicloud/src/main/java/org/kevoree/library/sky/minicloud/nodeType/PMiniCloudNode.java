@@ -16,8 +16,5 @@ import org.kevoree.library.sky.api.nodeType.PaaSNode;
 @Library(name = "SKY")
 @NodeType
 public class PMiniCloudNode extends MiniCloudNode implements PaaSNode {
-	@Override
-	protected boolean isDaemon () {
-		return true;
-	}
+
 }

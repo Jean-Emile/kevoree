@@ -4,6 +4,7 @@ import org.kevoree.library.javase.webserver.{AbstractWebServer, KevoreeHttpReque
 import org.kevoree.framework.MessagePort
 import actors.Actor
 import collection.mutable
+import org.kevoree.library.webserver.internal.IDGenerator
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,23 +30,20 @@ class RequestHandler(origin: AbstractWebServer) extends Actor {
   }
 
   var handlers = new Array[ResponseHandler](200)
-  var freeIDS = new mutable.Stack[Int]()
+  var freeIDS = new IDGenerator(200)
 
   def staticInit(timeout : Int) {
     val pointer = this
     for (i <- 0 until handlers.length) {
       handlers(i) = new ResponseHandler(timeout, pointer)
       handlers(i).start()
-      freeIDS.push(i)
     }
   }
 
-
   def sendAndWait(rr: KevoreeHttpRequest): KevoreeHttpResponse = {
-    val handlerID = (this !? GetHandler()).asInstanceOf[Int]
-    rr.setTokenID(handlerID)
+    rr.setTokenID(freeIDS.getID)
     origin.getPortByName("handler", classOf[MessagePort]).process(rr)
-    handlers(handlerID).sendAndWait(handlerID)
+    handlers(rr.getTokenID).sendAndWait(rr.getTokenID)
   }
 
   def internalSend(resp: KevoreeHttpResponse) {
@@ -55,12 +53,6 @@ class RequestHandler(origin: AbstractWebServer) extends Actor {
   def act() {
     loop {
       react {
-        case GetHandler() => {
-          reply(freeIDS.pop())
-        }
-        case REMOVE(i) => {
-          freeIDS.push(i)
-        }
         case msg: KevoreeHttpResponse => {
           if (msg.getTokenID >= 0 && msg.getTokenID < handlers.size) {
             handlers(msg.getTokenID).checkAndReply(msg)
