@@ -16,10 +16,7 @@ import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager;
 import org.kevoree.log.Log;
 import org.kevoreeadaptation.AdaptationModel;
 import org.kevoreeadaptation.AdaptationPrimitive;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 
 /**
@@ -39,33 +36,15 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
     private KevoreeKompareBean kompareBean = null;
     private CommandMapper mapper = null;
 
-    private boolean isRunning;
-    private Thread shutdownThread;
-
-
-    protected boolean isDaemon() {
-        return false;
-    }
-
     @Start
     @Override
     public void startNode() {
         mapper = new CommandMapper();
         preTime = System.currentTimeMillis();
         getModelService().registerModelListener(this);
-        isRunning = true;
         kompareBean = new KevoreeKompareBean();
         mapper.setNodeType(this);
         updateNode();
-        if (!isDaemon()) {
-            shutdownThread = new Thread() {
-                @Override
-                public void run() {
-                    catchShutdown();
-                }
-            };
-            shutdownThread.start();
-        }
     }
 
     @Stop
@@ -74,10 +53,6 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
         getModelService().unregisterModelListener(this);
         kompareBean = null;
         mapper = null;
-        isRunning = false;
-        if (shutdownThread != null) {
-            shutdownThread.stop();
-        }
         //Cleanup the local runtime
         KevoreeDeployManager.instance$.clearAll(this);
     }
@@ -114,7 +89,6 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
             } else if ("FINE".equals(coreLogLevelVal)) {
                 corelogLevel = KevoreeLogLevel.FINE;
             }
-
             getBootStrapperService().getKevoreeLogService().setUserLogLevel(logLevel);
             getBootStrapperService().getKevoreeLogService().setCoreLogLevel(corelogLevel);
         }
@@ -128,36 +102,6 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
     @Override
     public org.kevoree.api.PrimitiveCommand getPrimitive(AdaptationPrimitive adaptationPrimitive) {
         return mapper.buildPrimitiveCommand(adaptationPrimitive, this.getNodeName());
-    }
-
-    private void catchShutdown() {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        try {
-            String line = reader.readLine();
-            boolean shutdown = false;
-            while (isRunning && !shutdown) {
-                if ("shutdown".equalsIgnoreCase(line)) {
-                    shutdown = true;
-                } else if ("kcl".equalsIgnoreCase(line)) {
-                    System.out.println(this.getBootStrapperService().getKevoreeClassLoaderHandler().getKCLDump());
-                } else if ("help".equalsIgnoreCase(line)) {
-                    System.out.println("commands:\n\tshutdown: shutdown the node\n\tkcl: lists all KCLClassLoaders and their relationships\n\thelp: displays this list");
-                } else if (line == null) {
-                    isRunning = false;
-                }
-                line = reader.readLine();
-            }
-            if (shutdown) {
-                // start the shutdown of the platform
-                System.exit(0);
-            }
-        } catch (IOException ignored) {
-        } finally {
-            try {
-                reader.close();
-            } catch (IOException ignored) {
-            }
-        }
     }
 
     private Long preTime = 0l;
