@@ -20,7 +20,7 @@ public class DockerNodeRunner extends KevoreeNodeRunner {
     }
 
     private String kevoreeBootStrap = "/bin/sh curl http://boot.kevoree.org";
-    private String dockerStartCmd = "docker run -h=\"nodeName\" ubuntu " + kevoreeBootStrap;
+    private String dockerStartCmd = "docker run -h=\"nodeName\" base " + kevoreeBootStrap;
     private String dockerStopCmd = "docker stop nodeName";
 
     @Override
