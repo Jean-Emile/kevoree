@@ -21,8 +21,8 @@ import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager;
 @Library(name = "Android")
 @NodeType
 @DictionaryType({
-		@DictionaryAttribute(name = "logLevel", defaultValue = "INFO", optional = true, vals = {"INFO", "WARN", "DEBUG", "ERROR", "FINE"}),
-		@DictionaryAttribute(name = "coreLogLevel", defaultValue = "WARN", optional = true, vals = {"INFO", "WARN", "DEBUG", "ERROR", "FINE"})
+		@DictionaryAttribute(name = "logLevel", defaultValue = "DEBUG", optional = true, vals = {"INFO", "WARN", "DEBUG", "ERROR", "FINE"}),
+		@DictionaryAttribute(name = "coreLogLevel", defaultValue = "DEBUG", optional = true, vals = {"INFO", "WARN", "DEBUG", "ERROR", "FINE"})
 })
 @PrimitiveCommands(
 		values = {"UpdateType", "UpdateDeployUnit", "AddType", "AddDeployUnit", "AddThirdParty", "RemoveType", "RemoveDeployUnit", "UpdateInstance", "UpdateBinding", "UpdateDictionaryInstance", "AddInstance", "RemoveInstance", "AddBinding", "RemoveBinding", "AddFragmentBinding", "RemoveFragmentBinding", "UpdateFragmentBinding", "StartInstance", "StopInstance", "StartThirdParty", "RemoveThirdParty"},

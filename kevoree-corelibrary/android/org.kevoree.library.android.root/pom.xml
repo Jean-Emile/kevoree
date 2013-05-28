@@ -36,6 +36,7 @@
 		<module>../org.kevoree.library.android.jexxus</module>
         <module>../org.kevoree.library.android.basicGossiper</module>
 		<module>../org.kevoree.library.android.mavenCache</module>
+        <module>../org.kevoree.library.android.nfcdemo</module>
     </modules>
 
     <dependencies>
