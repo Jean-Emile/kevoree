@@ -1,0 +1,29 @@
+ {
+addRepo "http://maven.kevoree.org/release"
+addRepo "http://repo.maven.apache.org/maven2"
+addRepo "http://repository.jetbrains.com/all"
+addRepo "http://maven.kevoree.org/archiva/repository/snapshots/"
+addRepo "http://maven.kevoree.org/snapshots"
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.javaseNode/2.0.0-SNAPSHOT'
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.nanohttp/2.0.0-SNAPSHOT'
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.webserver.nanohttpd/2.0.0-SNAPSHOT'
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.defaultChannels/2.0.0-SNAPSHOT'
+addNode node0:JavaSENode
+ {
+  addComponent helloPage@node0 : HelloWorldPage {}
+  addComponent NanoHTTPD355@node0 : NanoHTTPDComponent {}
+addChannel req : defMSG {}
+addChannel res : defMSG {}
+bind helloPage.request@node0 => req
+bind helloPage.content@node0 => res
+bind NanoHTTPD355.response@node0 => res
+bind NanoHTTPD355.handler@node0 => req
+updateDictionary helloPage@node0 
+updateDictionary req 
+updateDictionary res 
+updateDictionary NanoHTTPD355@node0 
+}
+
+addGroup sync:NanoRestGroup
+addToGroup sync node0
+}
