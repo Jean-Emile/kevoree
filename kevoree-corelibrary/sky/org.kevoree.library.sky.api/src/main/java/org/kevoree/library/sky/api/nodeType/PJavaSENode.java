@@ -1,5 +1,7 @@
 package org.kevoree.library.sky.api.nodeType;
 
+import org.kevoree.annotation.DictionaryAttribute;
+import org.kevoree.annotation.DictionaryType;
 import org.kevoree.annotation.Library;
 import org.kevoree.annotation.NodeType;
 import org.kevoree.library.defaultNodeTypes.JavaSENode;
@@ -14,6 +16,9 @@ import org.kevoree.library.defaultNodeTypes.JavaSENode;
  */
 @Library(name = "SKY")
 @NodeType
+@DictionaryType({
+        @DictionaryAttribute(name = "VMARGS", optional = true)
+})
 public class PJavaSENode extends JavaSENode implements PaaSNode {
 
 }
