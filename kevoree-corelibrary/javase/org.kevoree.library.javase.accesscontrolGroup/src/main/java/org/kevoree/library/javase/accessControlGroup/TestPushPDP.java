@@ -1,6 +1,8 @@
 package org.kevoree.library.javase.accessControlGroup;
 
 import org.kevoree.accesscontrol.AccessControlRoot;
+import org.kevoree.library.javase.accessControlGroup.utils.KevScriptLoader;
+import org.kevoree.tools.accesscontrol.framework.AccessControlException;
 import org.kevoree.tools.accesscontrol.framework.utils.AccessControlXmiHelper;
 import org.kevoree.tools.accesscontrol.framework.utils.HelperSignature;
 
@@ -17,17 +19,16 @@ import java.util.HashMap;
 public class TestPushPDP {
 
 
-    public static void main(String argv[]) throws Exception
-    {
+    public static void main(String argv[]) throws Exception, AccessControlException {
 
         HashMap<String, Object> dico = new HashMap<String, Object>();
-        dico.put("port", "8080");
+        dico.put("port", "8000");
         dico.put("ip","localhost");
         dico.put("ssl","false");
         dico.put("gui","false");
         dico.put("pdp","false");
 
-        AccessControlGroupOld group =new AccessControlGroupOld();
+        AccessControlGroup group =new AccessControlGroup();
         group.setDictionary(dico);
         // private key
         String private_exponent = "4109406322895233351937244823949130450198126497340017617427663515773659616365455834584473049790061841196898489588297331922833138074446236327075996525971717609987352411769231643214939977856590128556711125769670219934822712525295744744260700314730439781770858314592005380741217371388959032631896022121650706113";
@@ -37,11 +38,14 @@ public class TestPushPDP {
         //  System.out.println(Tester2.class.getClassLoader().getResourceAsStream("benchmark/pdp/model3.ac"));
 
         // INSTALL PDP (MODEL ACCESS CONTROL)
-        AccessControlRoot root = AccessControlXmiHelper.instance$.loadStream(Tester.class.getClassLoader().getResourceAsStream("benchmark/pdp/model5.ac"));
+        AccessControlRoot root = AccessControlXmiHelper.instance$.loadStream(TesterSignedModel.class.getClassLoader().getResourceAsStream("benchmark/pdp/model5.ac"));
         System.out.println("PUSH PDP "+root.getUsers().size());
 
         /*PUSH SIGNED MODEL      */
-      group.pushPDP(root,rsaPrivateKey,KevScriptLoader.getModel(Tester.class.getClassLoader().getResource("benchmark/models2/emptynode.kevs").getPath()),"node0");
+
+// public void pushPDP(ContainerRoot containerRoot, String node, AccessControlRoot accessControlRoot, PrivateKey privateKey)
+
+        group.pushPDP(KevScriptLoader.getModel(TesterSignedModel.class.getClassLoader().getResource("benchmark/models2/emptynode.kevs").getPath()),"node0",root,rsaPrivateKey);
         System.exit(0);
 
     }

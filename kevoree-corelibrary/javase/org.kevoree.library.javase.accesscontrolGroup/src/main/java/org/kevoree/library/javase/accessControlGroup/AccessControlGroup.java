@@ -4,7 +4,6 @@ import jexxus.common.Connection;
 import jexxus.common.ConnectionListener;
 import jexxus.server.ServerConnection;
 import org.kevoree.ContainerRoot;
-import org.kevoree.adaptation.accesscontrol.api.SignedModel;
 import org.kevoree.tools.accesscontrol.framework.AbstractAccessControlGroupType;
 import org.kevoree.tools.accesscontrol.framework.AccessControlException;
 import controlbasicGossiper.HelperModelSigned;
@@ -20,6 +19,7 @@ import org.kevoree.annotation.*;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.KevoreeXmiHelper;
 import org.kevoree.library.NodeNetworkHelper;
+import org.kevoree.tools.accesscontrol.framework.utils.HelperSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -196,18 +196,22 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
 
     @Override
     public void receive(byte[] data, Connection from) {
+
         try {
             if (data == null) {
                 logger.error("Null rec");
             } else {
-                switch (data[0]) {
-                    case getModel: {
+                switch (data[0])
+                {
+                    case getModel:
+                    {
                         ByteArrayOutputStream output = new ByteArrayOutputStream();
                         KevoreeXmiHelper.instance$.saveCompressedStream(output, getModelService().getLastModel());
                         from.send(output.toByteArray(), Delivery.RELIABLE);
                     }
                     break;
-                    case pushModel: {
+                    case pushModel:
+                    {
                         ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
                         inputStream.read();
 
@@ -218,18 +222,9 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
                         try
                         {
                             Object signed = ois.readObject();
-
-                            if(approvalPDP(signed)){
-                              logger.debug("accepted PDP");
-                            }
-
-                            if(approvalSignedModel(signed)) {
-                                logger.debug("accepted Model");
-                                locaUpdateModel(getModel((SignedModel) signed));
-                            }
-
-                        } finally {
-                            // on ferme les flux
+                            updateSignedModel(signed);
+                        } finally
+                        {
                             try {
                                 ois.close();
                             } finally {
@@ -257,22 +252,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
     public void clientConnected(ServerConnection conn) {
 
     }
-    protected void locaUpdateModel(final ContainerRoot modelOption) {
-        new Thread() {
-            public void run() {
-                try {
-                    long duree, start;
-                    getModelService().unregisterModelListener(AccessControlGroup.this);
-                    start = System.currentTimeMillis();
-                    getModelService().atomicUpdateModel(modelOption);
-                    duree = (System.currentTimeMillis() - start);
-                    getModelService().registerModelListener(AccessControlGroup.this);
-                } catch (Exception e) {
-                    logger.error("", e);
-                }
-            }
-        }.start();
-    }
+
 
     public void write(ContainerRoot model, String targetNodeName, Object data) throws IOException {
 
@@ -293,7 +273,10 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
         }
 
         List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
-
+        if(ips.size()== 0){
+            logger.warn("no address ip");
+            ips.add("127.0.0.1");
+        }
         for (String ip : ips) {
             final UniClientConnection[] conns = new UniClientConnection[1];
             conns[0] = new UniClientConnection(new ConnectionListener() {
@@ -336,7 +319,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
     @Override
     public void pushPDP(ContainerRoot containerRoot, String node, AccessControlRoot accessControlRoot, PrivateKey privateKey) throws AccessControlException {
         try {
-            write(containerRoot, node, createSignedPDP(accessControlRoot, privateKey));
+            write(containerRoot, node, HelperSignature.createSignedPDP(accessControlRoot, privateKey));
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (NoSuchAlgorithmException e) {
@@ -352,7 +335,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
     public void pushSignedModel(ContainerRoot containerRoot, String node, PrivateKey privateKey) throws AccessControlException {
         try
         {
-            write(containerRoot, node, createSignedModel(containerRoot,privateKey));
+            write(containerRoot, node, HelperSignature.createSignedModel(containerRoot, privateKey));
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (NoSuchAlgorithmException e) {

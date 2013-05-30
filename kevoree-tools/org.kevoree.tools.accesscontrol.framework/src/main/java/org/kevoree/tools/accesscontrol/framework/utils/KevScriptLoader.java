@@ -11,12 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kevoree.library.javase.accessControlGroup;
+package org.kevoree.tools.accesscontrol.framework.utils;
 
 import org.kevoree.ContainerRoot;
 import org.kevoree.KevoreeFactory;
 import org.kevoree.api.service.core.script.KevScriptEngineException;
-
 import org.kevoree.impl.DefaultKevoreeFactory;
 import org.kevoree.tools.marShell.KevScriptOfflineEngine;
 import org.kevoree.tools.modelsync.FakeBootstraperService;

@@ -1014,7 +1014,6 @@ updateDictionary node0{coreLogLevel="WARN",logLevel="WARN"}
 }
 
 addGroup controlgroup:AccessControlGroup
-updateDictionary controlgroup{benchmark="true"}@node0
 addToGroup controlgroup node0
-updateDictionary controlgroup{port="8000",gui="false",ip="0.0.0.0"}@node0
+updateDictionary controlgroup{port="8000",ip="0.0.0.0"}@node0
 }

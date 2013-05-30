@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kevoree.library.javase.accessControlGroup;
+package org.kevoree.tools.accesscontrol.framework.utils;
 
 import java.io.*;
 import java.util.ArrayList;
