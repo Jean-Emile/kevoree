@@ -17,10 +17,11 @@ import java.io.IOException;
 @ComponentType
 public class ComponentApache2224 extends AbstractComponentType {
 
-    ApacheManager  manager = new ApacheManager("apache2224");
+    NativeExecManager manager = new NativeExecManager();
     @Start
     public void startApache() {
         try {
+            manager.setNameNativeExec("apache2224");
             manager.getProperties().put("User", "nobody");
             manager.getProperties().put("Group","bin");
             manager.setPort(Integer.parseInt(getDictionary().get("port").toString()));

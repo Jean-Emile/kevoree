@@ -22,9 +22,13 @@ public class Test {
 
     public static void main(String[] args) throws Exception {
 
-        ApacheManager t = new ApacheManager("apache2224");
+        NativeExecManager t = new NativeExecManager();
+        t.setNameNativeExec("apache2224");
 
         t.install_generics();
+        t.install_lib("libapr-0.so.0");
+        t.install_lib("libaprutil-0.so.0");
+        t.install_lib("libexpat.so.0");
 
 
 

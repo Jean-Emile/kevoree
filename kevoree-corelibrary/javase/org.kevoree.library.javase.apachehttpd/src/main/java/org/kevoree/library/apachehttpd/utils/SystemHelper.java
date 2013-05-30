@@ -24,6 +24,16 @@ import java.io.File;
  */
 public class SystemHelper {
 
+    public enum  OS {
+        WIN32,
+        WIN64,
+        OSX32,
+        OSX64,
+        NIX32,
+        NIX64,
+        ARM,
+        NONE
+    }
     public static String getExtension() {
         if (System.getProperty("os.name").toLowerCase().contains("nux")) {
             return ".so";
@@ -50,6 +60,29 @@ public class SystemHelper {
             return "osx"+ File.separatorChar;
         }
         return null;
+    }
+
+
+    public static OS getOS() {
+        if (System.getProperty("os.name").toLowerCase().contains("nux")) {
+            if(isArm())
+            {
+                return OS.ARM;
+            }
+            if (is64()) {
+                return OS.NIX64;
+            } else {
+                return OS.NIX32;
+            }
+        }
+        if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+            if (is64()) {
+                return OS.OSX64;
+            } else {
+                return OS.OSX32;
+            }
+        }
+        return OS.NONE;
     }
 
     public static boolean isArm() {

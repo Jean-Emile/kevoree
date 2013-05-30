@@ -17,7 +17,9 @@ import java.util.Properties;
  * Time: 11:12
  * To change this template use File | Settings | File Templates.
  */
-public class ApacheManager {
+public class NativeExecManager {
+
+
     private Properties properties = new Properties();
     private String httpdexecpath ="";
     private String httpdconfigpath = "";
@@ -25,10 +27,9 @@ public class ApacheManager {
     private String version = "";
 
 
-    public ApacheManager(String version){
+    public NativeExecManager(){
 
-        this.version = version;
-        apache_directory =System.getProperty("java.io.tmpdir")+ File.separatorChar+version;
+
         properties.put("PidFile","httpd.pid");
         properties.put("Listen","8080");
         properties.put("ServerName","localhost");
@@ -53,6 +54,11 @@ public class ApacheManager {
 
     }
 
+    public void setNameNativeExec(String name){
+        this.version = name;
+        apache_directory =System.getProperty("java.io.tmpdir")+ File.separatorChar+name;
+    }
+
     public void setPort(int port){
         properties.setProperty("Listen", "" + port);
     }
@@ -64,7 +70,6 @@ public class ApacheManager {
         }  else {
             System.err.println("setDocumentRoot failure is not a directory");
         }
-
     }
 
     public Properties getProperties() {
@@ -86,19 +91,27 @@ public class ApacheManager {
         System.out.println("Updating "+httpdconfigpath);
     }
 
+
+    public void allow_exec(String path_file_exec) throws IOException {
+        if(SystemHelper.getOS() != SystemHelper.OS.WIN32 && SystemHelper.getOS() != SystemHelper.OS.WIN64){
+            System.out.println("chmod +x "+path_file_exec);
+            // todo check os
+            Runtime.getRuntime().exec("chmod 777 "+path_file_exec);
+        } else {
+            // win32
+            System.err.println("ERROR");
+        }
+    }
     public  void install_generics(){
         File tmpd = new File(apache_directory+File.separatorChar+"conf");
         tmpd.mkdirs();
-        File tmpwww = new File(apache_directory+File.separatorChar+"www");
-        tmpwww.mkdirs();
+
         properties.setProperty("ServerRoot",apache_directory);
         try
         {
             httpdexecpath =install_lib("httpd");
 
-            System.out.println("chmod "+httpdexecpath);
-            // todo check os
-            Runtime.getRuntime().exec("chmod 777 "+httpdexecpath);
+            allow_exec(httpdexecpath);
 
             FileManager.copyFileFromPath(SystemHelper.getPathOS()+version+File.separatorChar+"mime.types", apache_directory+File.separatorChar+"conf", "mime.types");
             updateConfiguration();
@@ -108,8 +121,8 @@ public class ApacheManager {
         }
     }
 
-
     public String install_lib(String name) throws IOException {
+        System.out.println("Copying "+SystemHelper.getPathOS()+version+File.separatorChar+name+"  -->  "+apache_directory);
         return FileManager.copyFileFromPath(SystemHelper.getPathOS()+version+File.separatorChar+name, apache_directory, name);
     }
 
@@ -130,7 +143,7 @@ public class ApacheManager {
         Process javap = pb.start();
 
 
-
+       // TODO create thread
         BufferedReader input =
                 new BufferedReader
                         (new InputStreamReader(javap.getInputStream()));
