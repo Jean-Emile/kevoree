@@ -11,11 +11,13 @@ import org.kevoree.api.service.core.handler.ModelListener;
 import org.kevoree.api.service.core.logging.KevoreeLogLevel;
 import org.kevoree.framework.AbstractNodeType;
 import org.kevoree.framework.KevoreeXmiHelper;
+import org.kevoree.kcl.KevoreeJarClassLoader;
 import org.kevoree.kompare.KevoreeKompareBean;
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager;
 import org.kevoree.log.Log;
 import org.kevoreeadaptation.AdaptationModel;
 import org.kevoreeadaptation.AdaptationPrimitive;
+
 import java.io.File;
 
 
@@ -132,6 +134,10 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
 	@Override
 	public void preRollback (ContainerRoot containerRoot, ContainerRoot containerRoot1) {
         Log.warn("JavaSENode is aborting last update...");
+
+        if (Log.DEBUG && this.getClass().getClassLoader() instanceof KevoreeJarClassLoader) {
+            Log.error("Dump before rollback:\n" + getBootStrapperService().getKevoreeClassLoaderHandler().getKCLDump());
+        }
 	}
 
 	@Override
@@ -144,7 +150,9 @@ public class JavaSENode extends AbstractNodeType implements ModelListener {
             KevoreeXmiHelper.instance$.save(afterModel.getAbsolutePath(),containerRoot1);
             Log.error("PreModel->"+preModel.getAbsolutePath());
             Log.error("PostModel->"+afterModel.getAbsolutePath());
-
+            if (Log.DEBUG && this.getClass().getClassLoader() instanceof KevoreeJarClassLoader) {
+                Log.error("Dump after rollback:\n" + getBootStrapperService().getKevoreeClassLoaderHandler().getKCLDump());
+            }
         } catch (Exception e){
             Log.error("Error while saving debug model",e);
         }
