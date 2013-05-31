@@ -1,10 +1,10 @@
 package org.kevoree.library.javase.accessControlGroup;
 
 import org.kevoree.accesscontrol.AccessControlRoot;
-import org.kevoree.library.javase.accessControlGroup.utils.KevScriptLoader;
 import org.kevoree.tools.accesscontrol.framework.AccessControlException;
 import org.kevoree.tools.accesscontrol.framework.utils.AccessControlXmiHelper;
 import org.kevoree.tools.accesscontrol.framework.utils.HelperSignature;
+import org.kevoree.tools.accesscontrol.framework.utils.KevScriptLoader;
 
 import java.security.interfaces.RSAPrivateKey;
 import java.util.HashMap;
