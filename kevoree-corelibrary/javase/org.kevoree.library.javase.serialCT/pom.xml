@@ -22,12 +22,21 @@
             <groupId>org.kevoree.extra</groupId>
             <artifactId>org.kevoree.extra.kserial</artifactId>
             <version>1.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.5</version>
         </dependency>
+
+
     </dependencies>
 
     <build>
