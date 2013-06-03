@@ -81,4 +81,8 @@ class UpdateDictionary(val c: Instance, val nodeName: String): PrimitiveCommand 
         }
     }
 
+    fun toString(): String {
+        return "UpdateDictionary "+c.getName()
+    }
+
 }

@@ -42,14 +42,6 @@ public class URLHandler {
     public boolean precheck(String url) {
         Matcher m = Pattern.compile(localURLPattern).matcher(url);
         return m.matches();
-        /*LocalURLPattern.unapplySeq(url) match {
-            case Some(paramsList) => {
-                true
-            }
-            case _ => {
-                false
-            }
-        }*/
     }
 
     public KevoreeHttpRequest check(KevoreeHttpRequest url) {

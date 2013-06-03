@@ -74,4 +74,8 @@ class StartStopInstance(c: Instance, nodeName: String, val start: Boolean): Life
         }
     }
 
+    override fun toString(): String {
+        return "StartStopInstance "+c.getName()
+    }
+
 }
