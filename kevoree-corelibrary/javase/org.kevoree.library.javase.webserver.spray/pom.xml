@@ -18,11 +18,22 @@
             <groupId>org.kevoree.extra</groupId>
             <artifactId>org.kevoree.extra.spray</artifactId>
             <version>0.9.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.kevoree.corelibrary.javase</groupId>
             <artifactId>org.kevoree.library.javase.webserver.api</artifactId>
             <version>${kevoree.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.5</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
