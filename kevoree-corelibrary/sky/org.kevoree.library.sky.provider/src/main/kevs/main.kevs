@@ -17,6 +17,8 @@ addNode node0 : MiniCloudNode { coreLogLevel="WARN",logLevel="DEBUG"}
 addGroup sync : BasicGossiperGroup
 addToGroup sync node0
 
+addComponent LogBackConfigurator@node0 : LogBackConfigurator
+
 addComponent iaasManager@node0 : IaaSKloudManager
 addComponent paasManager@node0 : PaaSKloudManager
 
