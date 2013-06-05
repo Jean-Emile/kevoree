@@ -19,10 +19,11 @@ import org.kevoree.api.service.core.script.KevScriptEngineFactory
 import org.kevoree.library.defaultNodeTypes.reflect.MethodAnnotationResolver
 import org.kevoree.library.defaultNodeTypes.reflect.FieldAnnotationResolver
 import org.kevoree.log.Log
+import java.lang.reflect.InvocationTargetException
 
-class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeName: String, val _name: String, val modelService: KevoreeModelHandlerService,val bootService:Bootstraper,val kevsEngine : KevScriptEngineFactory, val tg: ThreadGroup): KevoreeChannelFragment, KInstance, ChannelFragment {
+class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeName: String, val _name: String, val modelService: KevoreeModelHandlerService, val bootService: Bootstraper, val kevsEngine: KevScriptEngineFactory, val tg: ThreadGroup): KevoreeChannelFragment, KInstance, ChannelFragment {
 
-    public fun initChannel(){
+    public fun initChannel() {
         target.delegate = this
     }
 
@@ -87,9 +88,12 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
                 met?.invoke(target)
                 (target.getModelService() as ModelHandlerServiceProxy).unsetTempModel()
                 isStarted = true
-                pool = PausablePortThreadPoolExecutor.newPausableThreadPool(1,tg)
+                pool = PausablePortThreadPoolExecutor.newPausableThreadPool(1, tg)
                 return true
-            } catch(e: Exception) {
+            }catch(e: InvocationTargetException){
+                Log.error("Kevoree Channel Instance Start Error !", e.getCause())
+                return false
+            }catch(e: Exception) {
                 Log.error("Kevoree Channel Instance Start Error !", e)
                 return false
             }
@@ -112,6 +116,9 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
                 (target.getModelService() as ModelHandlerServiceProxy).unsetTempModel()
                 isStarted = false
                 return true
+            }catch(e: InvocationTargetException){
+                Log.error("Kevoree Channel Instance Stop Error !", e.getCause())
+                return false
             } catch(e: Exception) {
                 Log.error("Kevoree Channel Instance Stop Error !", e)
                 return false
@@ -134,7 +141,10 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
                 (target.getModelService() as ModelHandlerServiceProxy).unsetTempModel()
             }
             return previousDictionary as Map<String, Any>?
-        } catch(e: Exception) {
+        }catch(e: InvocationTargetException){
+            Log.error("Kevoree Group Instance Update Error !", e.getCause())
+            return null
+        }catch(e: Exception) {
             Log.error("Kevoree Group Instance Update Error !", e)
             return null
         }
@@ -208,8 +218,8 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
                 delegate.send(msg.getContent())
                 return null
             }
-        } catch(e:Throwable) {
-            Log.error("Error while sending MSG ",e)
+        } catch(e: Throwable) {
+            Log.error("Error while sending MSG ", e)
             return null
         }
     }

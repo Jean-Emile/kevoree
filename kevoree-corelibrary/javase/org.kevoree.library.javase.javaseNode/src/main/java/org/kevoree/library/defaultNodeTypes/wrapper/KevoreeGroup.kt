@@ -23,8 +23,9 @@ import org.kevoree.api.service.core.script.KevScriptEngineFactory
 import org.kevoree.library.defaultNodeTypes.reflect.FieldAnnotationResolver
 import org.kevoree.library.defaultNodeTypes.reflect.MethodAnnotationResolver
 import org.kevoree.log.Log
+import java.lang.reflect.InvocationTargetException
 
-public class KevoreeGroup(val target: AbstractGroupType, val nodeName: String, val name: String,val modelService : KevoreeModelHandlerService,val bootService:Bootstraper,val kevsEngine : KevScriptEngineFactory): KInstance {
+public class KevoreeGroup(val target: AbstractGroupType, val nodeName: String, val name: String, val modelService: KevoreeModelHandlerService, val bootService: Bootstraper, val kevsEngine: KevScriptEngineFactory): KInstance {
 
     var isStarted: Boolean = false
     private val resolver = MethodAnnotationResolver(target.javaClass);
@@ -66,6 +67,9 @@ public class KevoreeGroup(val target: AbstractGroupType, val nodeName: String, v
                 (target.getModelService() as ModelHandlerServiceProxy).unsetTempModel()
                 isStarted = true
                 return true
+            }catch(e: InvocationTargetException){
+                Log.error("Kevoree Group Instance Start Error !", e.getCause())
+                return false
             } catch(e: Exception) {
                 Log.error("Kevoree Group Instance Start Error !", e)
                 return false
@@ -85,6 +89,9 @@ public class KevoreeGroup(val target: AbstractGroupType, val nodeName: String, v
                 (target.getModelService() as ModelHandlerServiceProxy).unsetTempModel()
                 isStarted = false
                 return true
+            } catch(e: InvocationTargetException){
+                Log.error("Kevoree Group Instance Stop Error !", e.getCause())
+                return false
             } catch (e: Exception){
                 Log.error("Kevoree Group Instance Stop Error !", e)
                 return false
@@ -107,6 +114,9 @@ public class KevoreeGroup(val target: AbstractGroupType, val nodeName: String, v
                 (target.getModelService() as ModelHandlerServiceProxy).unsetTempModel()
             }
             return previousDictionary as Map<String, Any>?
+        } catch(e: InvocationTargetException){
+            Log.error("Kevoree Group Instance Update Error !", e.getCause())
+            return null
         } catch(e: Exception) {
             Log.error("Kevoree Group Instance Update Error !", e)
             return null
