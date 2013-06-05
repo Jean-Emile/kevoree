@@ -49,8 +49,8 @@ class StartStopInstance(c: Instance, nodeName: String, val start: Boolean): Life
         //Look thread group
         root = c.getTypeDefinition()!!.eContainer() as ContainerRoot
         val ref = KevoreeDeployManager.getRef(c.javaClass.getName()+"_wrapper", c.getName())
-        tg = KevoreeDeployManager.getRef(c.javaClass.getName()+"_tg", c.getName())!! as ThreadGroup
-        if(ref != null && ref is KInstance){
+        tg = KevoreeDeployManager.getRef(c.javaClass.getName()+"_tg", c.getName()) as? ThreadGroup
+        if(tg != null && ref != null && ref is KInstance){
             iact = ref as KInstance
             t = Thread(tg,this)
             t!!.start()

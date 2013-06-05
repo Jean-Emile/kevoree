@@ -23,6 +23,7 @@ import org.kevoree.api.service.core.script.KevScriptEngineFactory
 import org.kevoree.library.defaultNodeTypes.reflect.MethodAnnotationResolver
 import org.kevoree.library.defaultNodeTypes.reflect.FieldAnnotationResolver
 import org.kevoree.log.Log
+import java.lang.reflect.InvocationTargetException
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
@@ -126,6 +127,10 @@ public class KevoreeComponent(val ct: AbstractComponentType, val nodeName: Strin
                 }
                 ct_started = true
                 return true
+            } catch(e : InvocationTargetException){
+                Log.error("Kevoree Component Instance Start Error !", e.getCause())
+                ct_started = true //WE PUT COMPONENT IN START STATE TO ALLOW ROLLBACK TO UNSET VARIABLE
+                return false
             } catch(e: Exception) {
                 Log.error("Kevoree Component Instance Start Error !", e)
                 ct_started = true //WE PUT COMPONENT IN START STATE TO ALLOW ROLLBACK TO UNSET VARIABLE
@@ -151,6 +156,10 @@ public class KevoreeComponent(val ct: AbstractComponentType, val nodeName: Strin
                 (getKevoreeComponentType().getModelService() as ModelHandlerServiceProxy).unsetTempModel()
                 ct_started = false
                 return true
+            } catch(e : InvocationTargetException){
+                Log.error("Kevoree Component Instance Stop Error !", e.getCause())
+                return false
+
             } catch(e: Exception) {
                 Log.error("Kevoree Component Instance Stop Error !", e)
                 return false
@@ -173,6 +182,9 @@ public class KevoreeComponent(val ct: AbstractComponentType, val nodeName: Strin
                 (getKevoreeComponentType().getModelService() as ModelHandlerServiceProxy).unsetTempModel()
             }
             return previousDictionary as Map<String, Any>?
+        } catch(e : InvocationTargetException){
+            Log.error("Kevoree Component Instance Update Error !", e.getCause())
+            return null
         } catch(e: Exception) {
             Log.error("Kevoree Component Instance Update Error !", e)
             return null
