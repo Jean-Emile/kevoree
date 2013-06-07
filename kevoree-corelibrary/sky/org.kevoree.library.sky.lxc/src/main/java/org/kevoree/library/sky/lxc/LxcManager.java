@@ -11,6 +11,8 @@ import org.kevoree.library.sky.lxc.utils.FileManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -22,6 +24,7 @@ import java.io.InputStreamReader;
  */
 public class LxcManager {
 
+    private static String clone_id = "cloneubuntu";
 
     private void updateNetworkProperties(ContainerRoot model, String remoteNodeName, String address) {
         System.out.println("set "+remoteNodeName+" "+address);
@@ -34,6 +37,7 @@ public class LxcManager {
             System.out.println("Creating container " + id + " OS " + operating_system);
 
             String clone_target ="";
+            // TODO remove
             if(operating_system.contains("ubuntu")){
                 clone_target = "cloneubuntu";
             }    else    {
@@ -72,8 +76,22 @@ public class LxcManager {
 
     }
 
+    public static List<String> getNodes() throws IOException {
+        List<String> containers = new ArrayList<String>();
+        Process processcreate = new ProcessBuilder("/bin/lxc-list-containers").redirectErrorStream(true).start();
+        BufferedReader input =  new BufferedReader(new InputStreamReader(processcreate.getInputStream()));
+        String line;
+        while ((line = input.readLine()) != null){
+            if(!line.equals(clone_id)){
+                containers.add(line);
+            }
+        }
+        input.close();
+        return containers;
+    }
 
-    public String getIP(String id)  {
+
+    public static  String getIP(String id)  {
         String line;
         try {
             Process processcreate = new ProcessBuilder("/bin/lxc-ip","-n",id).redirectErrorStream(true).start();
