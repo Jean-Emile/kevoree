@@ -23,4 +23,8 @@ class AddNodeCommand(iaasModel: ContainerRoot,targetChildName : String,node: Abs
   def undo () {
     node.getNodeManager.removeNode(iaasModel,targetChildName)
   }
+
+  override def toString:String ={
+    "AddNode " + targetChildName
+  }
 }

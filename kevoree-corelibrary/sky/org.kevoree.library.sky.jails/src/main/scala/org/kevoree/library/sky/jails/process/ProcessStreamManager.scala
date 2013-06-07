@@ -22,7 +22,9 @@ class ProcessStreamManager (resultActor: ResultManagementActor, inputStream: Inp
       val reader = new BufferedReader(new InputStreamReader(inputStream))
       var line = reader.readLine()
       while (line != null) {
-
+        if (logger.isTraceEnabled) {
+          logger.trace(line)
+        }
         outputRegexes.find(regex => {
           val m = regex.pattern.matcher(line)
           m.find()
@@ -40,7 +42,7 @@ class ProcessStreamManager (resultActor: ResultManagementActor, inputStream: Inp
         line = reader.readLine()
       }
     } catch {
-      case _@e =>
+      case _@e => logger.debug("Unable to read inputStream", e)
     }
     logger.debug("waiting for the end of the process")
     val exitValue = p.waitFor()

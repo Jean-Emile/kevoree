@@ -22,7 +22,6 @@ class ProcessStreamFileLogger (inputStream: InputStream, file: File) extends Run
         }
         var lineIn = readerIn.readLine()
         while (lineIn != null) {
-          //            logger.info(lineIn)
           outputStream.write(lineIn + "\n")
           outputStream.flush()
           lineIn = readerIn.readLine()

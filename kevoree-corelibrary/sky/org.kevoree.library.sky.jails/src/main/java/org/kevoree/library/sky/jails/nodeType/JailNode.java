@@ -68,18 +68,16 @@ public class JailNode extends AbstractIaaSNode {
         super.updateNode();
     }
 
-    protected boolean isDaemon() {
-        return true;
-    }
-
     public void modelUpdated() {
         if (initialization) {
+            initialization = false;
             KevScriptEngine kengine = getKevScriptEngineFactory().createKevScriptEngine();
             // look at all the vms that are already defined and add them on the model
             if (JailsReasoner.createNodes(kengine, this)) {
+                getModelService().unregisterModelListener(this);
                 updateModel(kengine);
+                getModelService().registerModelListener(this);
             }
-            initialization = false;
         }
     }
 

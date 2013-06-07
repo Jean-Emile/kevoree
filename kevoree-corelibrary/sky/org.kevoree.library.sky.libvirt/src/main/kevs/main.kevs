@@ -8,6 +8,8 @@ addNode node0 : LibVirtLXCNode  { coreLogLevel="WARN",logLevel="DEBUG"}
 addGroup sync : BasicGroup
 addToGroup sync node0
 
+addComponent LogBackConfigurator@node0 : LogBackConfigurator
+
 addComponent webServer@node0 : KTinyWebServer {port = "8080", timeout = "5000"}
 addComponent iaasPage@node0 : IaaSKloudResourceManagerPage { urlpattern="/iaas"}
 addComponent iaasManager@node0 : IaaSKloudManager

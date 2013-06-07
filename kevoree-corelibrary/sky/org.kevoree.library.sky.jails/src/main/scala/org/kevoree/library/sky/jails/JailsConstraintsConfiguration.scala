@@ -237,5 +237,19 @@ object JailsConstraintsConfiguration {
     result._1
   }
 
+  def getJailConstraints(nodeName : String): (Boolean, List[(String, String)]) = {
+    val exec = Array[String]("rctl", "-l", "jail:" + nodeName)
+    val resultActor = new ResultManagementActor()
+    resultActor.starting()
+    logger.debug("running {}", exec)
+    val p = Runtime.getRuntime.exec(exec)
+    new Thread(new ProcessStreamManager(resultActor, p.getInputStream, Array(new Regex(".*")), Array(), p)).start()
+    val result = resultActor.waitingFor(500)
+    /*if (!result._1) {
+      logger.debug("unable to remove jail limitations:\n{}", result._2)
+    }*/
+    // TODO
+    (result._1, List[(String, String)]())
+  }
 
 }

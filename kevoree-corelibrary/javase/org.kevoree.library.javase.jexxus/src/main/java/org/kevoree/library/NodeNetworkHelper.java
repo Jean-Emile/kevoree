@@ -61,7 +61,7 @@ public class NodeNetworkHelper {
         ContainerRoot readWriteModel = cloner.clone(group.getModelService().getLastModel());
         if (ipObject != null && !ipObject.toString().equals("") && !ipObject.toString().equals("0.0.0.0")) {
             java.util.HashMap<String,String> addresses = new java.util.HashMap<String,String>();
-            addresses.put(ipObject.toString(),"unknown");
+            addresses.put(ipObject.toString(),"unknown-" + ipObject.toString());
             return addNetworkProperty(readWriteModel, group.getNodeName(),addresses, group.getKevScriptEngineFactory());
         } else {
             java.util.HashMap<String,String> addresses = getAddresses();

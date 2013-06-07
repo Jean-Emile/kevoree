@@ -9,6 +9,8 @@ import org.kevoree.library.sky.api.property.PropertyConversionHelper
 import org.kevoree.library.sky.api.nodeType.AbstractHostNode
 import org.kevoree.library.sky.api.nodeType.helper.SubnetUtils
 import scala.Array
+import org.kevoree.library.sky.jails.JailsConstraintsConfiguration
+import org.kevoree.{ContainerRoot, ContainerNode}
 
 
 /**
@@ -25,32 +27,52 @@ class ProcessExecutor() {
   private val listJailsProcessBuilder = new ProcessBuilder
   listJailsProcessBuilder.command("/usr/local/bin/ezjail-admin", "list")
 
+  val jlsPattern = ".* ip4.addr=((?:(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?),?)*) .* ip6.addr=(?:(?:(?:([0-9a-zA-Z]{0,4}:?){8}),?)*) .*"
+  val jlsRegex = new Regex(jlsPattern)
+
   val ezjailListPattern = "(D.?)\\ \\ *([0-9][0-9]*|N/A)\\ \\ *((?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\\ \\ *([a-zA-Z0-9\\.][a-zA-Z0-9_\\.]*)\\ \\ *((?:(?:/[a-zA-Z0-9_\\.][a-zA-Z0-9_\\.]*)*))"
   val ezjailListRegex = new Regex(ezjailListPattern)
-
 
   val ifconfig = "/sbin/ifconfig"
   val ezjailAdmin = "/usr/local/bin/ezjail-admin"
   val jexec = "/usr/sbin/jexec"
 
-  def listIpJails(nodeName: String): (Boolean, List[String]) = {
-    // looking for currently launched jail
+  var currentProcess: Process = null
+
+  def listJails(): (Boolean, List[(String, String, String)]) = {
     val resultActor = new ResultManagementActor()
     resultActor.starting()
-    val p = listJailsProcessBuilder.start()
-    new Thread(new ProcessStreamManager(resultActor, p.getInputStream, Array(ezjailListRegex), Array(), p)).start()
+    currentProcess = listJailsProcessBuilder.start()
+    new Thread(new ProcessStreamManager(resultActor, currentProcess.getInputStream, Array(ezjailListRegex), Array(), currentProcess)).start()
     val result = resultActor.waitingFor(2000)
-    var notFound = true
-    var ips: List[String] = List[String]()
+    var jailConfigurations = List[(String, String, String)]()
     if (result._1) {
       result._2.split("\n").foreach {
         line =>
           line match {
             case ezjailListRegex(tmp, jid, ip, name, path) => {
-              if (name == nodeName) {
-                notFound = false
+              val resultActor = new ResultManagementActor()
+              resultActor.starting()
+              currentProcess = Runtime.getRuntime.exec(Array[String]("jls", "-n", "-j", jid))
+              new Thread(new ProcessStreamManager(resultActor, currentProcess.getInputStream, Array(jlsRegex), Array(), currentProcess)).start()
+              val result2 = resultActor.waitingFor(2000)
+              var ips = ""
+              if (result2._1) {
+                result2._2.split("\n").foreach {
+                  line2 =>
+                    line2 match {
+                      case jlsRegex(ipsv4, ipsv6) => {
+                        if (ips == "") {
+                          ips = ipsv4 + "," + ipsv6
+                        } else {
+                        ips = ips + "," + ipsv4 + "," + ipsv6
+                        }
+                      }
+                      case _ =>
+                    }
+                }
               }
-              ips = ips ++ List(ip)
+              jailConfigurations = jailConfigurations ++ List[(String, String, String)]((jid, ips, name))
             }
             case _ =>
           }
@@ -59,18 +81,114 @@ class ProcessExecutor() {
       logger.debug(result._2)
     }
 
-    (result._1 && notFound, ips)
+    (result._1, jailConfigurations)
+  }
+
+  def isAlreadyExistingJail(nodeName: String): Boolean = {
+    // looking for currently launched jail
+    val resultActor = new ResultManagementActor()
+    resultActor.starting()
+    currentProcess = listJailsProcessBuilder.start()
+    new Thread(new ProcessStreamManager(resultActor, currentProcess.getInputStream, Array(ezjailListRegex), Array(), currentProcess)).start()
+    val result = resultActor.waitingFor(2000)
+    var found = false
+    if (result._1) {
+      result._2.split("\n").foreach {
+        line =>
+          line match {
+            case ezjailListRegex(tmp, jid, ip, name, path) => {
+              // already existing jails with the same name
+              if (name == nodeName) {
+                found = true
+              }
+            }
+            case _ =>
+          }
+      }
+    } else {
+      logger.debug(result._2)
+    }
+
+    found
+  }
+
+  def hasSameConfiguration(nodeName: String, nodeips: List[String]): Boolean = {
+    // FIXME check constraints ? or try to update the constraints instead (must be done in JailKevoreeNodeRunner)
+    // looking for currently launched jail
+    val resultActor = new ResultManagementActor()
+    resultActor.starting()
+    currentProcess = listJailsProcessBuilder.start()
+    new Thread(new ProcessStreamManager(resultActor, currentProcess.getInputStream, Array(ezjailListRegex), Array(), currentProcess)).start()
+    val result = resultActor.waitingFor(2000)
+    var found = false
+    if (result._1) {
+      result._2.split("\n").foreach {
+        line =>
+          line match {
+            case ezjailListRegex(tmp, jid, ip, name, path) => {
+              val resultActor = new ResultManagementActor()
+              resultActor.starting()
+              currentProcess = Runtime.getRuntime.exec(Array[String]("jls", "-n", "-j", jid))
+              new Thread(new ProcessStreamManager(resultActor, currentProcess.getInputStream, Array(jlsRegex), Array(), currentProcess)).start()
+              val result = resultActor.waitingFor(2000)
+              if (result._1) {
+                result._2.split("\n").foreach {
+                  line =>
+                    line match {
+                      case jlsRegex(ipsv4, ipsv6) => {
+                        val ips = ipsv4.split(",") ++ ipsv6.split(",")
+                        found = nodeips.forall{
+                          ip =>
+                            ips.exists(p => p == ip)
+                        }
+                      }
+                    }
+                }
+              }
+            }
+            case _ =>
+          }
+      }
+    } else {
+      logger.debug(result._2)
+    }
+    found
+  }
+
+  def listIpAlreadyUsedByJails(): (Boolean, List[String]) = {
+    // looking for currently launched jail
+    val resultActor = new ResultManagementActor()
+    resultActor.starting()
+    currentProcess = listJailsProcessBuilder.start()
+    new Thread(new ProcessStreamManager(resultActor, currentProcess.getInputStream, Array(ezjailListRegex), Array(), currentProcess)).start()
+    val result = resultActor.waitingFor(2000)
+    var ipsList: List[String] = List[String]()
+    if (result._1) {
+      result._2.split("\n").foreach {
+        line =>
+          line match {
+            case ezjailListRegex(tmp, jid, ip, name, path) => {
+              ipsList = ipsList ++ List(ip)
+            }
+            case _ =>
+          }
+      }
+    } else {
+      logger.debug(result._2)
+    }
+
+    (result._1, ipsList)
   }
 
   def addNetworkAlias(networkInterface: String, newIps: List[String], mask: String = "24"): Boolean = {
     newIps.forall {
       newIp =>
         val netmask = new SubnetUtils(newIp + "/" + mask).getInfo.getNetmask
-        logger.debug("running {} {} alias {} netmask {}", Array[String](ifconfig, networkInterface, newIp, netmask))
+        logger.debug("Running {} {} alias {} netmask {}", Array[String](ifconfig, networkInterface, newIp, netmask))
         val resultActor = new ResultManagementActor()
         resultActor.starting()
-        val p = Runtime.getRuntime.exec(Array[String](ifconfig, networkInterface, "alias", newIp, "netmask", netmask))
-        new Thread(new ProcessStreamManager(resultActor, p.getInputStream, Array(), Array(new Regex("ifconfig: ioctl \\(SIOCDIFADDR\\): .*")), p)).start()
+        currentProcess = Runtime.getRuntime.exec(Array[String](ifconfig, networkInterface, "alias", newIp, "netmask", netmask))
+        new Thread(new ProcessStreamManager(resultActor, currentProcess.getInputStream, Array(), Array(new Regex("ifconfig: ioctl \\(SIOCDIFADDR\\): .*")), currentProcess)).start()
         val result = resultActor.waitingFor(1000)
         if (!result._1) {
           logger.debug("Unable to configure alias: {}", result._2)
@@ -84,18 +202,18 @@ class ProcessExecutor() {
     var exec = Array[String]()
     if (flavor == null) {
       // TODO add archive attribute and use it to save the jail => the archive must be available from all nodes of the network
-      logger.debug("running {} create {} {}", Array[String](ezjailAdmin, nodeName, newIps.mkString(",")))
+      logger.debug("Running {} create {} {}", Array[String](ezjailAdmin, nodeName, newIps.mkString(",")))
       exec = Array[String](ezjailAdmin, "create") ++ Array[String](nodeName, newIps.mkString(","))
     } else {
       // TODO add archive attribute and use it to save the jail => the archive must be available from all nodes of the network
-      logger.debug("running {} create -f {} {} {}", Array[String](ezjailAdmin, flavor, nodeName, newIps.mkString(",")))
+      logger.debug("Running {} create -f {} {} {}", Array[String](ezjailAdmin, flavor, nodeName, newIps.mkString(",")))
       exec = Array[String](ezjailAdmin, "create", "-f") ++ Array[String](flavor) ++ Array[String](nodeName, newIps.mkString(","))
     }
 
     val resultActor = new ResultManagementActor()
     resultActor.starting()
-    val p = Runtime.getRuntime.exec(exec)
-    new Thread(new ProcessStreamManager(resultActor, p.getErrorStream, Array(), Array(new Regex("^Error.*")), p)).start()
+    currentProcess = Runtime.getRuntime.exec(exec)
+    new Thread(new ProcessStreamManager(resultActor, currentProcess.getErrorStream, Array(), Array(new Regex("^Error.*")), currentProcess)).start()
     val result = resultActor.waitingFor(timeout)
     if (!result._1) {
       logger.debug(result._2)
@@ -103,12 +221,11 @@ class ProcessExecutor() {
     result._1
   }
 
-
   def findPathForJail(nodeName: String): String = {
     val resultActor = new ResultManagementActor()
     resultActor.starting()
-    val p = listJailsProcessBuilder.start()
-    new Thread(new ProcessStreamManager(resultActor, p.getInputStream, Array(ezjailListRegex), Array(), p)).start()
+    currentProcess = listJailsProcessBuilder.start()
+    new Thread(new ProcessStreamManager(resultActor, currentProcess.getInputStream, Array(ezjailListRegex), Array(), currentProcess)).start()
     val result = resultActor.waitingFor(1000)
     var jailPath = ""
     if (result._1) {
@@ -130,11 +247,11 @@ class ProcessExecutor() {
   }
 
   def startJail(nodeName: String, timeout: Long): Boolean = {
-    logger.debug("running {} onestart {}", Array[String](ezjailAdmin, nodeName))
+    logger.debug("Running {} onestart {}", Array[String](ezjailAdmin, nodeName))
     val resultActor = new ResultManagementActor()
     resultActor.starting()
-    val p = Runtime.getRuntime.exec(Array[String](ezjailAdmin, "onestart", nodeName))
-    new Thread(new ProcessStreamManager(resultActor, p.getErrorStream, Array(), Array(), p)).start()
+    currentProcess = Runtime.getRuntime.exec(Array[String](ezjailAdmin, "onestart", nodeName))
+    new Thread(new ProcessStreamManager(resultActor, currentProcess.getErrorStream, Array(), Array(), currentProcess)).start()
     val result = resultActor.waitingFor(timeout)
     if (!result._1) {
       logger.debug(result._2)
@@ -145,8 +262,8 @@ class ProcessExecutor() {
   def findJail(nodeName: String): (String, String, String) = {
     val resultActor = new ResultManagementActor()
     resultActor.starting()
-    val p = listJailsProcessBuilder.start()
-    new Thread(new ProcessStreamManager(resultActor, p.getInputStream, Array(ezjailListRegex), Array(), p)).start()
+    currentProcess = listJailsProcessBuilder.start()
+    new Thread(new ProcessStreamManager(resultActor, currentProcess.getInputStream, Array(ezjailListRegex), Array(), currentProcess)).start()
     val result = resultActor.waitingFor(1000)
     var jailPath = "-1"
     var jailId = "-1"
@@ -205,7 +322,7 @@ class ProcessExecutor() {
         false
       } catch {
         case e: IllegalThreadStateException => {
-          logger.debug("platform {} is started", nodeName)
+          logger.debug("Platform {} is started", nodeName)
           true
         }
       }
@@ -215,12 +332,16 @@ class ProcessExecutor() {
 
   }
 
+  def defineJailConstraints(iaasModel: ContainerRoot, node: ContainerNode): Boolean = {
+    JailsConstraintsConfiguration.applyJailConstraints(iaasModel, node)
+  }
+
   def stopJail(nodeName: String, timeout: Long): Boolean = {
     val resultActor = new ResultManagementActor()
     resultActor.starting()
-    logger.debug("running {} onestop {}", Array[String](ezjailAdmin, nodeName))
-    val p = Runtime.getRuntime.exec(Array[String](ezjailAdmin, "onestop", nodeName))
-    new Thread(new ProcessStreamManager(resultActor, p.getInputStream, Array(), Array(), p)).start()
+    logger.debug("Running {} onestop {}", Array[String](ezjailAdmin, nodeName))
+    currentProcess = Runtime.getRuntime.exec(Array[String](ezjailAdmin, "onestop", nodeName))
+    new Thread(new ProcessStreamManager(resultActor, currentProcess.getInputStream, Array(), Array(), currentProcess)).start()
     val result = resultActor.waitingFor(timeout)
     if (!result._1) {
       logger.debug(result._2)
@@ -231,9 +352,9 @@ class ProcessExecutor() {
   def deleteJail(nodeName: String, timeout: Long): Boolean = {
     val resultActor = new ResultManagementActor()
     resultActor.starting()
-    logger.debug("running {} delete -w {}", Array[String](ezjailAdmin, nodeName))
-    val p = Runtime.getRuntime.exec(Array[String](ezjailAdmin, "delete", "-w", nodeName))
-    new Thread(new ProcessStreamManager(resultActor, p.getInputStream, Array(), Array(), p)).start()
+    logger.debug("Running {} delete -w {}", Array[String](ezjailAdmin, nodeName))
+    currentProcess = Runtime.getRuntime.exec(Array[String](ezjailAdmin, "delete", "-w", nodeName))
+    new Thread(new ProcessStreamManager(resultActor, currentProcess.getInputStream, Array(), Array(), currentProcess)).start()
     val result = resultActor.waitingFor(timeout)
     if (!result._1) {
       logger.debug(result._2)
@@ -244,13 +365,17 @@ class ProcessExecutor() {
   def deleteNetworkAlias(networkInterface: String, oldIP: String): Boolean = {
     val resultActor = new ResultManagementActor()
     resultActor.starting()
-    logger.debug("running {} {} -alias {}", Array[String](ezjailAdmin, networkInterface, oldIP))
-    val p = Runtime.getRuntime.exec(Array[String](ifconfig, networkInterface, "-alias", oldIP))
-    new Thread(new ProcessStreamManager(resultActor, p.getInputStream, Array(), Array(new Regex("ifconfig: ioctl \\(SIOCDIFADDR\\): .*")), p)).start()
+    logger.debug("Running {} {} -alias {}", Array[String](ezjailAdmin, networkInterface, oldIP))
+    currentProcess = Runtime.getRuntime.exec(Array[String](ifconfig, networkInterface, "-alias", oldIP))
+    new Thread(new ProcessStreamManager(resultActor, currentProcess.getInputStream, Array(), Array(new Regex("ifconfig: ioctl \\(SIOCDIFADDR\\): .*")), currentProcess)).start()
     val result = resultActor.waitingFor(1000)
     if (!result._1) {
       logger.debug(result._2)
     }
     result._1
+  }
+
+  def waitProcess() {
+    currentProcess.waitFor()
   }
 }
