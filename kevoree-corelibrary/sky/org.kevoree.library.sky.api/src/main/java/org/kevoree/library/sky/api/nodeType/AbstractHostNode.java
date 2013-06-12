@@ -1,13 +1,11 @@
 package org.kevoree.library.sky.api.nodeType;
 
-import org.kevoree.ContainerRoot;
 import org.kevoree.annotation.*;
 import org.kevoree.library.defaultNodeTypes.JavaSENode;
+import org.kevoree.library.sky.api.CommandMapper;
 import org.kevoree.library.sky.api.KevoreeNodeManager;
 import org.kevoree.library.sky.api.KevoreeNodeRunner;
 import org.kevoree.library.sky.api.PlanningManager;
-import org.kevoreeadaptation.AdaptationModel;
-import org.kevoreeadaptation.AdaptationPrimitive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +36,9 @@ public abstract class AbstractHostNode extends JavaSENode implements HostNode {
 	@Override
 	public void startNode () {
 		super.startNode();
+        kompareBean = new PlanningManager(this);
+        mapper = new CommandMapper(this);
+        mapper.setNodeType(this);
 		nodeManager = new KevoreeNodeManager(this);
 	}
 
@@ -59,21 +60,21 @@ public abstract class AbstractHostNode extends JavaSENode implements HostNode {
 		return (role != null && role.contains("container"));
 	}
 
-	public AdaptationModel superKompare (ContainerRoot current, ContainerRoot target) {
+	/*public AdaptationModel superKompare (ContainerRoot current, ContainerRoot target) {
 		return super.kompare(current, target);
-	}
+	}*/
 
-	@Override
+	/*@Override
 	public AdaptationModel kompare (ContainerRoot current, ContainerRoot target) {
-		return PlanningManager.kompare(current, target, this);
-	}
+		return kompareBean.kompare(current, target, this);
+	}*/
 
-	public org.kevoree.api.PrimitiveCommand superGetPrimitive (AdaptationPrimitive adaptationPrimitive) {
+	/*public org.kevoree.api.PrimitiveCommand superGetPrimitive (AdaptationPrimitive adaptationPrimitive) {
 		return super.getPrimitive(adaptationPrimitive);
-	}
+	}*/
 
-	@Override
+	/*@Override
 	public org.kevoree.api.PrimitiveCommand getPrimitive (AdaptationPrimitive adaptationPrimitive) {
-		return PlanningManager.getPrimitive(adaptationPrimitive, this);
-	}
+		return kompareBean.getPrimitive(adaptationPrimitive, this);
+	}*/
 }

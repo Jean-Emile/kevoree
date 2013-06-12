@@ -8,6 +8,8 @@ import org.kevoree._
 import api.PrimitiveCommand
 import org.kevoreeadaptation.impl.DefaultKevoreeAdaptationFactory
 import scala.collection.JavaConversions._
+import org.kevoree.kompare.{JavaSePrimitive, KevoreeKompareBean}
+import org.kevoree.kompare.scheduling.SchedulingWithTopologicalOrderAlgo
 
 
 /**
@@ -19,14 +21,14 @@ import scala.collection.JavaConversions._
  * @version 1.0
  */
 
-object PlanningManager {
-  private val logger: Logger = LoggerFactory.getLogger(PlanningManager.getClass)
+class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def kompare(current: ContainerRoot, target: ContainerRoot, skyNode: AbstractHostNode): AdaptationModel = {
+  override def compareModels(current: ContainerRoot, target: ContainerRoot, nodeName: String): AdaptationModel = {
     val factory = new DefaultKevoreeAdaptationFactory
     val adaptationModel: AdaptationModel = factory.createAdaptationModel
-    var step: ParallelStep = factory.createParallelStep
-    adaptationModel.setOrderedPrimitiveSet(step)
+//    var step: ParallelStep = factory.createParallelStep
+//    adaptationModel.setOrderedPrimitiveSet(step)
     if (skyNode.isHost) {
       var removeNodeType: AdaptationPrimitiveType = null
       var addNodeType: AdaptationPrimitiveType = null
@@ -70,11 +72,11 @@ object PlanningManager {
                       val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                       command.setPrimitiveType(removeNodeType)
                       command.setRef(subNode)
-                      val subStep: ParallelStep = factory.createParallelStep
-                      subStep.addAdaptations(command)
+//                      val subStep: ParallelStep = factory.createParallelStep
+//                      subStep.addAdaptations(command)
                       adaptationModel.addAdaptations(command)
-                      step.setNextStep(subStep)
-                      step = subStep
+//                      step.setNextStep(subStep)
+//                      step = subStep
                     }
                     case subNode1: ContainerNode =>
                   }
@@ -88,11 +90,11 @@ object PlanningManager {
                   val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                   command.setPrimitiveType(removeNodeType)
                   command.setRef(subNode)
-                  val subStep: ParallelStep = factory.createParallelStep
-                  subStep.addAdaptations(command)
+//                  val subStep: ParallelStep = factory.createParallelStep
+//                  subStep.addAdaptations(command)
                   adaptationModel.addAdaptations(command)
-                  step.setNextStep(subStep)
-                  step = subStep
+//                  step.setNextStep(subStep)
+//                  step = subStep
               }
             }
           }
@@ -112,11 +114,11 @@ object PlanningManager {
                       val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                       command.setPrimitiveType(addNodeType)
                       command.setRef(subNode)
-                      val subStep: ParallelStep = factory.createParallelStep
-                      subStep.addAdaptations(command)
+//                      val subStep: ParallelStep = factory.createParallelStep
+//                      subStep.addAdaptations(command)
                       adaptationModel.addAdaptations(command)
-                      step.setNextStep(subStep)
-                      step = subStep
+//                      step.setNextStep(subStep)
+//                      step = subStep
                     }
                     case subNode1: ContainerNode =>
                   }
@@ -130,11 +132,11 @@ object PlanningManager {
                   val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                   command.setPrimitiveType(addNodeType)
                   command.setRef(subNode)
-                  val subStep: ParallelStep = factory.createParallelStep
-                  subStep.addAdaptations(command)
+//                  val subStep: ParallelStep = factory.createParallelStep
+//                  subStep.addAdaptations(command)
                   adaptationModel.addAdaptations(command)
-                  step.setNextStep(subStep)
-                  step = subStep
+//                  step.setNextStep(subStep)
+//                  step = subStep
               }
             }
           }
@@ -143,15 +145,151 @@ object PlanningManager {
       }
     }
     logger.debug("Adaptation model contain {} Host node primitives", adaptationModel.getAdaptations.size)
-    val superModel: AdaptationModel = skyNode.superKompare(current, target)
+    //    val superModel: AdaptationModel = skyNode.superKompare(current, target)
+
+    val superModel = super.compareModels(current, target, nodeName)
+
     if (!skyNode.isContainer && isContaining(superModel.getOrderedPrimitiveSet)) {
       throw new Exception("This node is not a container (see \"role\" attribute)")
     }
     adaptationModel.addAllAdaptations(superModel.getAdaptations)
-    step.setNextStep(superModel.getOrderedPrimitiveSet)
+    //    step.setNextStep(superModel.getOrderedPrimitiveSet)
     logger.debug("Adaptation model contain {} primitives", adaptationModel.getAdaptations.size)
-
     adaptationModel
+  }
+
+
+  override def plan(adaptationModel: AdaptationModel, p2: String): AdaptationModel = {
+    if (!adaptationModel.getAdaptations.isEmpty) {
+
+      val adaptationModelFactory = new org.kevoreeadaptation.impl.DefaultKevoreeAdaptationFactory()
+      val scheduling = new SchedulingWithTopologicalOrderAlgo()
+      nextStep()
+      adaptationModel.setOrderedPrimitiveSet(getCurrentStep)
+
+      // TODO STOP child nodes
+
+      // REMOVE child nodes
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == HostNode.REMOVE_NODE
+      })
+
+      nextStep()
+
+      //PROCESS STOP
+      scheduling.schedule(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getStopInstance
+      }, false).foreach {
+        p =>
+          getStep.addAdaptations(p)
+          setStep(adaptationModelFactory.createParallelStep())
+          getCurrentStep.setNextStep(getStep)
+          setCurrentStep(getStep)
+      }
+      // REMOVE BINDINGS
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt =>
+          adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getRemoveBinding ||
+            adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getRemoveFragmentBinding
+      })
+      if (!getStep.getAdaptations.isEmpty) {
+        setStep(adaptationModelFactory.createParallelStep())
+        getCurrentStep.setNextStep(getStep)
+        setCurrentStep(getStep)
+      }
+
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getRemoveInstance
+      })
+
+      nextStep()
+
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getRemoveType
+      })
+
+      nextStep()
+
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getRemoveDeployUnit
+      })
+
+      nextStep()
+
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getAddThirdParty
+      })
+
+      nextStep()
+
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getUpdateDeployUnit
+      })
+
+      nextStep()
+
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getAddDeployUnit
+      })
+
+      nextStep()
+
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getAddType
+      })
+
+      nextStep()
+
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getAddInstance
+      })
+
+      nextStep()
+
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt =>
+          adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getAddBinding ||
+            adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getAddFragmentBinding
+      })
+
+      nextStep()
+
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getUpdateDictionaryInstance
+      })
+
+      nextStep()
+
+
+      // ADD child nodes
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == HostNode.ADD_NODE
+      })
+
+      nextStep()
+      // TODO START child nodes
+
+      var oldStep = getCurrentStep
+      //PROCESS START
+      scheduling.schedule(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getStartInstance
+      }, true).foreach {
+        p =>
+          getStep.addAdaptations(p)
+          setStep(adaptationModelFactory.createParallelStep())
+          getCurrentStep.setNextStep(getStep)
+          oldStep = getCurrentStep
+          setCurrentStep(getStep)
+      }
+      if (getStep.getAdaptations.isEmpty) {
+        oldStep.setNextStep(null)
+      }
+    } else {
+      adaptationModel.setOrderedPrimitiveSet(null)
+    }
+    clearSteps()
+    adaptationModel
+
   }
 
   private def isContaining(step: ParallelStep): Boolean = {
@@ -168,28 +306,5 @@ object PlanningManager {
     } else {
       false
     }
-  }
-
-  def getPrimitive(adaptationPrimitive: AdaptationPrimitive, skyNode: AbstractHostNode): PrimitiveCommand = {
-    logger.debug("ask for primitiveCommand corresponding to {}", adaptationPrimitive.getPrimitiveType.getName)
-    var command: PrimitiveCommand = null
-    if (adaptationPrimitive.getPrimitiveType.getName == HostNode.REMOVE_NODE) {
-      logger.debug("add REMOVE_NODE command on {}", (adaptationPrimitive.getRef.asInstanceOf[ContainerNode]).getName)
-
-      val targetNode = adaptationPrimitive.getRef.asInstanceOf[ContainerNode]
-      val targetNodeRoot = adaptationPrimitive.getRef.asInstanceOf[ContainerNode].eContainer.asInstanceOf[ContainerRoot]
-      command = new RemoveNodeCommand(targetNodeRoot, targetNode.getName, skyNode)
-    }
-    else if (adaptationPrimitive.getPrimitiveType.getName == HostNode.ADD_NODE) {
-      logger.debug("add ADD_NODE command on {}", (adaptationPrimitive.getRef.asInstanceOf[ContainerNode]).getName)
-
-      val targetNode = adaptationPrimitive.getRef.asInstanceOf[ContainerNode]
-      val targetNodeRoot = adaptationPrimitive.getRef.asInstanceOf[ContainerNode].eContainer.asInstanceOf[ContainerRoot]
-      command = new AddNodeCommand(targetNodeRoot, targetNode.getName, skyNode)
-    }
-    if (command == null) {
-      command = skyNode.superGetPrimitive(adaptationPrimitive)
-    }
-    command
   }
 }
