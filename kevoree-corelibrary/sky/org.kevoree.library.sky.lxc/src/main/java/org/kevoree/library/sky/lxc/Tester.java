@@ -1,5 +1,5 @@
 package org.kevoree.library.sky.lxc;
-
+ /*
 import org.kevoree.ContainerRoot;
 import org.kevoree.KevoreeFactory;
 import org.kevoree.api.service.core.script.KevScriptEngineException;
@@ -12,7 +12,7 @@ import org.kevoreeadaptation.AdaptationModel;
 import org.kevoreeadaptation.AdaptationPrimitive;
 
 import java.util.HashMap;
-
+ */
 /**
  * Created with IntelliJ IDEA.
  * User: jed
@@ -23,8 +23,8 @@ import java.util.HashMap;
 public class Tester {
 
 
-    public static void main(String argv[]) throws KevScriptEngineException {
-
+    public static void main(String argv[])  {
+          /*
         LxcHostNode node = new LxcHostNode();
 
         node.setNodeName("node0");
@@ -74,7 +74,7 @@ public class Tester {
         {
             System.out.println(p.getPrimitiveType()) ;
         }
-              System.exit(0);
+              System.exit(0);      */
     }
 
 
