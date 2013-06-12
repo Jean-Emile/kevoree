@@ -5,11 +5,7 @@ import org.kevoree.ContainerNode;
 import org.kevoree.ContainerRoot;
 import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.library.sky.api.KevoreeNodeRunner;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Map;
+import org.kevoree.log.Log;
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,15 +28,14 @@ public class LxcNodeRunner extends KevoreeNodeRunner {
 
     @Override
     public boolean startNode(ContainerRoot iaasModel, ContainerRoot childBootStrapModel) {
+        Log.debug("startNode " + nodeName + "  parent = " + iaasNode.getNodeName());
         ContainerNode node =    iaasModel.findByPath("nodes[" + iaasNode.getName() + "]/hosts[" + nodeName + "]", ContainerNode.class);
-        String operating_system = KevoreePropertyHelper.instance$.getProperty(node, "OS", false, "") ;
-
-
-        return    lxcManager.start(nodeName,operating_system,iaasNode,iaasModel);
+        String id_clone = KevoreePropertyHelper.instance$.getProperty(node, "idclone", false, "") ;
+        return    lxcManager.start(nodeName,id_clone,iaasNode,iaasModel);
     }
 
     @Override
     public boolean stopNode() {
-        return   lxcManager.destroy(nodeName);
+        return   lxcManager.stop(nodeName,false);
     }
 }

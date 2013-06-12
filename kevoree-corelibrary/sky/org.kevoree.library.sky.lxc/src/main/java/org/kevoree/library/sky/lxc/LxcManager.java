@@ -3,10 +3,15 @@ package org.kevoree.library.sky.lxc;
 import org.kevoree.ContainerNode;
 import org.kevoree.ContainerRoot;
 import org.kevoree.api.service.core.handler.UUIDModel;
+import org.kevoree.api.service.core.script.KevScriptEngine;
+import org.kevoree.api.service.core.script.KevScriptEngineException;
+import org.kevoree.api.service.core.script.KevScriptEngineFactory;
 import org.kevoree.cloner.ModelCloner;
 import org.kevoree.framework.KevoreePlatformHelper;
 import org.kevoree.framework.KevoreePropertyHelper;
+import org.kevoree.impl.DefaultKevoreeFactory;
 import org.kevoree.library.sky.lxc.utils.FileManager;
+import org.kevoree.log.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,48 +29,59 @@ import java.util.List;
  */
 public class LxcManager {
 
-    private static String clone_id = "cloneubuntu";
+    private  String clone_id = "";
+    private final int timeout = 50;
+    public void setClone_id(String id){
+        this.clone_id = id;
+    }
 
     private void updateNetworkProperties(ContainerRoot model, String remoteNodeName, String address) {
-        System.out.println("set "+remoteNodeName+" "+address);
+        Log.debug("set "+remoteNodeName+" "+address);
         KevoreePlatformHelper.instance$.updateNodeLinkProp(model, remoteNodeName, remoteNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), address, "LAN", 100);
     }
 
-    public boolean start(String id, String operating_system, LxcHostNode service, ContainerRoot iaasModel){
+
+    public void lxc_start(String id) throws InterruptedException, IOException {
+
+        Log.debug("Starting container " + id);
+        Process lxcstartprocess = new ProcessBuilder("lxc-start","-n",id,"-d").start();
+        FileManager.display_message_process(lxcstartprocess.getInputStream());
+        lxcstartprocess.waitFor();
+    }
+    public boolean start(String id, String id_clone, LxcHostNode service, ContainerRoot iaasModel){
         try
         {
-            System.out.println("Creating container " + id + " OS " + operating_system);
+            Log.debug("LxcManager : "+id+" clone =>"+id_clone);
 
-            String clone_target ="";
-            // TODO remove
-            if(operating_system.contains("ubuntu")){
-                clone_target = "cloneubuntu";
-            }    else    {
-                clone_target = "cloneubuntu";
+            if(!getNodes().contains(id))
+            {
+                Log.debug("Creating container " + id + " OS " + id_clone);
+                Process processcreate = new ProcessBuilder("lxc-clone","-o",id_clone,"-n",id).redirectErrorStream(true).start();
+                FileManager.display_message_process(processcreate.getInputStream());
+                processcreate.waitFor();
+            } else
+            {
+                Log.warn("Container {} already exist",iaasModel);
             }
 
-            Process processcreate = new ProcessBuilder("lxc-clone","-o",clone_target,"-n",id).redirectErrorStream(true).start();
-            FileManager.display_message_process(processcreate.getInputStream());
-            processcreate.waitFor();
-
-            System.out.println("Starting container " + id + " OS " + operating_system);
-            Process lxcstartprocess = new ProcessBuilder("lxc-start","-n",id,"-d").start();
-            FileManager.display_message_process(lxcstartprocess.getInputStream());
-            lxcstartprocess.waitFor();
+            lxc_start(id);
 
             String ip =null;
+            int c = 0;
             do {
                 ip = getIP(id) ;
                 Thread.sleep(1000);
-            } while (ip == null);
+                c++;
+            } while (ip == null && c < timeout);
 
-            System.out.println("Container is ready on "+ip);
-
+            Log.debug("Container is ready on "+ip);
 
             ModelCloner cloner = new ModelCloner();
             ContainerRoot readWriteModel = cloner.clone(iaasModel);
             updateNetworkProperties(readWriteModel,id,ip);
             service.getModelService().updateModel(readWriteModel);
+
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -76,20 +92,52 @@ public class LxcManager {
 
     }
 
-    public static List<String> getNodes() throws IOException {
+    public  List<String> getNodes()   {
         List<String> containers = new ArrayList<String>();
-        Process processcreate = new ProcessBuilder("/bin/lxc-list-containers").redirectErrorStream(true).start();
-        BufferedReader input =  new BufferedReader(new InputStreamReader(processcreate.getInputStream()));
-        String line;
-        while ((line = input.readLine()) != null){
-            if(!line.equals(clone_id)){
-                containers.add(line);
+        Process processcreate = null;
+        try {
+            processcreate = new ProcessBuilder("/bin/lxc-list-containers").redirectErrorStream(true).start();
+
+            BufferedReader input =  new BufferedReader(new InputStreamReader(processcreate.getInputStream()));
+            String line;
+            while ((line = input.readLine()) != null){
+                if(!line.equals(clone_id)){
+                    containers.add(line);
+                }
             }
+            input.close();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-        input.close();
         return containers;
     }
 
+
+    public  ContainerRoot buildModelCurrentLxcState(KevScriptEngineFactory factory,String nodename) throws IOException, KevScriptEngineException {
+
+        DefaultKevoreeFactory defaultKevoreeFactory = new DefaultKevoreeFactory();
+        KevScriptEngine  engine = factory.createKevScriptEngine();
+        if(getNodes().size() > 0){
+
+            Log.debug("ADD => "+getNodes()+" in current model");
+
+            engine.append("merge 'mvn:org.kevoree.corelibrary.sky/org.kevoree.library.sky.lxc/"+defaultKevoreeFactory.getVersion()+"'");
+            engine.append("addNode "+nodename+":LxcHostNode");
+
+            for(String node_child_id :getNodes()){
+                engine.append("addNode "+node_child_id+":LxcHostNode");
+                engine.append("updateDictionary "+node_child_id+"{log_folder=\"/tmp\",role=\"host\"}");
+                engine.append("addChild "+node_child_id+"@"+nodename);
+
+                //    String ip = LxcManager.getIP(node_child_id);
+            }
+
+            return   engine.interpret();
+
+
+        }
+        return    defaultKevoreeFactory.createContainerRoot();
+    }
 
     public static  String getIP(String id)  {
         String line;
@@ -105,9 +153,9 @@ public class LxcManager {
 
     }
 
-    public boolean destroy(String id){
+    public boolean stop(String id,boolean destroy){
         try {
-            System.out.println("Stoping container " + id );
+            Log.debug("Stoping container " + id );
             Process lxcstartprocess = new ProcessBuilder("lxc-stop","-n",id).redirectErrorStream(true).start();
 
             FileManager.display_message_process(lxcstartprocess.getInputStream());
@@ -116,15 +164,18 @@ public class LxcManager {
             e.printStackTrace();
             return false;
         }
-        try {
-            System.out.println("Destroying container " + id );
-            Process lxcstartprocess = new ProcessBuilder("lxc-destroy","-n",id).redirectErrorStream(true).start();
-            FileManager.display_message_process(lxcstartprocess.getInputStream());
-            lxcstartprocess.waitFor();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+        if(destroy){
+            try {
+                Log.debug("Destroying container " + id );
+                Process lxcstartprocess = new ProcessBuilder("lxc-stop","-n",id).redirectErrorStream(true).start();
+                FileManager.display_message_process(lxcstartprocess.getInputStream());
+                lxcstartprocess.waitFor();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
         }
+
 
         return true;
     }

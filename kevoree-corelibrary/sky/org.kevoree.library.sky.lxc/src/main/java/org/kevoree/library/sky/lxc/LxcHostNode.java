@@ -5,6 +5,7 @@ import org.kevoree.KevoreeFactory;
 import org.kevoree.annotation.*;
 import org.kevoree.api.service.core.handler.ModelListener;
 import org.kevoree.api.service.core.script.KevScriptEngine;
+import org.kevoree.api.service.core.script.KevScriptEngineException;
 import org.kevoree.impl.DefaultKevoreeFactory;
 import org.kevoree.library.sky.api.KevoreeNodeManager;
 import org.kevoree.library.sky.api.KevoreeNodeRunner;
@@ -24,20 +25,27 @@ import java.io.IOException;
 
 @Library(name = "SKY")
 @DictionaryType({
-        @DictionaryAttribute(name = "OS", defaultValue = "ubuntu", vals = {"busybox", "debian", "fedora","opensuse","ubuntu"})
+        @DictionaryAttribute(name = "idclone", defaultValue = "cloneubuntu") ,
+        @DictionaryAttribute(name = "timebeforeshutdown",defaultValue ="10",optional = false)
 })
 @NodeType
 @PrimitiveCommands(value = {
-        @PrimitiveCommand(name = HostNode.ADD_NODE, maxTime = 120000)
-}, values = {HostNode.REMOVE_NODE})
+        @PrimitiveCommand(name = HostNode.ADD_NODE, maxTime = LxcHostNode.ADD_TIMEOUT),
+        @PrimitiveCommand(name = HostNode.REMOVE_NODE, maxTime = LxcHostNode.REMOVE_TIMEOUT)
+})
 public class LxcHostNode extends AbstractHostNode {
 
+    public static final long ADD_TIMEOUT = 300000l;
+    public static final long REMOVE_TIMEOUT = 180000l;
+    private boolean done = false;
+    private LxcManager lxcManager = new LxcManager();
 
     @Start
     @Override
     public void startNode () {
         super.startNode();
-        // query node
+
+        lxcManager.setClone_id(getDictionary().get("idclone").toString());
 
         getModelService().registerModelListener(new ModelListener() {
             @Override
@@ -52,35 +60,28 @@ public class LxcHostNode extends AbstractHostNode {
 
             @Override
             public boolean afterLocalUpdate(ContainerRoot containerRoot, ContainerRoot containerRoot2) {
-
-                try
-                {
-                    System.out.println("ADD "+LxcManager.getNodes()+" in current model");
-                    KevScriptEngine engine =   getKevScriptEngineFactory().createKevScriptEngine();
-
-                    DefaultKevoreeFactory defaultKevoreeFactory = new DefaultKevoreeFactory();
-
-                        engine.append("merge 'mvn:org.kevoree.corelibrary.sky/org.kevoree.library.sky.lxc/"+defaultKevoreeFactory.getVersion()+"'");
-                         engine.append("addNode "+getNodeName()+":LxcHostNode");
-
-                    for(String node_child_id :LxcManager.getNodes()){
-                        engine.append("addNode "+node_child_id+":LxcHostNode");
-                        engine.append("addChild "+node_child_id+"@"+getNodeName());
-                        //  String ip = LxcManager.getIP(node_child_id);
-                        // todo set ip
-                    }
-
-                    System.out.println(engine.getScript());
-                    engine.interpret();
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return true;
+                return true;  //To change body of implemented methods use File | Settings | File Templates.
             }
 
             @Override
             public void modelUpdated() {
+
+                  if(!done){
+                         done = true;
+                      if(lxcManager.getNodes().size() > 0){
+
+                          ContainerRoot target = null;
+                          try {
+                              target = lxcManager.buildModelCurrentLxcState(getKevScriptEngineFactory(),getNodeName());
+
+                              getModelService().atomicUpdateModel(target);
+                          } catch (IOException e) {
+                              e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                          } catch (Exception e) {
+                              e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                          }
+                      }
+                  }
 
 
 
@@ -105,4 +106,7 @@ public class LxcHostNode extends AbstractHostNode {
         return new LxcNodeRunner(nodeName,this);
     }
 
+    public LxcManager getLxcManager() {
+        return lxcManager;
+    }
 }
