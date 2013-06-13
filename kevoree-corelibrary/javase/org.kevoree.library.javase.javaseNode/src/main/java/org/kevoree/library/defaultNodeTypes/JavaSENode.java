@@ -35,8 +35,8 @@ import java.io.File;
         value = {@PrimitiveCommand(name="AddDeployUnit",maxTime = 120000),@PrimitiveCommand(name="UpdateDeployUnit",maxTime = 120000)})
 public class JavaSENode extends AbstractNodeType implements ModelListener {
 
-    private KevoreeKompareBean kompareBean = null;
-    private CommandMapper mapper = null;
+    protected KevoreeKompareBean kompareBean = null;
+    protected CommandMapper mapper = null;
 
     @Start
     @Override
