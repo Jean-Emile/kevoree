@@ -12,7 +12,6 @@ import org.kevoree.log.Log;
  * User: jed
  * Date: 03/06/13
  * Time: 13:48
- * To change this template use File | Settings | File Templates.
  */
 public class LxcNodeRunner extends KevoreeNodeRunner {
 
@@ -31,11 +30,11 @@ public class LxcNodeRunner extends KevoreeNodeRunner {
         Log.debug("startNode " + nodeName + "  parent = " + iaasNode.getNodeName());
         ContainerNode node =    iaasModel.findByPath("nodes[" + iaasNode.getName() + "]/hosts[" + nodeName + "]", ContainerNode.class);
         String id_clone = KevoreePropertyHelper.instance$.getProperty(node, "idclone", false, "") ;
-        return    lxcManager.start(nodeName,id_clone,iaasNode,iaasModel);
+        return    lxcManager.create_container(nodeName,id_clone,iaasNode,iaasModel);
     }
 
     @Override
     public boolean stopNode() {
-        return   lxcManager.stop(nodeName,false);
+        return   lxcManager.lxc_stop_container(nodeName, false);
     }
 }
