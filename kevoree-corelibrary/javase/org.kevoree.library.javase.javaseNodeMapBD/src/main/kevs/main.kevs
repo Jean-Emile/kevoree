@@ -1,0 +1,6 @@
+merge 'mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.javaseNodeMapBD/{kevoree.version}'
+
+addNode node0:JavaSENodeMapDB {logLevel = "INFO"}
+addComponent sample@node0 : SampleDataSpaceUsage
+
+

@@ -4,7 +4,9 @@ merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.defaultChan
 merge "mvn:org.kevoree.corelibrary.javase/org.kevoree.library.javase.jexxus/{kevoree.version}"
 
 
-addNode node0 : JavaSENode { logLevel="DEBUG" }
+
+
+addNode node0 : JavaSENode { logLevel="INFO" }
 addComponent light@node0 : FakeSimpleLight
 addComponent sw@node0 : FakeSimpleSwitch
 

@@ -22,14 +22,15 @@ import org.kevoree.api.PrimitiveCommand
 import org.kevoree.framework.KevoreeGeneratorHelper
 import org.kevoree.framework.kaspects.TypeDefinitionAspect
 import org.kevoree.log.Log
+import org.kevoree.framework.AbstractNodeType
 
-class RemoveInstance(val c: Instance, val nodeName: String, val modelservice: KevoreeModelHandlerService, val kscript: KevScriptEngineFactory, val bs: org.kevoree.api.Bootstraper): PrimitiveCommand {
+class RemoveInstance(val c: Instance, val nodeName: String, val modelservice: KevoreeModelHandlerService, val kscript: KevScriptEngineFactory, val bs: org.kevoree.api.Bootstraper, val nt : AbstractNodeType): PrimitiveCommand {
 
     private val typeDefinitionAspect = TypeDefinitionAspect()
 
     override fun undo() {
         try {
-            AddInstance(c, nodeName, modelservice, kscript, bs).execute()
+            AddInstance(c, nodeName, modelservice, kscript, bs,nt).execute()
             UpdateDictionary(c, nodeName).execute()
         } catch(e: Exception) {
         }
