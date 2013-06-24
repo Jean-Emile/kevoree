@@ -51,7 +51,7 @@ public class MonitoredJavaSENode extends JavaSENode {
     public PrimitiveCommand getPrimitive(AdaptationPrimitive adaptationPrimitive) {
 
         if(adaptationPrimitive.getPrimitiveType().getName().equals(JavaSePrimitive.instance$.getAddInstance())){
-               return new MonitoredAddInstance( (Instance)adaptationPrimitive.getRef(), getNodeName(), getModelService(), getKevScriptEngineFactory(), getBootStrapperService());
+               return new MonitoredAddInstance( (Instance)adaptationPrimitive.getRef(), getNodeName(), getModelService(), getKevScriptEngineFactory(), getBootStrapperService(),this);
         } else {
             return super.getPrimitive(adaptationPrimitive);
         }
