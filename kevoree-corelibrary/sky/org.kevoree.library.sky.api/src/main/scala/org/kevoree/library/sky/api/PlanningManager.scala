@@ -37,7 +37,8 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
         //        for (primitiveType <- current.getAdaptationPrimitiveTypesForJ) {
           if (primitiveType.getName == HostNode.REMOVE_NODE) {
             removeNodeType = primitiveType
-          }
+          } else if (primitiveType.getName == HostNode.ADD_NODE) {
+            addNodeType = primitiveType
           else if (primitiveType.getName == HostNode.ADD_NODE) {
             addNodeType = primitiveType
           }
