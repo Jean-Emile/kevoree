@@ -17,7 +17,10 @@ public class SampleDataSpaceUsage extends AbstractComponentType {
 
     @Start
     public void start(){
-        System.out.println(data);
+        data.putData("/duke/context/hello","Hello World !");
+
+
+        System.out.println(data.getData("/duke/context/hello"));
     }
 
 
