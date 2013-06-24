@@ -20,8 +20,10 @@ import org.kevoree.library.defaultNodeTypes.reflect.MethodAnnotationResolver
 import org.kevoree.library.defaultNodeTypes.reflect.FieldAnnotationResolver
 import org.kevoree.log.Log
 import java.lang.reflect.InvocationTargetException
+import org.kevoree.library.defaultNodeTypes.wrapper.KInject
+import org.kevoree.api.dataspace.DataSpaceService
 
-class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeName: String, val _name: String, val modelService: KevoreeModelHandlerService, val bootService: Bootstraper, val kevsEngine: KevScriptEngineFactory, val tg: ThreadGroup): KevoreeChannelFragment, KInstance, ChannelFragment {
+class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeName: String, val _name: String, val modelService: KevoreeModelHandlerService, val bootService: Bootstraper, val kevsEngine: KevScriptEngineFactory, val dataSpace: DataSpaceService?, val tg: ThreadGroup): KevoreeChannelFragment, KInstance, ChannelFragment {
 
     public fun initChannel() {
         target.delegate = this
@@ -57,27 +59,8 @@ class ChannelTypeFragmentThread(val target: AbstractChannelFragment, val _nodeNa
         if (!isStarted) {
             try {
 
-                val modelServiceFields = fieldResolver.resolve(javaClass<KevoreeInject>(), javaClass<KevoreeModelHandlerService>())!!
-                for(mserv in modelServiceFields){
-                    if(Modifier.isPrivate(mserv.getModifiers())){
-                        mserv.setAccessible(true);
-                    }
-                    mserv.set(target, modelService)
-                }
-                val bootServiceField = fieldResolver.resolve(javaClass<KevoreeInject>(), javaClass<Bootstraper>())!!
-                for(loopField in bootServiceField){
-                    if(Modifier.isPrivate(loopField.getModifiers())){
-                        loopField.setAccessible(true);
-                    }
-                    loopField.set(target, bootService)
-                }
-                val kevSField = fieldResolver.resolve(javaClass<KevoreeInject>(), javaClass<KevScriptEngineFactory>())!!
-                for(loopField in kevSField){
-                    if(Modifier.isPrivate(loopField.getModifiers())){
-                        loopField.setAccessible(true);
-                    }
-                    loopField.set(target, kevsEngine)
-                }
+                val injector = KInject(target, modelService, bootService, kevsEngine, dataSpace)
+                injector.kinject()
 
                 target.setName(_name)
                 target.setNodeName(_nodeName)

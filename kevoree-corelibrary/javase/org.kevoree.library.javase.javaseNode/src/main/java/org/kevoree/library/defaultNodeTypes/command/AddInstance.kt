@@ -21,6 +21,7 @@ import org.kevoree.Channel
 import org.kevoree.framework.ChannelTypeFragmentThread
 import org.kevoree.DeployUnit
 import org.kevoree.log.Log
+import org.kevoree.framework.AbstractNodeType
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
@@ -44,11 +45,9 @@ import org.kevoree.log.Log
  * Time: 17:53
  */
 
-class AddInstance(val c: Instance, val nodeName: String, val modelservice: KevoreeModelHandlerService, val kscript: KevScriptEngineFactory, val bs: org.kevoree.api.Bootstraper): PrimitiveCommand, Runnable {
-
+class AddInstance(val c: Instance, val nodeName: String, val modelservice: KevoreeModelHandlerService, val kscript: KevScriptEngineFactory, val bs: org.kevoree.api.Bootstraper, val nt : AbstractNodeType): PrimitiveCommand, Runnable {
 
     private val typeDefinitionAspect = TypeDefinitionAspect()
-
     var deployUnit : DeployUnit? = null
     var nodeTypeName : String? = null
     var tg : ThreadGroup? = null
@@ -83,7 +82,7 @@ class AddInstance(val c: Instance, val nodeName: String, val modelservice: Kevor
     }
 
     override fun undo() {
-        RemoveInstance(c, nodeName, modelservice, kscript, bs).execute()
+        RemoveInstance(c, nodeName, modelservice, kscript, bs,nt).execute()
     }
 
     public override fun run() {
@@ -91,14 +90,14 @@ class AddInstance(val c: Instance, val nodeName: String, val modelservice: Kevor
         val newBeanInstance = beanClazz!!.newInstance()
         var newBeanKInstanceWrapper :KInstance? = null
         if(c is ComponentInstance){
-            newBeanKInstanceWrapper = KevoreeComponent(newBeanInstance as AbstractComponentType,nodeName,c.getName(),modelservice,bs,kscript)
+            newBeanKInstanceWrapper = KevoreeComponent(newBeanInstance as AbstractComponentType,nodeName,c.getName(),modelservice,bs,kscript,nt.getDataSpaceService())
             (newBeanKInstanceWrapper as KevoreeComponent).initPorts(nodeTypeName!!,c,tg!!)
         }
         if(c is Group){
-            newBeanKInstanceWrapper = KevoreeGroup(newBeanInstance as AbstractGroupType,nodeName,c.getName(),modelservice,bs,kscript)
+            newBeanKInstanceWrapper = KevoreeGroup(newBeanInstance as AbstractGroupType,nodeName,c.getName(),modelservice,bs,kscript,nt.getDataSpaceService())
         }
         if(c is Channel){
-            newBeanKInstanceWrapper = ChannelTypeFragmentThread(newBeanInstance as AbstractChannelFragment,nodeName,c.getName(),modelservice,bs,kscript,tg!!)
+            newBeanKInstanceWrapper = ChannelTypeFragmentThread(newBeanInstance as AbstractChannelFragment,nodeName,c.getName(),modelservice,bs,kscript,nt.getDataSpaceService(),tg!!)
             (newBeanKInstanceWrapper as ChannelTypeFragmentThread).initChannel()
         }
 

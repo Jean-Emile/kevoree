@@ -79,10 +79,10 @@ public class CommandMapper {
         }
 
         if (pTypeName.equals(JavaSePrimitive.instance$.getAddInstance())) {
-            return new AddInstance((Instance) p.getRef(), nodeName, nodeType.getModelService(), nodeType.getKevScriptEngineFactory(), nodeType.getBootStrapperService());
+            return new AddInstance((Instance) p.getRef(), nodeName, nodeType.getModelService(), nodeType.getKevScriptEngineFactory(), nodeType.getBootStrapperService(),nodeType);
         }
         if (pTypeName.equals(JavaSePrimitive.instance$.getRemoveInstance())) {
-            return new RemoveInstance((Instance) p.getRef(), nodeName, nodeType.getModelService(), nodeType.getKevScriptEngineFactory(), nodeType.getBootStrapperService());
+            return new RemoveInstance((Instance) p.getRef(), nodeName, nodeType.getModelService(), nodeType.getKevScriptEngineFactory(), nodeType.getBootStrapperService(),nodeType);
         }
 
         if (pTypeName.equals(JavaSePrimitive.instance$.getAddThirdParty())) {

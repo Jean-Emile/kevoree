@@ -2,7 +2,7 @@ package org.kevoree.library.sky.api
 
 import command.{AddNodeCommand, RemoveNodeCommand}
 import nodeType.{HostNode, AbstractHostNode}
-import org.kevoreeadaptation.{AdaptationPrimitive, ParallelStep, AdaptationModel}
+import org.kevoreeadaptation.{KevoreeAdaptationFactory, AdaptationPrimitive, ParallelStep, AdaptationModel}
 import org.slf4j.{LoggerFactory, Logger}
 import org.kevoree._
 import api.PrimitiveCommand
@@ -27,25 +27,22 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
   override def compareModels(current: ContainerRoot, target: ContainerRoot, nodeName: String): AdaptationModel = {
     val factory = new DefaultKevoreeAdaptationFactory
     val adaptationModel: AdaptationModel = factory.createAdaptationModel
-//    var step: ParallelStep = factory.createParallelStep
-//    adaptationModel.setOrderedPrimitiveSet(step)
+    //    var step: ParallelStep = factory.createParallelStep
+    //    adaptationModel.setOrderedPrimitiveSet(step)
     if (skyNode.isHost) {
       var removeNodeType: AdaptationPrimitiveType = null
       var addNodeType: AdaptationPrimitiveType = null
       current.getAdaptationPrimitiveTypes.foreach {
         primitiveType =>
-        //        for (primitiveType <- current.getAdaptationPrimitiveTypesForJ) {
           if (primitiveType.getName == HostNode.REMOVE_NODE) {
             removeNodeType = primitiveType
-          }
-          else if (primitiveType.getName == HostNode.ADD_NODE) {
+          } else if (primitiveType.getName == HostNode.ADD_NODE) {
             addNodeType = primitiveType
           }
       }
       if (removeNodeType == null || addNodeType == null) {
         target.getAdaptationPrimitiveTypes.foreach {
           primitiveType =>
-          //          for (primitiveType <- target.getAdaptationPrimitiveTypesForJ) {
             if (primitiveType.getName == HostNode.REMOVE_NODE) {
               removeNodeType = primitiveType
             }
@@ -60,6 +57,7 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
       if (addNodeType == null) {
         logger.warn("there is no adaptation primitive for {}", HostNode.ADD_NODE)
       }
+
       current.findByPath("nodes[" + skyNode.getNodeName + "]", classOf[ContainerNode]) match {
         case node: ContainerNode => {
           target.findByPath("nodes[" + skyNode.getNodeName + "]", classOf[ContainerNode]) match {
@@ -72,13 +70,21 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
                       val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                       command.setPrimitiveType(removeNodeType)
                       command.setRef(subNode)
-//                      val subStep: ParallelStep = factory.createParallelStep
-//                      subStep.addAdaptations(command)
+                      //                      val subStep: ParallelStep = factory.createParallelStep
+                      //                      subStep.addAdaptations(command)
                       adaptationModel.addAdaptations(command)
-//                      step.setNextStep(subStep)
-//                      step = subStep
+                      //                      step.setNextStep(subStep)
+                      //                      step = subStep
                     }
-                    case subNode1: ContainerNode =>
+                    case subNode1: ContainerNode => {
+                      if (subNode1.getStarted() != subNode.getStarted()) {
+                        if (subNode.getStarted()) {
+                          processStopInstance(subNode, adaptationModel, current, factory)
+                        } else {
+                          processStartInstance(subNode, adaptationModel, current, factory);
+                        }
+                      }
+                    }
                   }
               }
             }
@@ -90,11 +96,11 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
                   val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                   command.setPrimitiveType(removeNodeType)
                   command.setRef(subNode)
-//                  val subStep: ParallelStep = factory.createParallelStep
-//                  subStep.addAdaptations(command)
+                  //                  val subStep: ParallelStep = factory.createParallelStep
+                  //                  subStep.addAdaptations(command)
                   adaptationModel.addAdaptations(command)
-//                  step.setNextStep(subStep)
-//                  step = subStep
+                //                  step.setNextStep(subStep)
+                //                  step = subStep
               }
             }
           }
@@ -114,13 +120,21 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
                       val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                       command.setPrimitiveType(addNodeType)
                       command.setRef(subNode)
-//                      val subStep: ParallelStep = factory.createParallelStep
-//                      subStep.addAdaptations(command)
+                      //                      val subStep: ParallelStep = factory.createParallelStep
+                      //                      subStep.addAdaptations(command)
                       adaptationModel.addAdaptations(command)
-//                      step.setNextStep(subStep)
-//                      step = subStep
+                      //                      step.setNextStep(subStep)
+                      //                      step = subStep
                     }
-                    case subNode1: ContainerNode =>
+                    case subNode1: ContainerNode => {
+                      if (subNode1.getStarted() != subNode.getStarted()) {
+                        if (subNode.getStarted()) {
+                          processStopInstance(subNode, adaptationModel, current, factory)
+                        } else {
+                          processStartInstance(subNode, adaptationModel, current, factory)
+                        }
+                      }
+                    }
                   }
               }
             }
@@ -132,11 +146,11 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
                   val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                   command.setPrimitiveType(addNodeType)
                   command.setRef(subNode)
-//                  val subStep: ParallelStep = factory.createParallelStep
-//                  subStep.addAdaptations(command)
+                  //                  val subStep: ParallelStep = factory.createParallelStep
+                  //                  subStep.addAdaptations(command)
                   adaptationModel.addAdaptations(command)
-//                  step.setNextStep(subStep)
-//                  step = subStep
+                //                  step.setNextStep(subStep)
+                //                  step = subStep
               }
             }
           }
@@ -159,6 +173,21 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
   }
 
 
+  private def processStopInstance(actualInstance: Instance, adaptationModel: AdaptationModel, actualRoot: ContainerRoot, adaptationModelFactory: KevoreeAdaptationFactory) {
+    val ccmd2 = adaptationModelFactory.createAdaptationPrimitive()
+    ccmd2.setPrimitiveType(actualRoot.findAdaptationPrimitiveTypesByID(JavaSePrimitive.instance$.getStopInstance()))
+    ccmd2.setRef(actualInstance)
+    adaptationModel.addAdaptations(ccmd2)
+  }
+
+  private def processStartInstance(updatedInstance: Instance, adaptationModel: AdaptationModel, updateRoot: ContainerRoot, adaptationModelFactory: KevoreeAdaptationFactory) {
+    val ccmd2 = adaptationModelFactory.createAdaptationPrimitive()
+    ccmd2.setPrimitiveType(updateRoot.findAdaptationPrimitiveTypesByID(JavaSePrimitive.instance$.getStartInstance()))
+    ccmd2.setRef(updatedInstance)
+    adaptationModel.addAdaptations(ccmd2)
+  }
+
+
   override def plan(adaptationModel: AdaptationModel, p2: String): AdaptationModel = {
     if (!adaptationModel.getAdaptations.isEmpty) {
 
@@ -167,7 +196,13 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
       nextStep()
       adaptationModel.setOrderedPrimitiveSet(getCurrentStep)
 
-      // TODO STOP child nodes
+      // STOP child nodes
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getStopInstance && adapt.getRef.isInstanceOf[ContainerNode]
+      })
+
+      nextStep()
+
 
       // REMOVE child nodes
       getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
@@ -267,12 +302,18 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
       })
 
       nextStep()
-      // TODO START child nodes
+
+      // START child nodes
+      getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getStartInstance && adapt.getRef.isInstanceOf[ContainerNode]
+      })
+
+      nextStep()
 
       var oldStep = getCurrentStep
       //PROCESS START
       scheduling.schedule(adaptationModel.getAdaptations.filter {
-        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getStartInstance
+        adapt => adapt.getPrimitiveType.getName == JavaSePrimitive.instance$.getStartInstance && !adapt.getRef.isInstanceOf[ContainerNode]
       }, true).foreach {
         p =>
           getStep.addAdaptations(p)
