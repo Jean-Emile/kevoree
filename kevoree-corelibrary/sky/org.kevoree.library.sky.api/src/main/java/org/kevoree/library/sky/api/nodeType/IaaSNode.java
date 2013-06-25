@@ -2,7 +2,7 @@ package org.kevoree.library.sky.api.nodeType;
 
 import org.kevoree.annotation.DictionaryAttribute;
 import org.kevoree.annotation.DictionaryType;
-import org.kevoree.annotation.NodeFragment;
+import org.kevoree.annotation.NodeType;
 
 /**
  * User: Erwan Daubert - erwan.daubert@gmail.com
@@ -18,7 +18,7 @@ import org.kevoree.annotation.NodeFragment;
 		@DictionaryAttribute(name = "mask", optional = true),
 //		@DictionaryAttribute(name = "role", defaultValue = "host/container", vals = {"host", "container", "host/container"}, optional = true)
 })
-@NodeFragment
+@NodeType
 public interface IaaSNode extends CloudNode {
 
 }

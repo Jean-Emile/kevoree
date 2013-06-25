@@ -2,7 +2,7 @@ package org.kevoree.library.sky.api.nodeType;
 
 import org.kevoree.annotation.DictionaryAttribute;
 import org.kevoree.annotation.DictionaryType;
-import org.kevoree.annotation.NodeFragment;
+import org.kevoree.annotation.NodeType;
 
 /**
  * User: Erwan Daubert - erwan.daubert@gmail.com
@@ -17,6 +17,7 @@ import org.kevoree.annotation.NodeFragment;
         @DictionaryAttribute(name = "credentials", optional = true),
         @DictionaryAttribute(name = "endpoints", optional = true),
 })
-@NodeFragment
+@NodeType
 public interface ProxyNode {
+
 }
