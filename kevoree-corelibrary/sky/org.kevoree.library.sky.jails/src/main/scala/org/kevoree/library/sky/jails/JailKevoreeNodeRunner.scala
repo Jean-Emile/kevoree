@@ -28,7 +28,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout: Lo
   //  var nodeProcess: Process = null
   var starting: Boolean = false
 
-  def startNode(iaasModel: ContainerRoot, childBootstrapModel: ContainerRoot): Boolean = {
+  def addNode(iaasModel: ContainerRoot, childBootstrapModel: ContainerRoot): Boolean = {
     starting = true
     val beginTimestamp = System.currentTimeMillis()
     iaasModel.findByPath("nodes[" + iaasNode.getName + "]/hosts[" + nodeName + "]", classOf[ContainerNode]) match {
@@ -57,51 +57,8 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout: Lo
               flavor = iaasNode.getDefaultFlavor
             }
             // create the new jail
-            if (processExecutor.createJail(flavor, nodeName, newIps, findArchive(nodeName), addTimeout - (System.currentTimeMillis() - beginTimestamp)) && shouldContinue()) {
-              var jailPath = processExecutor.findPathForJail(nodeName)
-              // find the needed version of Kevoree for the child node
-              val version = findVersionForChildNode(nodeName, childBootstrapModel, iaasModel.getNodes.find(n => n.getName == iaasNode.getNodeName).get)
-              // install the model on the jail
-              // TODO use watchdog
-              val platformFile = iaasNode.getBootStrapperService.resolveKevoreeArtifact("org.kevoree.platform.standalone", "org.kevoree.platform", version)
-              KevoreeXmiHelper.instance$.save(jailPath + File.separator + "root" + File.separator + "bootstrapmodel.kev", childBootstrapModel)
-              if (shouldContinue() && copyFile(platformFile.getAbsolutePath, jailPath + File.separator + "root" + File.separator + "kevoree-runtime.jar") && shouldContinue()) {
-                // specify limitation on jail such as CPU, RAM
-                if (processExecutor.defineJailConstraints(iaasModel, node) && shouldContinue()) {
-                  // configure ssh access
-                  configureSSHServer(jailPath, newIps)
-                  // launch the jail
-                  if (processExecutor.startJail(nodeName, addTimeout - (System.currentTimeMillis() - beginTimestamp)) && shouldContinue()) {
-                    logger.debug("{} started", nodeName)
-                    val jailData = processExecutor.findJail(nodeName)
-                    jailPath = jailData._1
-                    val jailId = jailData._2
-                    if (shouldContinue() && jailId != "-1") {
-                      logger.debug("Jail {} is correctly configure, now we try to start the Kevoree Node", nodeName)
-                      val logFile = System.getProperty("java.io.tmpdir") + File.separator + nodeName + ".log"
-                      outFile = new File(logFile + ".out")
-                      errFile = new File(logFile + ".err")
-                      var property = KevoreePropertyHelper.instance$.getProperty(node, "RAM", false, "")
-                      if (property == null) {
-                        property = "N/A"
-                      }
-                      processExecutor.startKevoreeOnJail(jailId, property, nodeName /*, outFile, errFile*/ , this, iaasNode, managedChildKevoreePlatform)
-                    } else {
-                      logger.error("Unable to find the jail {}", nodeName)
-                      false
-                    }
-                  } else {
-                    logger.error("Unable to start the jail {}", nodeName)
-                    false
-                  }
-                } else {
-                  logger.error("Unable to specify jail limitations on {}", nodeName)
-                  false
-                }
-              } else {
-                logger.error("Unable to set the model the new jail {}", nodeName)
-                false
-              }
+            if (processExecutor.createJail(flavor, nodeName, newIps, findArchive(nodeName), addTimeout - (System.currentTimeMillis() - beginTimestamp))) {
+              true
             } else {
               logger.error("Unable to create a new Jail {}", nodeName)
               false
@@ -143,21 +100,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout: Lo
     if (oldIP != "-1") {
       // stop the jail
       if (processExecutor.stopJail(nodeName, removeTimeout - (System.currentTimeMillis() - beginTimestamp))) {
-        // delete the jail
-        if (processExecutor.deleteJail(nodeName, removeTimeout - (System.currentTimeMillis() - beginTimestamp))) {
-          // release IP alias to allow next IP select to use this one
-          if (!processExecutor.deleteNetworkAlias(iaasNode.getNetworkInterface, oldIP)) {
-            logger.warn("Unable to release ip alias {} for the network interface {}", Array[String](oldIP, iaasNode.getNetworkInterface))
-          }
-          // remove rctl constraint using rctl -r jail:<jailNode>
-          if (!JailsConstraintsConfiguration.removeJailConstraints(nodeName)) {
-            logger.warn("Unable to remove jail constraints about {}", nodeName)
-          }
-          true
-        } else {
-          logger.error("Unable to delete the jail {}", nodeName)
-          false
-        }
+        true
       } else {
         logger.error("Unable to stop the jail {}", nodeName)
         false
@@ -189,5 +132,87 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout: Lo
 
     None
   }
+
+  def startNode(iaasModel: ContainerRoot, childBootStrapModel: ContainerRoot): Boolean = {
+    val beginTimestamp = System.currentTimeMillis()
+    iaasModel.findByPath("nodes[" + iaasNode.getName + "]/hosts[" + nodeName + "]", classOf[ContainerNode]) match {
+      case node: ContainerNode => {
+        var newIps = List("127.0.0.1")
+        // check if the node have a inet address
+        val ips = KevoreePropertyHelper.instance$.getNetworkProperties(iaasModel, nodeName, Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP)
+        if (ips.size() > 0) {
+          newIps = ips.toList
+        } else {
+          logger.warn("Unable to get the IP for the new jail, the creation may fail")
+        }
+        var jailPath = processExecutor.findPathForJail(nodeName)
+        // find the needed version of Kevoree for the child node
+        val version = findVersionForChildNode(nodeName, childBootStrapModel, iaasModel.getNodes.find(n => n.getName == iaasNode.getNodeName).get)
+        // install the model on the jail
+        // TODO use watchdog
+        val platformFile = iaasNode.getBootStrapperService.resolveKevoreeArtifact("org.kevoree.platform.standalone", "org.kevoree.platform", version)
+        KevoreeXmiHelper.instance$.save(jailPath + File.separator + "root" + File.separator + "bootstrapmodel.kev", childBootStrapModel)
+        if (shouldContinue() && copyFile(platformFile.getAbsolutePath, jailPath + File.separator + "root" + File.separator + "kevoree-runtime.jar") && shouldContinue()) {
+          // specify limitation on jail such as CPU, RAM
+          if (processExecutor.defineJailConstraints(iaasModel, node) && shouldContinue()) {
+            // configure ssh access
+            configureSSHServer(jailPath, newIps)
+            // launch the jail
+            if (processExecutor.startJail(nodeName, addTimeout - (System.currentTimeMillis() - beginTimestamp)) && shouldContinue()) {
+              logger.debug("{} started", nodeName)
+              val jailData = processExecutor.findJail(nodeName)
+              jailPath = jailData._1
+              val jailId = jailData._2
+              if (shouldContinue() && jailId != "-1") {
+                logger.debug("Jail {} is correctly configure, now we try to start the Kevoree Node", nodeName)
+                val logFile = System.getProperty("java.io.tmpdir") + File.separator + nodeName + ".log"
+                outFile = new File(logFile + ".out")
+                errFile = new File(logFile + ".err")
+                var property = KevoreePropertyHelper.instance$.getProperty(node, "RAM", false, "")
+                if (property == null) {
+                  property = "N/A"
+                }
+                processExecutor.startKevoreeOnJail(jailId, property, nodeName /*, outFile, errFile*/ , this, iaasNode, managedChildKevoreePlatform)
+              } else {
+                logger.error("Unable to find the jail {}", nodeName)
+                false
+              }
+            } else {
+              logger.error("Unable to start the jail {}", nodeName)
+              false
+            }
+          } else {
+            logger.error("Unable to specify jail limitations on {}", nodeName)
+            false
+          }
+        } else {
+          logger.error("Unable to set the model the new jail {}", nodeName)
+          false
+        }
+      }
+      case null => logger.error("The model that must be applied doesn't contain the node {}", nodeName); false
+    }
+  }
+
+  def removeNode(): Boolean = {
+    val beginTimestamp = System.currentTimeMillis()
+    // delete the jail
+    if (processExecutor.deleteJail(nodeName, removeTimeout - (System.currentTimeMillis() - beginTimestamp))) {
+      val oldIP = processExecutor.findJail(nodeName)._3
+      // release IP alias to allow next IP selection to use this one
+      if (oldIP != "-1" && !processExecutor.deleteNetworkAlias(iaasNode.getNetworkInterface, oldIP)) {
+        logger.warn("Unable to release ip alias {} for the network interface {}", Array[String](oldIP, iaasNode.getNetworkInterface))
+      }
+      // remove rctl constraint using rctl -r jail:<jailNode>
+      if (!JailsConstraintsConfiguration.removeJailConstraints(nodeName)) {
+        logger.warn("Unable to remove jail constraints about {}", nodeName)
+      }
+      true
+    } else {
+      logger.error("Unable to delete the jail {}", nodeName)
+      false
+    }
+  }
+
 }
 

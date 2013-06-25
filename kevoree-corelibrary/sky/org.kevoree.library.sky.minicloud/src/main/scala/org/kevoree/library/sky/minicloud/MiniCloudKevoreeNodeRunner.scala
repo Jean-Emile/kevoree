@@ -198,5 +198,9 @@ class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractNodeType) e
       }
     }
   }
+
+  def addNode(iaasModel: ContainerRoot, childBootStrapModel: ContainerRoot): Boolean = true
+
+  def removeNode(): Boolean = true
 }
 

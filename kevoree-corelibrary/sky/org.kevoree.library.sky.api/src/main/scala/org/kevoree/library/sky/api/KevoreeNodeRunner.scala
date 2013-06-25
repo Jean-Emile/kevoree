@@ -34,9 +34,13 @@ abstract class KevoreeNodeRunner(var nodeName: String) {
 
   private val logger: Logger = LoggerFactory.getLogger(classOf[KevoreeNodeRunner])
 
+  def addNode(iaasModel: ContainerRoot, childBootStrapModel: ContainerRoot) : Boolean
+
   def startNode(iaasModel: ContainerRoot, childBootStrapModel: ContainerRoot): Boolean
 
   def stopNode(): Boolean
+
+  def removeNode() : Boolean
 
   //def updateNode (modelPath: String): Boolean
 

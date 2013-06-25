@@ -13,7 +13,6 @@ import org.kevoree.library.sky.lxc.utils.SystemHelper;
 import org.kevoree.log.Log;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -32,81 +31,87 @@ public class LxcManager {
     private String clone_id = "baseclonekevore";
     private final int timeout = 50;
 
-    private final String lxcstart =   "lxc-start";
-    private final String lxcstop =   "lxc-stop";
-    private final String lxcdestroy =   "lxc-destroy";
-    private final String lxcshutdown =   "lxc-shutdown";
-    private final String lxcclone =   "lxc-clone";
-    private final String lxccreate =   "lxc-create";
+    private final String lxcstart = "lxc-start";
+    private final String lxcstop = "lxc-stop";
+    private final String lxcdestroy = "lxc-destroy";
+    private final String lxcshutdown = "lxc-shutdown";
+    private final String lxcclone = "lxc-clone";
+    private final String lxccreate = "lxc-create";
 
 
-    public boolean create_container(String id, String id_clone, LxcHostNode service, ContainerRoot iaasModel){
-        try
-        {
-            Log.debug("LxcManager : "+id+" clone =>"+id_clone);
-            UUIDModel uuidModel =     service.getModelService().getLastUUIDModel();
+    public boolean create_container(String id, String id_clone, LxcHostNode service, ContainerRoot iaasModel) {
+        try {
+            Log.debug("LxcManager : " + id + " clone =>" + id_clone);
 
-            if(!getContainers().contains(id))
-            {
+            if (!getContainers().contains(id)) {
                 Log.debug("Creating container " + id + " OS " + id_clone);
-                Process processcreate = new ProcessBuilder(lxcclone,"-o",id_clone,"-n",id).redirectErrorStream(true).start();
+                Process processcreate = new ProcessBuilder(lxcclone, "-o", id_clone, "-n", id).redirectErrorStream(true).start();
                 FileManager.display_message_process(processcreate.getInputStream());
                 processcreate.waitFor();
-            } else
-            {
-                Log.warn("Container {} already exist",iaasModel);
+            } else {
+                Log.warn("Container {} already exist", iaasModel);
             }
+        } catch (Exception e) {
+            Log.error("create_container", e);
+            return false;
+        }
+        return true;
+    }
 
+    public boolean start_container(String id, LxcHostNode service, ContainerRoot iaasModel) {
+
+        try {
+            UUIDModel uuidModel = service.getModelService().getLastUUIDModel();
             lxc_start_container(id);
 
-            String ip =null;
+            String ip = null;
             int c = 0;
             do {
-                ip = getIP(id) ;
+                ip = getIP(id);
                 Thread.sleep(500);
                 c++;
             } while (ip == null && c < timeout);
 
-            if(ip == null){
+            if (ip == null) {
                 Log.error("When all attempts to get the address IP have failed");
-            }else {
+                return false;
+            } else {
 
-                Log.debug("Container is ready on "+ip);
+                Log.debug("Container is ready on " + ip);
 
                 ModelCloner cloner = new ModelCloner();
                 ContainerRoot readWriteModel = cloner.clone(iaasModel);
-                updateNetworkProperties(readWriteModel,id,ip);
+                updateNetworkProperties(readWriteModel, id, ip);
 
                 service.getModelService().compareAndSwapModel(uuidModel, readWriteModel);
+                return true;
             }
-
-
-
-        } catch (Exception e) {
-            Log.error("create_container",e);
+        } catch (InterruptedException e) {
+            Log.error("start_container", e);
+            return false;
+        } catch (IOException e) {
+            Log.error("start_container", e);
             return false;
         }
-        return true;
-
     }
 
 
-    public void lxc_start_container(String id) throws InterruptedException, IOException {
+    private void lxc_start_container(String id) throws InterruptedException, IOException {
         Log.debug("Starting container " + id);
-        Process lxcstartprocess = new ProcessBuilder(lxcstart,"-n",id,"-d").start();
+        Process lxcstartprocess = new ProcessBuilder(lxcstart, "-n", id, "-d").start();
         FileManager.display_message_process(lxcstartprocess.getInputStream());
         lxcstartprocess.waitFor();
     }
 
-    public  List<String> getContainers()   {
+    public List<String> getContainers() {
         List<String> containers = new ArrayList<String>();
         Process processcreate = null;
         try {
             processcreate = new ProcessBuilder("/bin/lxc-list-containers").redirectErrorStream(true).start();
 
-            BufferedReader input =  new BufferedReader(new InputStreamReader(processcreate.getInputStream()));
+            BufferedReader input = new BufferedReader(new InputStreamReader(processcreate.getInputStream()));
             String line;
-            while ((line = input.readLine()) != null){
+            while ((line = input.readLine()) != null) {
                 containers.add(line);
             }
             input.close();
@@ -117,62 +122,62 @@ public class LxcManager {
     }
 
 
-    public  ContainerRoot buildModelCurrentLxcState(KevScriptEngineFactory factory,String nodename) throws IOException, KevScriptEngineException {
+    public ContainerRoot buildModelCurrentLxcState(KevScriptEngineFactory factory, String nodename) throws IOException, KevScriptEngineException {
 
         DefaultKevoreeFactory defaultKevoreeFactory = new DefaultKevoreeFactory();
-        KevScriptEngine  engine = factory.createKevScriptEngine();
-        if(getContainers().size() > 0){
+        KevScriptEngine engine = factory.createKevScriptEngine();
+        if (getContainers().size() > 0) {
 
-            Log.debug("ADD => "+ getContainers()+" in current model");
+            Log.debug("ADD => " + getContainers() + " in current model");
 
-            engine.append("merge 'mvn:org.kevoree.corelibrary.sky/org.kevoree.library.sky.lxc/"+defaultKevoreeFactory.getVersion()+"'");
-            engine.append("addNode "+nodename+":LxcHostNode");
+            engine.append("merge 'mvn:org.kevoree.corelibrary.sky/org.kevoree.library.sky.lxc/" + defaultKevoreeFactory.getVersion() + "'");
+            engine.append("addNode " + nodename + ":LxcHostNode");
 
-            for(String node_child_id : getContainers()){
-                if(!node_child_id.equals(clone_id))  {
-                    engine.append("addNode "+node_child_id+":LxcHostNode");
-                    engine.append("updateDictionary "+node_child_id+"{log_folder=\"/tmp\",role=\"host\"}");
-                    engine.append("addChild "+node_child_id+"@"+nodename);
+            for (String node_child_id : getContainers()) {
+                if (!node_child_id.equals(clone_id)) {
+                    engine.append("addNode " + node_child_id + ":LxcHostNode");
+                    engine.append("updateDictionary " + node_child_id + "{log_folder=\"/tmp\",role=\"host\"}");
+                    engine.append("addChild " + node_child_id + "@" + nodename);
                 }
                 //    String ip = LxcManager.getIP(node_child_id);
             }
 
-            return   engine.interpret();
+            return engine.interpret();
 
 
         }
-        return    defaultKevoreeFactory.createContainerRoot();
+        return defaultKevoreeFactory.createContainerRoot();
     }
 
-    public static  String getIP(String id)  {
+    public static String getIP(String id) {
         String line;
         try {
-            Process processcreate = new ProcessBuilder("/bin/lxc-ip","-n",id).redirectErrorStream(true).start();
-            BufferedReader input =  new BufferedReader(new InputStreamReader(processcreate.getInputStream()));
+            Process processcreate = new ProcessBuilder("/bin/lxc-ip", "-n", id).redirectErrorStream(true).start();
+            BufferedReader input = new BufferedReader(new InputStreamReader(processcreate.getInputStream()));
             line = input.readLine();
             input.close();
             return line;
         } catch (Exception e) {
-            return  null;
+            return null;
         }
 
     }
 
-    public boolean lxc_stop_container(String id, boolean destroy){
+    private boolean lxc_stop_container(String id, boolean destroy) {
         try {
-            Log.debug("Stoping container " + id );
-            Process lxcstartprocess = new ProcessBuilder(lxcstop,"-n",id).redirectErrorStream(true).start();
+            Log.debug("Stoping container " + id);
+            Process lxcstartprocess = new ProcessBuilder(lxcstop, "-n", id).redirectErrorStream(true).start();
 
             FileManager.display_message_process(lxcstartprocess.getInputStream());
             lxcstartprocess.waitFor();
         } catch (Exception e) {
-            Log.error("lxc_stop_container ",e);
+            Log.error("lxc_stop_container ", e);
             return false;
         }
-        if(destroy){
+        if (destroy) {
             try {
-                Log.debug("Destroying container " + id );
-                Process lxcstartprocess = new ProcessBuilder(lxcdestroy,"-n",id).redirectErrorStream(true).start();
+                Log.debug("Destroying container " + id);
+                Process lxcstartprocess = new ProcessBuilder(lxcdestroy, "-n", id).redirectErrorStream(true).start();
                 FileManager.display_message_process(lxcstartprocess.getInputStream());
                 lxcstartprocess.waitFor();
             } catch (Exception e) {
@@ -185,31 +190,38 @@ public class LxcManager {
         return true;
     }
 
+    public boolean stop_container(String id) {
+        return lxc_stop_container(id, false);
+    }
+
+    public boolean remove_container(String id) {
+        return lxc_stop_container(id, true);
+    }
+
     public void createClone() throws IOException, InterruptedException {
-        if(!getContainers().contains(clone_id) ){
+        if (!getContainers().contains(clone_id)) {
             Log.debug("Creating the clone");
-            Process lxcstartprocess = new ProcessBuilder(lxccreate,"-n",clone_id,"-t","kevoree").redirectErrorStream(true).start();
+            Process lxcstartprocess = new ProcessBuilder(lxccreate, "-n", clone_id, "-t", "kevoree").redirectErrorStream(true).start();
             FileManager.display_message_process(lxcstartprocess.getInputStream());
             lxcstartprocess.waitFor();
         }
     }
 
 
-
     private void updateNetworkProperties(ContainerRoot model, String remoteNodeName, String address) {
-        Log.debug("set "+remoteNodeName+" "+address);
+        Log.debug("set " + remoteNodeName + " " + address);
         KevoreePlatformHelper.instance$.updateNodeLinkProp(model, remoteNodeName, remoteNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP(), address, "LAN", 100);
     }
 
-    public void copy(String file,String path) throws IOException {
-        FileManager.copyFileFromStream( LxcManager.class.getClassLoader().getResourceAsStream(file),path,file,true);
+    public void copy(String file, String path) throws IOException {
+        FileManager.copyFileFromStream(LxcManager.class.getClassLoader().getResourceAsStream(file), path, file, true);
     }
 
     public void allow_exec(String path_file_exec) throws IOException {
-        if(SystemHelper.getOS() != SystemHelper.OS.WIN32 && SystemHelper.getOS() != SystemHelper.OS.WIN64){
-            System.out.println("chmod +x "+path_file_exec);
+        if (SystemHelper.getOS() != SystemHelper.OS.WIN32 && SystemHelper.getOS() != SystemHelper.OS.WIN64) {
+            System.out.println("chmod +x " + path_file_exec);
             // todo check os
-            Runtime.getRuntime().exec("chmod 777 "+path_file_exec);
+            Runtime.getRuntime().exec("chmod 777 " + path_file_exec);
         } else {
             // win32
             System.err.println("ERROR");
@@ -218,14 +230,15 @@ public class LxcManager {
 
     /**
      * Install scripts and template
+     *
      * @throws IOException
      */
     public void install() throws IOException {
         copy("lxc-ip", "/bin");
         allow_exec("/bin/lxc-ip");
-        copy("lxc-list-containers","/bin");
+        copy("lxc-list-containers", "/bin");
         allow_exec("/bin/lxc-list-containers");
-        copy("lxc-kevoree","/usr/share/lxc/templates");
+        copy("lxc-kevoree", "/usr/share/lxc/templates");
         allow_exec("/usr/share/lxc/templates/lxc-kevoree");
     }
 

@@ -13,20 +13,11 @@ import org.slf4j.{LoggerFactory, Logger}
  * @author Erwan Daubert
  * @version 1.0
  */
-class KevoreeNodeManager(kevoreeNodeRunnerFactory : KevoreeNodeRunnerFactory) {
+class KevoreeNodeManager(kevoreeNodeRunnerFactory: KevoreeNodeRunnerFactory) {
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   var runners = new scala.collection.mutable.ArrayBuffer[KevoreeNodeRunner] with scala.collection.mutable.SynchronizedBuffer[KevoreeNodeRunner]
-
-
-  case class STOP()
-
-  case class ADD_NODE(iaasModel: ContainerRoot, targetChildName: String, targetChildModel: ContainerRoot)
-
-  case class REMOVE_NODE(iaasModel: ContainerRoot, targetChildName: String)
-
-  // case class UPDATE_NODE(containerNode: ContainerNode, model: ContainerRoot)
 
   def stop() {
     logger.debug("try to stop all nodes")
@@ -37,15 +28,32 @@ class KevoreeNodeManager(kevoreeNodeRunnerFactory : KevoreeNodeRunnerFactory) {
   }
 
   def addNode(iaasModel: ContainerRoot, targetChildName: String, targetChildModel: ContainerRoot): Boolean = {
-    logger.debug("try to add a node: {}", targetChildName)
+    logger.debug("try to add {}", targetChildName)
     val newRunner = kevoreeNodeRunnerFactory.createKevoreeNodeRunner(targetChildName)
     runners.append(newRunner)
 
-    val result = newRunner.startNode(iaasModel, targetChildModel)
-    if (!result) {
-      logger.error("Can't start node")
+    newRunner.addNode(iaasModel, targetChildModel)
+  }
+
+
+  def startNode(iaasModel: ContainerRoot, targetChildName: String, targetChildModel: ContainerRoot) : Boolean = {
+    logger.debug("try to start {}", targetChildName)
+    runners.find(runner => runner.nodeName == targetChildName) match {
+      case None => true // we do nothing because there is no node with this name
+      case Some(runner) => {
+        runner.startNode(iaasModel, targetChildModel)
+      }
     }
-    result
+  }
+
+  def stopNode(iaasModel: ContainerRoot, targetChildName: String): Boolean = {
+    logger.debug("try to stop {}", targetChildName)
+    runners.find(runner => runner.nodeName == targetChildName) match {
+      case None => true // we do nothing because there is no node with this name
+      case Some(runner) => {
+        runner.stopNode()
+      }
+    }
   }
 
   def removeNode(iaasModel: ContainerRoot, targetChildName: String): Boolean = {
@@ -54,21 +62,8 @@ class KevoreeNodeManager(kevoreeNodeRunnerFactory : KevoreeNodeRunnerFactory) {
       case None => true // we do nothing because there is no node with this name
       case Some(runner) => {
         runners.remove(runners.indexOf(runner))
-        runner.stopNode()
+        runner.removeNode()
       }
     }
   }
-
-  /*
-  private def updateNode (containerNode: ContainerNode, model: ContainerRoot): Boolean = {
-    logger.debug("try to update " + containerNode.getName)
-    runners.find(runner => runner.nodeName == containerNode.getName) match {
-      case None => logger.debug(containerNode.getName + " is not available"); false
-      case Some(runner) => {
-        logger.debug(containerNode.getName + " is available, ask for update")
-
-        runner.updateNode(Helper.saveModelOnFile(model))
-      }
-    }
-  }*/
 }

@@ -26,15 +26,26 @@ public class LxcNodeRunner extends KevoreeNodeRunner {
     }
 
     @Override
-    public boolean startNode(ContainerRoot iaasModel, ContainerRoot childBootStrapModel) {
-        Log.debug("startNode " + nodeName + "  parent = " + iaasNode.getNodeName());
+    public boolean addNode(ContainerRoot iaasModel, ContainerRoot childBootStrapModel) {
+        Log.debug("addNode " + nodeName + "  parent = " + iaasNode.getNodeName());
         ContainerNode node =    iaasModel.findByPath("nodes[" + iaasNode.getName() + "]/hosts[" + nodeName + "]", ContainerNode.class);
         String id_clone = KevoreePropertyHelper.instance$.getProperty(node, "idclone", false, "") ;
         return    lxcManager.create_container(nodeName,id_clone,iaasNode,iaasModel);
     }
 
     @Override
+    public boolean startNode(ContainerRoot iaasModel, ContainerRoot childBootStrapModel) {
+        Log.debug("startNode " + nodeName + "  parent = " + iaasNode.getNodeName());
+        return    lxcManager.start_container(nodeName,iaasNode,iaasModel);
+    }
+
+    @Override
     public boolean stopNode() {
-        return   lxcManager.lxc_stop_container(nodeName, false);
+        return   lxcManager.stop_container(nodeName);
+    }
+
+    @Override
+    public boolean removeNode() {
+        return   lxcManager.remove_container(nodeName);
     }
 }
