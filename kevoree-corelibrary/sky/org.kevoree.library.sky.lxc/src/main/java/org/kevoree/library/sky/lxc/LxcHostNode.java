@@ -18,7 +18,7 @@ import org.kevoree.log.Log;
 
 @Library(name = "SKY")
 @DictionaryType({
-        @DictionaryAttribute(name = "idclone", defaultValue = "cloneubuntu") ,
+        @DictionaryAttribute(name = "idclone", defaultValue = "kevoreeclone") ,
         @DictionaryAttribute(name = "timebeforeshutdown",defaultValue ="10",optional = false) ,
         @DictionaryAttribute(name = "memorylimit",defaultValue ="10",optional = false),
         @DictionaryAttribute(name = "cpushares",defaultValue ="10",optional = false)

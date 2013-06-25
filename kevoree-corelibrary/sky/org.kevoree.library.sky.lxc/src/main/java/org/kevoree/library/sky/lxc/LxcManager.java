@@ -33,7 +33,7 @@ public class LxcManager {
     private final int timeout = 50;
 
     private final String lxcstart =   "lxc-start";
-    private final String lxcstop =   "lxc-lxc_stop_container";
+    private final String lxcstop =   "lxc-stop";
     private final String lxcdestroy =   "lxc-destroy";
     private final String lxcshutdown =   "lxc-shutdown";
     private final String lxcclone =   "lxc-clone";
@@ -63,7 +63,7 @@ public class LxcManager {
             int c = 0;
             do {
                 ip = getIP(id) ;
-                Thread.sleep(1000);
+                Thread.sleep(500);
                 c++;
             } while (ip == null && c < timeout);
 
@@ -205,7 +205,7 @@ public class LxcManager {
     }
 
     public void copy(String file,String path) throws IOException {
-        FileManager.copyFileFromStream( LxcManager.class.getClassLoader().getResourceAsStream(file),path,file,false);
+        FileManager.copyFileFromStream( LxcManager.class.getClassLoader().getResourceAsStream(file),path,file,true);
     }
 
     public void allow_exec(String path_file_exec) throws IOException {

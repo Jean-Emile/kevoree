@@ -54,7 +54,6 @@ public class FileManager {
                     }
                 }
             }
-         if(!copy.exists()){
             OutputStream outputStream = new FileOutputStream(copy);
             byte[] bytes = new byte[1024];
             int length = inputStream.read(bytes);
@@ -66,8 +65,6 @@ public class FileManager {
             inputStream.close();
             outputStream.flush();
             outputStream.close();
-
-         }
             return copy.getAbsolutePath();
         }
         return null;
