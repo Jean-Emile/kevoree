@@ -2,6 +2,7 @@ package org.kevoree.library.sky.api.command
 
 import org.kevoree.ContainerRoot
 import org.kevoree.library.sky.api.KevoreeNodeManager
+import org.kevoree.api.PrimitiveCommand
 
 /**
  * User: Erwan Daubert - erwan.daubert@gmail.com
@@ -11,7 +12,7 @@ import org.kevoree.library.sky.api.KevoreeNodeManager
  * @author Erwan Daubert
  * @version 1.0
  */
-class StartNodeCommand(iaasModel: ContainerRoot,targetChildName : String,nodeManager : KevoreeNodeManager) {
+class StartNodeCommand(iaasModel: ContainerRoot,targetChildName : String,nodeManager : KevoreeNodeManager) extends PrimitiveCommand {
   def execute () : Boolean = {
     //TODO PRUNE MODEL
 
