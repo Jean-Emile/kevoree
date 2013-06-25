@@ -6,7 +6,7 @@ addNode node0 : MiniCloudNode { coreLogLevel="DEBUG",logLevel="DEBUG", VMARGS = 
 addGroup sync : NanoRestGroup
 addToGroup sync node0
 
-addComponent LogBackConfigurator@node0 : LogBackConfigurator
+addComponent LogBackConfigurator@node0 : LogBackConfigurator { rootLevel = "DEBUG"}
 
-addNode worker1 : JavaSENode
-addChild worker1@node0
+//addNode worker1 : JavaSENode
+//addChild worker1@node0

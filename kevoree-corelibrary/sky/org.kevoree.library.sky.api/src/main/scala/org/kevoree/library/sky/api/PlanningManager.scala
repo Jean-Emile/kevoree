@@ -1,15 +1,14 @@
 package org.kevoree.library.sky.api
 
-import command.{AddNodeCommand, RemoveNodeCommand}
-import nodeType.{HostNode, AbstractHostNode}
+import org.kevoree.library.sky.api.nodeType.CloudNode
 import org.kevoreeadaptation.{KevoreeAdaptationFactory, AdaptationPrimitive, ParallelStep, AdaptationModel}
 import org.slf4j.{LoggerFactory, Logger}
 import org.kevoree._
-import api.PrimitiveCommand
 import org.kevoreeadaptation.impl.DefaultKevoreeAdaptationFactory
 import scala.collection.JavaConversions._
 import org.kevoree.kompare.{JavaSePrimitive, KevoreeKompareBean}
 import org.kevoree.kompare.scheduling.SchedulingWithTopologicalOrderAlgo
+import org.kevoree.framework.AbstractNodeType
 
 
 /**
@@ -21,7 +20,7 @@ import org.kevoree.kompare.scheduling.SchedulingWithTopologicalOrderAlgo
  * @version 1.0
  */
 
-class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
+class PlanningManager(skyNode: AbstractNodeType) extends KevoreeKompareBean {
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   override def compareModels(current: ContainerRoot, target: ContainerRoot, nodeName: String): AdaptationModel = {
@@ -29,33 +28,33 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
     val adaptationModel: AdaptationModel = factory.createAdaptationModel
     //    var step: ParallelStep = factory.createParallelStep
     //    adaptationModel.setOrderedPrimitiveSet(step)
-    if (skyNode.isHost) {
+//    if (skyNode.isHost) {
       var removeNodeType: AdaptationPrimitiveType = null
       var addNodeType: AdaptationPrimitiveType = null
       current.getAdaptationPrimitiveTypes.foreach {
         primitiveType =>
-          if (primitiveType.getName == HostNode.REMOVE_NODE) {
+          if (primitiveType.getName == CloudNode.REMOVE_NODE) {
             removeNodeType = primitiveType
-          } else if (primitiveType.getName == HostNode.ADD_NODE) {
+          } else if (primitiveType.getName == CloudNode.ADD_NODE) {
             addNodeType = primitiveType
           }
       }
       if (removeNodeType == null || addNodeType == null) {
         target.getAdaptationPrimitiveTypes.foreach {
           primitiveType =>
-            if (primitiveType.getName == HostNode.REMOVE_NODE) {
+            if (primitiveType.getName == CloudNode.REMOVE_NODE) {
               removeNodeType = primitiveType
             }
-            else if (primitiveType.getName == HostNode.ADD_NODE) {
+            else if (primitiveType.getName == CloudNode.ADD_NODE) {
               addNodeType = primitiveType
             }
         }
       }
       if (removeNodeType == null) {
-        logger.warn("there is no adaptation primitive for {}", HostNode.REMOVE_NODE)
+        logger.warn("there is no adaptation primitive for {}", CloudNode.REMOVE_NODE)
       }
       if (addNodeType == null) {
-        logger.warn("there is no adaptation primitive for {}", HostNode.ADD_NODE)
+        logger.warn("there is no adaptation primitive for {}", CloudNode.ADD_NODE)
       }
 
       current.findByPath("nodes[" + skyNode.getNodeName + "]", classOf[ContainerNode]) match {
@@ -66,7 +65,7 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
                 subNode =>
                   node1.findByPath("hosts[" + subNode.getName + "]", classOf[ContainerNode]) match {
                     case null => {
-                      logger.debug("add a {} adaptation primitive with {} as parameter", Array[String](HostNode.REMOVE_NODE, subNode.getName))
+                      logger.debug("add a {} adaptation primitive with {} as parameter", Array[String](CloudNode.REMOVE_NODE, subNode.getName))
                       val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                       command.setPrimitiveType(removeNodeType)
                       command.setRef(subNode)
@@ -92,7 +91,7 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
               logger.debug("Unable to find the current node on the target model, We remove all the hosted nodes from the current model")
               node.getHosts.foreach {
                 subNode =>
-                  logger.debug("add a {} adaptation primitive with {} as parameter", Array[String](HostNode.REMOVE_NODE, subNode.getName))
+                  logger.debug("add a {} adaptation primitive with {} as parameter", Array[String](CloudNode.REMOVE_NODE, subNode.getName))
                   val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                   command.setPrimitiveType(removeNodeType)
                   command.setRef(subNode)
@@ -116,7 +115,7 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
                 subNode =>
                   node1.findByPath("hosts[" + subNode.getName + "]", classOf[ContainerNode]) match {
                     case null => {
-                      logger.debug("add a {} adaptation primitive with {} as parameter", Array[String](HostNode.ADD_NODE, subNode.getName))
+                      logger.debug("add a {} adaptation primitive with {} as parameter", Array[String](CloudNode.ADD_NODE, subNode.getName))
                       val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                       command.setPrimitiveType(addNodeType)
                       command.setRef(subNode)
@@ -142,7 +141,7 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
               logger.debug("Unable to find the current node on the current model, We add all the hosted nodes from the target model")
               node.getHosts.foreach {
                 subNode =>
-                  logger.debug("add a {} adaptation primitive with {} as parameter", Array[String](HostNode.ADD_NODE, subNode.getName))
+                  logger.debug("add a {} adaptation primitive with {} as parameter", Array[String](CloudNode.ADD_NODE, subNode.getName))
                   val command: AdaptationPrimitive = factory.createAdaptationPrimitive
                   command.setPrimitiveType(addNodeType)
                   command.setRef(subNode)
@@ -157,15 +156,15 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
         }
         case null =>
       }
-    }
+//    }
     logger.debug("Adaptation model contain {} Host node primitives", adaptationModel.getAdaptations.size)
     //    val superModel: AdaptationModel = skyNode.superKompare(current, target)
 
     val superModel = super.compareModels(current, target, nodeName)
 
-    if (!skyNode.isContainer && isContaining(superModel.getOrderedPrimitiveSet)) {
+    /*if (!skyNode.isContainer && isContaining(superModel.getOrderedPrimitiveSet)) {
       throw new Exception("This node is not a container (see \"role\" attribute)")
-    }
+    }*/
     adaptationModel.addAllAdaptations(superModel.getAdaptations)
     //    step.setNextStep(superModel.getOrderedPrimitiveSet)
     logger.debug("Adaptation model contain {} primitives", adaptationModel.getAdaptations.size)
@@ -206,7 +205,7 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
 
       // REMOVE child nodes
       getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
-        adapt => adapt.getPrimitiveType.getName == HostNode.REMOVE_NODE
+        adapt => adapt.getPrimitiveType.getName == CloudNode.REMOVE_NODE
       })
 
       nextStep()
@@ -298,7 +297,7 @@ class PlanningManager(skyNode: AbstractHostNode) extends KevoreeKompareBean {
 
       // ADD child nodes
       getStep.addAllAdaptations(adaptationModel.getAdaptations.filter {
-        adapt => adapt.getPrimitiveType.getName == HostNode.ADD_NODE
+        adapt => adapt.getPrimitiveType.getName == CloudNode.ADD_NODE
       })
 
       nextStep()

@@ -19,9 +19,8 @@ import org.slf4j.LoggerFactory
 import java.io._
 import java.lang.Thread
 import util.matching.Regex
-import org.kevoree.library.sky.api.nodeType.AbstractHostNode
 import org.kevoree.ContainerRoot
-import org.kevoree.framework.KevoreeXmiHelper
+import org.kevoree.framework.{AbstractNodeType, KevoreeXmiHelper}
 import org.kevoree.library.sky.api.KevoreeNodeRunner
 import org.kevoree.impl.DefaultKevoreeFactory
 import scala.collection.JavaConversions._
@@ -34,7 +33,7 @@ import scala.collection.JavaConversions._
  * @author Erwan Daubert
  * @version 1.0
  */
-class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractHostNode) extends KevoreeNodeRunner(nodeName) {
+class MiniCloudKevoreeNodeRunner(nodeName: String, iaasNode: AbstractNodeType) extends KevoreeNodeRunner(nodeName) {
   private val logger: Logger = LoggerFactory.getLogger(classOf[MiniCloudKevoreeNodeRunner])
 
   val factory = new DefaultKevoreeFactory

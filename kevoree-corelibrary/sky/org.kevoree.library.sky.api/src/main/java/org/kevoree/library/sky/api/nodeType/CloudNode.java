@@ -3,6 +3,7 @@ package org.kevoree.library.sky.api.nodeType;
 import org.kevoree.annotation.DictionaryAttribute;
 import org.kevoree.annotation.DictionaryType;
 import org.kevoree.annotation.NodeFragment;
+import org.kevoree.annotation.PrimitiveCommands;
 
 /**
  * User: Erwan Daubert - erwan.daubert@gmail.com
@@ -13,18 +14,21 @@ import org.kevoree.annotation.NodeFragment;
  * @version 1.0
  */
 @DictionaryType({
-		@DictionaryAttribute(name = "ARCH", defaultValue = "N/A"/*, vals = {"x86", "x86_64"}*/, optional = true),
-		@DictionaryAttribute(name = "RAM", defaultValue = "N/A", optional = true),
+		@DictionaryAttribute(name = "ARCH", optional = true),
+		@DictionaryAttribute(name = "RAM", optional = true),
 		// GB, MB, KB is allowed, N/A means undefined
-		@DictionaryAttribute(name = "CPU_CORE", defaultValue = "N/A", optional = true),
+		@DictionaryAttribute(name = "CPU_CORE", optional = true),
 		// number of allowed cores, N/A means undefined
-		@DictionaryAttribute(name = "CPU_FREQUENCY", defaultValue = "N/A", optional = true),
+		@DictionaryAttribute(name = "CPU_FREQUENCY", optional = true),
 		// in MHz, N/A means undefined
-		@DictionaryAttribute(name = "OS", defaultValue = "N/A", optional = true),
+		@DictionaryAttribute(name = "OS", optional = true),
 		// number of allowed cores, N/A means undefined
-		@DictionaryAttribute(name = "DISK_SIZE", defaultValue = "N/A", optional = true)
+		@DictionaryAttribute(name = "DISK_SIZE", optional = true)
 		// the disk size allowed/available for the node (GB, MB, KB is allowed), undefined value can be set using N/A
 })
+@PrimitiveCommands(value = {}, values = {CloudNode.REMOVE_NODE, CloudNode.ADD_NODE})
 @NodeFragment
 public interface CloudNode {
+    public static final String REMOVE_NODE = "RemoveNode";
+    public static final String ADD_NODE = "AddNode";
 }

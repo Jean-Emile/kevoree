@@ -2,7 +2,7 @@ package org.kevoree.library.sky.api.command
 
 import org.kevoree.ContainerRoot
 import org.kevoree.api.PrimitiveCommand
-import org.kevoree.library.sky.api.nodeType.{AbstractHostNode, AbstractIaaSNode, IaaSNode}
+import org.kevoree.library.sky.api.KevoreeNodeManager
 
 /**
  * User: Erwan Daubert - erwan.daubert@gmail.com
@@ -13,15 +13,15 @@ import org.kevoree.library.sky.api.nodeType.{AbstractHostNode, AbstractIaaSNode,
  * @version 1.0
  */
 
-class AddNodeCommand(iaasModel: ContainerRoot,targetChildName : String,node: AbstractHostNode) extends PrimitiveCommand {
+class AddNodeCommand(iaasModel: ContainerRoot,targetChildName : String,nodeManager : KevoreeNodeManager) extends PrimitiveCommand {
   def execute () : Boolean = {
     //TODO PRUNE MODEL
 
-    node.getNodeManager.addNode(iaasModel,targetChildName,iaasModel)
+    nodeManager.addNode(iaasModel,targetChildName,iaasModel)
   }
 
   def undo () {
-    node.getNodeManager.removeNode(iaasModel,targetChildName)
+    nodeManager.removeNode(iaasModel,targetChildName)
   }
 
   override def toString:String ={

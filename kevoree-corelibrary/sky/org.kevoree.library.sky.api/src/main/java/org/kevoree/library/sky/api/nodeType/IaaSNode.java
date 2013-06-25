@@ -16,9 +16,9 @@ import org.kevoree.annotation.NodeFragment;
 		@DictionaryAttribute(name = "inet", optional = true),
 		@DictionaryAttribute(name = "subnet", optional = true),
 		@DictionaryAttribute(name = "mask", optional = true),
-		@DictionaryAttribute(name = "role", defaultValue = "host/container", vals = {"host", "container", "host/container"}, optional = true)
+//		@DictionaryAttribute(name = "role", defaultValue = "host/container", vals = {"host", "container", "host/container"}, optional = true)
 })
 @NodeFragment
-public interface IaaSNode extends CloudNode,HostNode {
+public interface IaaSNode extends CloudNode {
 
 }

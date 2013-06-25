@@ -1,11 +1,11 @@
 package org.kevoree.library.sky.api
 
-import nodeType.AbstractHostNode
 import org.slf4j.{LoggerFactory, Logger}
 import org.kevoree.{ContainerNode, TypeDefinition, ContainerRoot}
 import java.io._
 import scala.collection.JavaConversions._
 import org.kevoree.impl.DefaultKevoreeFactory
+import org.kevoree.framework.AbstractNodeType
 
 /**
  * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007;
@@ -172,7 +172,7 @@ abstract class KevoreeNodeRunner(var nodeName: String) {
     }
   }
 
-  def configureLogFile(iaasNode: AbstractHostNode, process: Process) {
+  def configureLogFile(iaasNode: AbstractNodeType, process: Process) {
     var logFolder = System.getProperty("java.io.tmpdir")
     if (iaasNode.getDictionary.get("log_folder") != null && new File(iaasNode.getDictionary.get("log_folder").toString).exists()) {
       logFolder = iaasNode.getDictionary.get("log_folder").toString

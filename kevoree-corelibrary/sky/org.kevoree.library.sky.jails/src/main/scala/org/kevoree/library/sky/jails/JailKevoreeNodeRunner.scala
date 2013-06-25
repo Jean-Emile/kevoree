@@ -62,6 +62,7 @@ class JailKevoreeNodeRunner(nodeName: String, iaasNode: JailNode, addTimeout: Lo
               // find the needed version of Kevoree for the child node
               val version = findVersionForChildNode(nodeName, childBootstrapModel, iaasModel.getNodes.find(n => n.getName == iaasNode.getNodeName).get)
               // install the model on the jail
+              // TODO use watchdog
               val platformFile = iaasNode.getBootStrapperService.resolveKevoreeArtifact("org.kevoree.platform.standalone", "org.kevoree.platform", version)
               KevoreeXmiHelper.instance$.save(jailPath + File.separator + "root" + File.separator + "bootstrapmodel.kev", childBootstrapModel)
               if (shouldContinue() && copyFile(platformFile.getAbsolutePath, jailPath + File.separator + "root" + File.separator + "kevoree-runtime.jar") && shouldContinue()) {
