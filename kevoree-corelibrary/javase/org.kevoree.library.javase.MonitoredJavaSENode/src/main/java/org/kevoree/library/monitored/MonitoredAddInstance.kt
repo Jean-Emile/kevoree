@@ -7,6 +7,7 @@ import org.kevoree.Instance
 import org.kevoree.api.PrimitiveCommand
 import org.slf4j.LoggerFactory
 import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
+import org.kevoree.framework.AbstractNodeType
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,7 +17,7 @@ import org.kevoree.library.defaultNodeTypes.context.KevoreeDeployManager
  */
 
 
-class MonitoredAddInstance(val c: Instance, nodeName: String,modelservice : KevoreeModelHandlerService,kscript : KevScriptEngineFactory,bs : org.kevoree.api.Bootstraper) : PrimitiveCommand {
+class MonitoredAddInstance(val c: Instance, nodeName: String,modelservice : KevoreeModelHandlerService,kscript : KevScriptEngineFactory,bs : org.kevoree.api.Bootstraper, nt : AbstractNodeType) : PrimitiveCommand {
     override fun execute(): Boolean {
         if(embedCmd.execute()){
             val ref = KevoreeDeployManager.getRef(c.javaClass.getName(),c.getName())
@@ -29,7 +30,7 @@ class MonitoredAddInstance(val c: Instance, nodeName: String,modelservice : Kevo
         embedCmd.undo()
     }
 
-    val embedCmd = AddInstance(c,nodeName,modelservice,kscript,bs)
+    val embedCmd = AddInstance(c,nodeName,modelservice,kscript,bs,nt)
     val logger = LoggerFactory.getLogger(this.javaClass)!!
 
 
