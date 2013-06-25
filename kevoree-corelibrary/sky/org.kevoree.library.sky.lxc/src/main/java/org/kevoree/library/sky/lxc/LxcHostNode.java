@@ -21,10 +21,9 @@ import org.kevoree.log.Log;
 
 @Library(name = "SKY")
 @DictionaryType({
-        @DictionaryAttribute(name = "idclone", defaultValue = "kevoreeclone"),
         @DictionaryAttribute(name = "timebeforeshutdown", defaultValue = "10", optional = false),
-        @DictionaryAttribute(name = "memorylimit", defaultValue = "10", optional = false),
-        @DictionaryAttribute(name = "cpushares", defaultValue = "10", optional = false)
+        @DictionaryAttribute(name = "memorylimit", defaultValue = "1024", optional = false),
+        @DictionaryAttribute(name = "cpushares", defaultValue = "1024", optional = false)
 })
 @NodeType
 @PrimitiveCommands(value = {
@@ -50,7 +49,6 @@ public class LxcHostNode extends JavaSENode implements CloudNode {
         mapper = new CommandMapper(nodeManager);
         mapper.setNodeType(this);
 
-        lxcManager.setClone_id(getDictionary().get("idclone").toString());
         getModelService().registerModelListener(new LXCModelListener());
     }
 

@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class LxcManager {
 
-    private String clone_id = "";
+    private String clone_id = "baseclonekevore";
     private final int timeout = 50;
 
     private final String lxcstart =   "lxc-start";
@@ -188,16 +188,13 @@ public class LxcManager {
     public void createClone() throws IOException, InterruptedException {
         if(!getContainers().contains(clone_id) ){
             Log.debug("Creating the clone");
-            Process lxcstartprocess = new ProcessBuilder(lxccreate,"-n",clone_id.toString(),"-t","kevoree").redirectErrorStream(true).start();
+            Process lxcstartprocess = new ProcessBuilder(lxccreate,"-n",clone_id,"-t","kevoree").redirectErrorStream(true).start();
             FileManager.display_message_process(lxcstartprocess.getInputStream());
             lxcstartprocess.waitFor();
         }
     }
 
 
-    public void setClone_id(String id){
-        this.clone_id = id;
-    }
 
     private void updateNetworkProperties(ContainerRoot model, String remoteNodeName, String address) {
         Log.debug("set "+remoteNodeName+" "+address);
