@@ -40,6 +40,9 @@ public class JavaSENodeMapDB extends JavaSENode implements DataSpaceService {
 
     @Override
     public void putData(String path, Object data) {
+
+
+
         treeMap.put(path, data);
     }
 
