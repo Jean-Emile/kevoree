@@ -2,11 +2,17 @@ package org.kevoree.library.sky.jails.nodeType;
 
 import org.kevoree.annotation.*;
 import org.kevoree.api.service.core.script.KevScriptEngine;
+import org.kevoree.library.defaultNodeTypes.JavaSENode;
+import org.kevoree.library.sky.api.CommandMapper;
+import org.kevoree.library.sky.api.KevoreeNodeManager;
 import org.kevoree.library.sky.api.KevoreeNodeRunner;
-import org.kevoree.library.sky.api.nodeType.AbstractIaaSNode;
-import org.kevoree.library.sky.api.nodeType.HostNode;
+import org.kevoree.library.sky.api.PlanningManager;
+import org.kevoree.library.sky.api.nodeType.CloudNode;
+import org.kevoree.library.sky.api.nodeType.KevoreeNodeRunnerFactory;
 import org.kevoree.library.sky.jails.JailKevoreeNodeRunner;
 import org.kevoree.library.sky.jails.JailsReasoner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: Erwan Daubert - erwan.daubert@gmail.com
@@ -20,9 +26,7 @@ import org.kevoree.library.sky.jails.JailsReasoner;
 @Library(name = "SKY")
 @DictionaryType({
         @DictionaryAttribute(name = "defaultFlavor", optional = true),
-        /*@DictionaryAttribute(name = "jailCreationTimeout", defaultValue = "240000", optional = true),
-        @DictionaryAttribute(name = "jailStartTimeout", defaultValue = "10000", optional = true),
-        @DictionaryAttribute(name = "useArchive", defaultValue = "false", vals= {"true", "false"}, optional = true),
+        /*@DictionaryAttribute(name = "useArchive", defaultValue = "false", vals= {"true", "false"}, optional = true),
 		@DictionaryAttribute(name = "archives", defaultValue = "http://localhost:8080/archives/", optional = true),*/
         @DictionaryAttribute(name = "MODE", defaultValue = "RELAX", vals = {"STRICT", "RELAX", "AVOID"}, optional = true),
         // how the restrictions are managed : STRICT = the jail is stopped, RELAX = the jail continue to execute, AVOID means to refused to execute something that break the limitation
@@ -32,11 +36,11 @@ import org.kevoree.library.sky.jails.JailsReasoner;
 })
 @NodeType
 @PrimitiveCommands(value = {
-        @PrimitiveCommand(name = HostNode.ADD_NODE, maxTime = JailNode.ADD_TIMEOUT),
-        @PrimitiveCommand(name = HostNode.REMOVE_NODE, maxTime = JailNode.REMOVE_TIMEOUT)
+        @PrimitiveCommand(name = CloudNode.ADD_NODE, maxTime = JailNode.ADD_TIMEOUT),
+        @PrimitiveCommand(name = CloudNode.REMOVE_NODE, maxTime = JailNode.REMOVE_TIMEOUT)
 })
-public class JailNode extends AbstractIaaSNode {
-//    private static final Logger logger = LoggerFactory.getLogger(JailNode.class);
+public class JailNode extends JavaSENode implements CloudNode {
+    private static final Logger logger = LoggerFactory.getLogger(JailNode.class);
 
     private String inet;
     private String subnet;
@@ -46,8 +50,11 @@ public class JailNode extends AbstractIaaSNode {
     public static final long ADD_TIMEOUT = 300000l;
     public static final long REMOVE_TIMEOUT = 180000l;
 
+    private KevoreeNodeManager nodeManager;
+
 
     @Start
+    @Override
     public void startNode() {
         inet = this.getDictionary().get("inet").toString();
         subnet = this.getDictionary().get("subnet").toString();
@@ -55,6 +62,18 @@ public class JailNode extends AbstractIaaSNode {
         aliasMask = this.getDictionary().get("alias_mask").toString();
         super.startNode();
         initialization = true;
+        nodeManager = new KevoreeNodeManager(new JailNodeRunnerFactory());
+        kompareBean = new PlanningManager(this);
+        mapper = new CommandMapper(nodeManager);
+        mapper.setNodeType(this);
+    }
+
+    @Stop
+    @Override
+    public void stopNode () {
+        logger.debug("stopping node type of {}", this.getNodeName());
+        nodeManager.stop();
+        super.stopNode();
     }
 
     @Update
@@ -82,9 +101,11 @@ public class JailNode extends AbstractIaaSNode {
     }
 
 
-    @Override
-    public KevoreeNodeRunner createKevoreeNodeRunner(String nodeName) {
-        return new JailKevoreeNodeRunner(nodeName, this, ADD_TIMEOUT, REMOVE_TIMEOUT, getDictionary().get("manageChildKevoreePlatform").equals("true"));
+    public class JailNodeRunnerFactory implements KevoreeNodeRunnerFactory {
+        @Override
+        public KevoreeNodeRunner createKevoreeNodeRunner(String nodeName) {
+            return new JailKevoreeNodeRunner(nodeName, JailNode.this, ADD_TIMEOUT, REMOVE_TIMEOUT, getDictionary().get("manageChildKevoreePlatform").equals("true"));
+        }
     }
 
     public String getNetworkInterface() {
@@ -123,5 +144,21 @@ public class JailNode extends AbstractIaaSNode {
 
     public String getArchives() {
         return this.getDictionary().get("archives").toString();
+    }
+
+    protected void updateModel (KevScriptEngine kengine) {
+        Boolean created = false;
+        for (int i = 0; i < 20; i++) {
+            try {
+                kengine.atomicInterpretDeploy();
+                created = true;
+                break;
+            } catch (Exception e) {
+                logger.warn("Error while try to update the configuration of node " + getName() + ", try number " + i, e);
+            }
+        }
+        if (!created) {
+            logger.error("After 20 attempt, it was not able to update the configuration of {}", getName());
+        }
     }
 }

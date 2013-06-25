@@ -3,6 +3,7 @@ package org.kevoree.library.sky.api.nodeType;
 import org.kevoree.annotation.DictionaryAttribute;
 import org.kevoree.annotation.DictionaryType;
 import org.kevoree.annotation.NodeFragment;
+import org.kevoree.annotation.PrimitiveCommands;
 
 /**
  * User: Erwan Daubert - erwan.daubert@gmail.com
@@ -25,6 +26,9 @@ import org.kevoree.annotation.NodeFragment;
 		@DictionaryAttribute(name = "DISK_SIZE", defaultValue = "N/A", optional = true)
 		// the disk size allowed/available for the node (GB, MB, KB is allowed), undefined value can be set using N/A
 })
+@PrimitiveCommands(value = {}, values = {CloudNode.REMOVE_NODE, CloudNode.ADD_NODE})
 @NodeFragment
 public interface CloudNode {
+    public static final String REMOVE_NODE = "RemoveNode";
+    public static final String ADD_NODE = "AddNode";
 }

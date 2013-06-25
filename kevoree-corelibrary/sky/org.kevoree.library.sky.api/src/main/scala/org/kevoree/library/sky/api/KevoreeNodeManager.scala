@@ -1,6 +1,6 @@
 package org.kevoree.library.sky.api
 
-import nodeType.AbstractHostNode
+import org.kevoree.library.sky.api.nodeType.KevoreeNodeRunnerFactory
 import org.kevoree.ContainerRoot
 
 import org.slf4j.{LoggerFactory, Logger}
@@ -13,7 +13,7 @@ import org.slf4j.{LoggerFactory, Logger}
  * @author Erwan Daubert
  * @version 1.0
  */
-class KevoreeNodeManager(node: AbstractHostNode) {
+class KevoreeNodeManager(kevoreeNodeRunnerFactory : KevoreeNodeRunnerFactory) {
 
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
@@ -38,7 +38,7 @@ class KevoreeNodeManager(node: AbstractHostNode) {
 
   def addNode(iaasModel: ContainerRoot, targetChildName: String, targetChildModel: ContainerRoot): Boolean = {
     logger.debug("try to add a node: {}", targetChildName)
-    val newRunner = node.createKevoreeNodeRunner(targetChildName)
+    val newRunner = kevoreeNodeRunnerFactory.createKevoreeNodeRunner(targetChildName)
     runners.append(newRunner)
 
     val result = newRunner.startNode(iaasModel, targetChildModel)

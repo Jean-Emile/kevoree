@@ -6,11 +6,11 @@ import java.io.File
 import org.kevoree.library.sky.api.KevoreeNodeRunner
 import org.slf4j.{LoggerFactory, Logger}
 import org.kevoree.library.sky.api.property.PropertyConversionHelper
-import org.kevoree.library.sky.api.nodeType.AbstractHostNode
 import org.kevoree.library.sky.api.nodeType.helper.SubnetUtils
 import scala.Array
 import org.kevoree.library.sky.jails.JailsConstraintsConfiguration
 import org.kevoree.{ContainerRoot, ContainerNode}
+import org.kevoree.framework.AbstractNodeType
 
 
 /**
@@ -288,7 +288,7 @@ class ProcessExecutor() {
     (jailPath, jailId, jailIP)
   }
 
-  def startKevoreeOnJail(jailId: String, ram: String, nodeName: String /*, outFile: File, errFile: File*/ , runner: KevoreeNodeRunner, iaasNode: AbstractHostNode, manageChildKevoreePlatform: Boolean): Boolean = {
+  def startKevoreeOnJail(jailId: String, ram: String, nodeName: String /*, outFile: File, errFile: File*/ , runner: KevoreeNodeRunner, iaasNode: AbstractNodeType, manageChildKevoreePlatform: Boolean): Boolean = {
     logger.debug("trying to start Kevoree node on jail {} ", nodeName)
     // FIXME java memory properties must define as Node properties
     // Currently the kloud provider only manages PJavaSeNode that hosts the software user configuration
