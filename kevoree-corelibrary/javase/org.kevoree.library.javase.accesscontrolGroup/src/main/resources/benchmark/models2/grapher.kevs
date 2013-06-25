@@ -17,4 +17,5 @@ updateDictionary Grapher854@node0
 addGroup controlgroup:AccessControlGroup
 addToGroup controlgroup node0
 updateDictionary controlgroup{gui="false",port="8000",ip="0.0.0.0"}@node0
+network node0 => node0 {"KEVOREE.remote.node.ip"="127.0.0.1"}
 }

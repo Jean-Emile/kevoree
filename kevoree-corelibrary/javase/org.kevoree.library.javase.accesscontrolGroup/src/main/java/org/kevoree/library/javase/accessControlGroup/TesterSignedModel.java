@@ -79,7 +79,7 @@ public class TesterSignedModel {
       group.pushPDP(root,rsaPrivateKey,KevScriptLoader.getModel(Tester.class.getClassLoader().getResource("benchmark/models2/emptynode.kevs").getPath()),"node0");
 
         Thread.sleep(5000); */
-      ContainerRoot modeltarget = KevScriptLoader.getModel(TesterSignedModel.class.getClassLoader().getResource("benchmark/models2/grapher.kevs").getPath());
+      ContainerRoot modeltarget = KevScriptLoader.getModel(TesterSignedModel.class.getClassLoader().getResource("benchmark/models2/randomcomponent.kevs").getPath());
         ContainerRoot modelempty = KevScriptLoader.getModel(TesterSignedModel.class.getClassLoader().getResource("benchmark/models2/emptynode.kevs").getPath());
         for(int i=0;i<500;i++)
         {

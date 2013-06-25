@@ -16,7 +16,7 @@ updateDictionary Random559@node0
 }
 
 addGroup controlgroup:AccessControlGroup
-updateDictionary controlgroup{benchmark="true"}@node0
+updateDictionary controlgroup{port="8000",ip="0.0.0.0"}@node0
 addToGroup controlgroup node0
-updateDictionary controlgroup{port="8000",gui="false",ip="0.0.0.0"}@node0
+network node0 => node0 {"KEVOREE.remote.node.ip"="127.0.0.1"}
 }

@@ -25,7 +25,6 @@ public class TestPushPDP {
         dico.put("port", "8000");
         dico.put("ip","localhost");
         dico.put("ssl","false");
-        dico.put("gui","false");
         dico.put("pdp","false");
 
         AccessControlGroup group =new AccessControlGroup();

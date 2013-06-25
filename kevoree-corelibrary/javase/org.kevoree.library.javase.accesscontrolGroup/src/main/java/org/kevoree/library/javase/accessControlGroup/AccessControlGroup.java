@@ -4,6 +4,7 @@ import jexxus.common.Connection;
 import jexxus.common.ConnectionListener;
 import jexxus.server.ServerConnection;
 import org.kevoree.ContainerRoot;
+import org.kevoree.log.Log;
 import org.kevoree.tools.accesscontrol.framework.AbstractAccessControlGroupType;
 import org.kevoree.tools.accesscontrol.framework.AccessControlException;
 import controlbasicGossiper.HelperModelSigned;
@@ -20,8 +21,6 @@ import org.kevoree.framework.KevoreePropertyHelper;
 import org.kevoree.framework.KevoreeXmiHelper;
 import org.kevoree.library.NodeNetworkHelper;
 import org.kevoree.tools.accesscontrol.framework.utils.HelperSignature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.security.InvalidKeyException;
@@ -51,7 +50,7 @@ import java.util.concurrent.TimeoutException;
 @Library(name = "JavaSE", names = "Android")
 public class AccessControlGroup extends AbstractAccessControlGroupType  implements ConnectionListener
 {
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final byte getModel = 0;
     private final byte pushModel = 1;
     protected Server server = null;
@@ -71,7 +70,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
         } else {
             server = new Server(this, port, ssl);
         }
-        logger.info("BasicGroup listen on " + port + "-SSL=" + ssl);
+        Log.info("BasicGroup listen on " + port + "-SSL=" + ssl);
         server.startServer();
         starting = true;
     }
@@ -95,7 +94,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
                             getModelService().atomicUpdateModel(modelOption);
                             getModelService().registerModelListener(AccessControlGroup.this);
                         } catch (Exception e) {
-                            logger.error("", e);
+                            Log.error("", e);
                         }
                     }
                 }.start();
@@ -109,7 +108,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
                     try {
                         push(currentModel, subNode.getName());
                     } catch (Exception e) {
-                        logger.warn("Unable to notify other members of {} group", group.getName());
+                        Log.warn("Unable to notify other members of {} group", group.getName());
                     }
                 }
             }
@@ -128,7 +127,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
                 try {
                     PORT = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
-                    logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
+                    Log.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
         }
@@ -138,14 +137,14 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
                 try {
                     return requestModel(ip, PORT, targetNodeName);
                 } catch (Exception e) {
-                    logger.debug("Unable to pull model on {} using {}:{}", targetNodeName, ip, PORT);
+                    Log.debug("Unable to pull model on {} using {}:{}", targetNodeName, ip, PORT);
                 }
             }
         } else {
             try {
                 return requestModel("127.0.0.1", PORT, targetNodeName);
             } catch (Exception e) {
-                logger.debug("Unable to pull model on {} using {}:{}", targetNodeName, "127.0.0.1", PORT);
+                Log.debug("Unable to pull model on {} using {}:{}", targetNodeName, "127.0.0.1", PORT);
             }
         }
         throw new Exception("Unable to pull model on " + targetNodeName);
@@ -161,7 +160,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
                 try {
                     exchanger.exchange(null);
                 } catch (InterruptedException e) {
-                    logger.error("", e);
+                    Log.error("", e);
                 }
             }
 
@@ -172,7 +171,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
                 try {
                     exchanger.exchange(root);
                 } catch (InterruptedException e) {
-                    logger.error("error while waiting model from " + targetNodeName, e);
+                    Log.error("error while waiting model from " + targetNodeName, e);
                 } finally {
                     conns[0].close();
                 }
@@ -199,7 +198,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
 
         try {
             if (data == null) {
-                logger.error("Null rec");
+                Log.error("Null rec");
             } else {
                 switch (data[0])
                 {
@@ -238,7 +237,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
                 }
             }
         } catch (Exception e) {
-            logger.error("Something bad ...", e);
+            Log.error("Something bad ...", e);
         }
 
     }
@@ -267,14 +266,14 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
                 try {
                     PORT = Integer.parseInt(portOption);
                 } catch (NumberFormatException e) {
-                    logger.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
+                    Log.warn("Attribute \"port\" of {} must be an Integer. Default value ({}) is used", getName(), PORT);
                 }
             }
         }
 
         List<String> ips = KevoreePropertyHelper.instance$.getNetworkProperties(model, targetNodeName, org.kevoree.framework.Constants.instance$.getKEVOREE_PLATFORM_REMOTE_NODE_IP());
         if(ips.size()== 0){
-            logger.warn("no address ip");
+            Log.warn("no address ip");
             ips.add("127.0.0.1");
         }
         for (String ip : ips) {
@@ -302,7 +301,7 @@ public class AccessControlGroup extends AbstractAccessControlGroupType  implemen
                 conns[0].send(output.toByteArray(), Delivery.RELIABLE);
                 break;
             } catch (Exception e) {
-                logger.debug("Unable to write data on {}", targetNodeName, e);
+                Log.debug("Unable to write data on {}", targetNodeName, e);
             } finally {
                 try {
                     oos.close();

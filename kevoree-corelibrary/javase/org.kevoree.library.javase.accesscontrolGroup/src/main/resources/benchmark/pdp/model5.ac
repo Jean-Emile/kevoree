@@ -11,8 +11,13 @@
 </elements>
 
 <elements xsi:type="AccessControl:Element" elementQuery="typeDefinitions[AccessControlGroup]">
-<permissions xsi:type="AccessControl:Permission" PrimitiveQuery="UpdateDictionaryInstance">
-</permissions>
+<permissions xsi:type="AccessControl:Permission" PrimitiveQuery="AddFragmentBinding"></permissions>
+<permissions xsi:type="AccessControl:Permission" PrimitiveQuery="StopInstance"></permissions>
+<permissions xsi:type="AccessControl:Permission" PrimitiveQuery="UpdateDictionaryInstance"></permissions>
+<permissions xsi:type="AccessControl:Permission" PrimitiveQuery="UpdateInstance"></permissions>
+<permissions xsi:type="AccessControl:Permission" PrimitiveQuery="StartInstance"></permissions>
+<permissions xsi:type="AccessControl:Permission" PrimitiveQuery="AddInstance"></permissions>
+<permissions xsi:type="AccessControl:Permission" PrimitiveQuery="RemoveInstance"></permissions>
 </elements>
 
 
