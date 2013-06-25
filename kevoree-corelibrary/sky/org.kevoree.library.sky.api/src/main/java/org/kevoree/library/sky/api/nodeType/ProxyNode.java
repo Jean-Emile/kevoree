@@ -15,7 +15,7 @@ import org.kevoree.annotation.NodeType;
 @DictionaryType({
         @DictionaryAttribute(name = "login", optional = true),
         @DictionaryAttribute(name = "credentials", optional = true),
-        @DictionaryAttribute(name = "endpoints", optional = true),
+        @DictionaryAttribute(name = "endpoints", optional = true)
 })
 @NodeType
 public interface ProxyNode {
